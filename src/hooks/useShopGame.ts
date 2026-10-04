@@ -1,51 +1,47 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import * as sfx from '../audio/sfx';
 import type { BoosterId } from '../assets';
+import * as sfx from '../audio/sfx';
 import { STORAGE_KEY, TIMING } from '../config';
-import { generateLevel, type GeneratedLevel } from '../game/generator';
-import { BOOSTER_PRICES, getLevelConfig, winCoins } from '../game/levels';
-import { createGameState, gameReducer, type GameAction } from '../game/reducer';
+import { BOOSTER_PRICES } from '../game/levels';
+import { generateShopLevel, type GeneratedShopLevel } from '../game/shop/generator';
+import { getShopLevelConfig, shopWinCoins } from '../game/shop/levels';
+import { createShopState, shopReducer, type ShopAction } from '../game/shop/reducer';
 import { DEFAULT_PROGRESS, type Progress } from './progress';
 import { usePersistedState } from './usePersistedState';
-const BOOSTER_ACTIONS = new Set<GameAction['type']>(['UNDO', 'USE_EXTRA', 'TOGGLE_PEEK', 'SHUFFLE']);
 
-// Generierte Level werden pro Sitzung gecacht (Generierung ist deterministisch).
-const cache = new Map<number, GeneratedLevel>();
-export function getGeneratedLevel(level: number): GeneratedLevel {
-  let g = cache.get(level);
+const BOOSTER_ACTIONS = new Set<ShopAction['type']>(['UNDO', 'USE_EXTRA', 'TOGGLE_PEEK', 'SHUFFLE']);
+
+const cache = new Map<number, GeneratedShopLevel>();
+export function getGeneratedShopLevel(day: number): GeneratedShopLevel {
+  let g = cache.get(day);
   if (!g) {
-    g = generateLevel(getLevelConfig(level));
-    cache.set(level, g);
+    g = generateShopLevel(getShopLevelConfig(day));
+    cache.set(day, g);
   }
   return g;
 }
 
-/**
- * Verbindet die reine Spiellogik (Reducer) mit der App: Level laden, Fortschritt
- * speichern, Sound-Events auslösen, Lupen-Timer. Komponenten bekommen nur `state`
- * und `dispatch` und bleiben dadurch dumm und leicht austauschbar.
- */
-export function useGame() {
+/** Wie useGame, aber für den Versand-Modus (Fortschritt = "Tag"). */
+export function useShopGame() {
   const [progress, setProgress] = usePersistedState<Progress>(STORAGE_KEY, DEFAULT_PROGRESS);
-  const [generated, setGenerated] = useState(() => getGeneratedLevel(progress.level));
-  const [state, rawDispatch] = useReducer(gameReducer, generated, (g) => createGameState(g.config, g.board));
-  /** Ändert sich bei jedem neuen Versuch -> Board wird neu gemountet (keine Flug-Animationen von alten Positionen). */
+  const [generated, setGenerated] = useState(() => getGeneratedShopLevel(progress.shopDay));
+  const [state, rawDispatch] = useReducer(shopReducer, generated, (g) => createShopState(g.config, g.board));
   const [attempt, setAttempt] = useState(0);
   const winHandledFor = useRef<number | null>(null);
 
-  const dispatch = useCallback((action: GameAction) => {
+  const dispatch = useCallback((action: ShopAction) => {
     if (action.type.startsWith('TAP_')) sfx.playTap();
     if (BOOSTER_ACTIONS.has(action.type)) sfx.playBooster();
     rawDispatch(action);
   }, []);
 
   const loadLevel = useCallback(
-    (level: number) => {
-      const g = getGeneratedLevel(level);
+    (day: number) => {
+      const g = getGeneratedShopLevel(day);
       setGenerated(g);
       rawDispatch({ type: 'LOAD_LEVEL', config: g.config, board: g.board });
       setAttempt((a) => a + 1);
-      setProgress((p) => ({ ...p, level, highest: Math.max(p.highest, level) }));
+      setProgress((p) => ({ ...p, shopDay: day, shopHighest: Math.max(p.shopHighest, day) }));
     },
     [setProgress],
   );
@@ -55,13 +51,13 @@ export function useGame() {
     setAttempt((a) => a + 1);
   }, []);
 
-  // Sieg: Münzen und nächstes Level sofort speichern (auch wenn die App danach geschlossen wird).
+  // Tag geschafft: Münzen + nächster Tag sofort speichern.
   useEffect(() => {
     if (state.status !== 'won' || winHandledFor.current === attempt) return;
     winHandledFor.current = attempt;
-    const earned = winCoins(state.config) + state.levelCoins;
+    const earned = shopWinCoins(state.config) + state.levelCoins;
     const next = state.config.level + 1;
-    setProgress((p) => ({ ...p, level: next, coins: p.coins + earned, highest: Math.max(p.highest, next) }));
+    setProgress((p) => ({ ...p, shopDay: next, coins: p.coins + earned, shopHighest: Math.max(p.shopHighest, next) }));
     sfx.playWin();
   }, [state.status, state.config, state.levelCoins, attempt, setProgress]);
 
@@ -69,16 +65,15 @@ export function useGame() {
     if (state.status === 'lost') sfx.playLose();
   }, [state.status]);
 
-  // Sound-Hooks für FX-Events
   const lastFx = useRef(0);
   useEffect(() => {
     for (const ev of state.fx) {
       if (ev.seq <= lastFx.current) continue;
       lastFx.current = ev.seq;
-      if (ev.kind === 'invalid' || ev.kind === 'denied') sfx.playInvalid();
-      if (ev.kind === 'solved') sfx.playSolved();
-      if (ev.kind === 'gold') sfx.playGold();
+      if (ev.kind === 'invalid' || ev.kind === 'blocked' || ev.kind === 'denied') sfx.playInvalid();
+      if (ev.kind === 'shipped') sfx.playShip();
       if (ev.kind === 'revealed') sfx.playReveal();
+      if (ev.kind === 'coins') sfx.playGold();
     }
   }, [state.fx]);
   useEffect(() => {
@@ -88,23 +83,20 @@ export function useGame() {
     if (state.moves > 0) sfx.playPlace();
   }, [state.moves]);
 
-  // Lupe: verpacktes Item nur kurz zeigen.
   useEffect(() => {
     if (state.peekItemId === null) return;
     const t = window.setTimeout(() => rawDispatch({ type: 'END_PEEK' }), TIMING.peek);
     return () => window.clearTimeout(t);
   }, [state.peekItemId]);
 
-  // Nächstes Level im Leerlauf vorberechnen, damit "Weiter" ohne Verzögerung lädt.
+  // Nächsten Tag im Leerlauf vorberechnen.
   useEffect(() => {
-    const next = state.config.level + 1;
-    const t = window.setTimeout(() => getGeneratedLevel(next), 1200);
+    const t = window.setTimeout(() => getGeneratedShopLevel(state.config.level + 1), 1200);
     return () => window.clearTimeout(t);
   }, [state.config.level]);
 
-  /** Booster für Münzen kaufen und sofort einsetzen (Kontingent im Level aufgebraucht). */
   const buyBooster = useCallback(
-    (id: BoosterId, use: GameAction) => {
+    (id: BoosterId, use: ShopAction) => {
       const price = BOOSTER_PRICES[id];
       if (progress.coins < price) return;
       setProgress((p) => ({ ...p, coins: p.coins - price }));
@@ -114,7 +106,6 @@ export function useGame() {
     [progress.coins, setProgress, dispatch],
   );
 
-  /** Münzanzeige: gespeicherte Münzen + noch nicht gutgeschriebene Gold-Münzen dieses Versuchs. */
   const displayCoins = progress.coins + (state.status === 'won' ? 0 : state.levelCoins);
 
   return { state, dispatch, generated, progress, setProgress, loadLevel, restart, attempt, displayCoins, buyBooster };

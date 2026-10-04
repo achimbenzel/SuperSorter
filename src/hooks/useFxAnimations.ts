@@ -1,7 +1,11 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { UI_IMAGE } from '../assets';
 import { TIMING } from '../config';
+import type { ShopFx } from '../game/shop/types';
 import type { FxEvent } from '../game/types';
+
+/** FX-Events beider Spielmodi. */
+type AnyFx = FxEvent | ShopFx;
 
 const SHAKE: Keyframe[] = [
   { transform: 'translateX(0)' },
@@ -21,7 +25,7 @@ function shake(el: Element | null) {
  * Bewusst imperativ per Web Animations API: Diese Effekte sind reine Deko und
  * sollen keine zusätzlichen React-Renders auslösen.
  */
-export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: FxEvent[], fxSeq: number) {
+export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: AnyFx[], fxSeq: number) {
   const handled = useRef(0);
 
   useEffect(() => {
@@ -31,7 +35,8 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: FxEv
       if (ev.seq <= handled.current) continue;
       handled.current = ev.seq;
       switch (ev.kind) {
-        case 'invalid': {
+        case 'invalid':
+        case 'blocked': {
           shake(root.querySelector(`[data-target="${ev.target.kind}-${ev.target.index}"]`));
           root.querySelectorAll('.item.is-selected').forEach(shake);
           break;
@@ -40,7 +45,10 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: FxEv
           shake(root.querySelector(`[data-booster="${ev.booster}"]`));
           break;
         case 'gold':
-          flyCoins(root, ev.slot, ev.amount);
+          flyCoins(root, `slot-${ev.slot}`, ev.amount);
+          break;
+        case 'coins':
+          flyCoins(root, ev.coinTarget, ev.amount);
           break;
         default:
           break;
@@ -50,9 +58,9 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: FxEv
   }, [rootRef, fx, fxSeq]);
 }
 
-/** Münzen fliegen vom Fach zum Münzzähler im HUD, dazu ein "+N". */
-function flyCoins(root: HTMLElement, slot: number, amount: number) {
-  const from = root.querySelector(`[data-target="slot-${slot}"]`)?.getBoundingClientRect();
+/** Münzen fliegen vom Fach/Paket zum Münzzähler im HUD, dazu ein "+N". */
+function flyCoins(root: HTMLElement, target: string, amount: number) {
+  const from = root.querySelector(`[data-target="${target}"]`)?.getBoundingClientRect();
   const to = root.querySelector('#hud-coins')?.getBoundingClientRect();
   if (!from || !to) return;
   const startX = from.left + from.width / 2;

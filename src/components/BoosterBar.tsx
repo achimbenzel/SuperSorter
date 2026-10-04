@@ -1,36 +1,43 @@
-import { BOOSTER_IMAGE, type BoosterId } from '../assets';
-import type { GameAction } from '../game/reducer';
-import { hasHiddenItems } from '../game/reducer';
-import type { GameState } from '../game/types';
+import { BOOSTER_IMAGE, UI_IMAGE, type BoosterId } from '../assets';
+import { BOOSTER_PRICES } from '../game/levels';
+import type { BoosterCounts } from '../game/types';
 
 interface BoosterBarProps {
-  state: GameState;
-  dispatch: (action: GameAction) => void;
+  boosters: BoosterCounts;
+  /** Ist der Booster gerade sinnvoll (z. B. Undo nur mit History)? */
+  usable: Record<BoosterId, boolean>;
+  playing: boolean;
+  peekArmed: boolean;
+  /** Gespeicherte Münzen (zum Nachkaufen). */
+  coins: number;
+  extraLabel?: string;
+  onUse: (id: BoosterId) => void;
+  onBuy: (id: BoosterId) => void;
 }
 
-const BOOSTERS: { id: BoosterId; label: string; action: GameAction }[] = [
-  { id: 'undo', label: 'Rückgängig', action: { type: 'UNDO' } },
-  { id: 'extra', label: 'Extra-Platz im Wagen', action: { type: 'USE_EXTRA' } },
-  { id: 'peek', label: 'Lupe', action: { type: 'TOGGLE_PEEK' } },
-  { id: 'shuffle', label: 'Mischen', action: { type: 'SHUFFLE' } },
-];
+const LABELS: Record<BoosterId, string> = {
+  undo: 'Rückgängig',
+  extra: 'Extra-Platz',
+  peek: 'Lupe',
+  shuffle: 'Mischen',
+};
+const ORDER: BoosterId[] = ['undo', 'extra', 'peek', 'shuffle'];
 
-/** Booster-Leiste ganz unten (Daumenzone). Zähler zeigt die Restmenge in diesem Level. */
-export function BoosterBar({ state, dispatch }: BoosterBarProps) {
-  const playing = state.status === 'playing';
-  const usable: Record<BoosterId, boolean> = {
-    undo: state.history.length > 0,
-    extra: true,
-    peek: hasHiddenItems(state.board),
-    shuffle: state.board.stacks.some((s) => s.length > 0),
-  };
-
+/**
+ * Booster-Leiste ganz unten (Daumenzone). Das rote Badge zeigt das Kontingent im
+ * Level. Ist es aufgebraucht, erscheint stattdessen der Preis: Ein Tap kauft den
+ * Booster für Münzen und setzt ihn sofort ein.
+ */
+export function BoosterBar({ boosters, usable, playing, peekArmed, coins, extraLabel, onUse, onBuy }: BoosterBarProps) {
   return (
     <nav className="boosters" aria-label="Booster">
-      {BOOSTERS.map(({ id, label, action }) => {
-        const count = state.boosters[id];
-        const active = id === 'peek' && state.peekArmed;
-        const enabled = playing && (active || (count > 0 && usable[id]));
+      {ORDER.map((id) => {
+        const count = boosters[id];
+        const active = id === 'peek' && peekArmed;
+        const price = BOOSTER_PRICES[id];
+        const buyable = count === 0 && usable[id] && coins >= price;
+        const enabled = playing && (active || (usable[id] && (count > 0 || buyable)));
+        const label = id === 'extra' && extraLabel ? extraLabel : LABELS[id];
         return (
           <button
             key={id}
@@ -38,12 +45,19 @@ export function BoosterBar({ state, dispatch }: BoosterBarProps) {
             className={`booster${active ? ' is-active' : ''}`}
             data-booster={id}
             disabled={!enabled}
-            onClick={() => dispatch(action)}
-            aria-label={`${label} (${count} übrig)`}
+            onClick={() => (count > 0 || active ? onUse(id) : onBuy(id))}
+            aria-label={count > 0 ? `${label} (${count} übrig)` : `${label} für ${price} Münzen kaufen`}
             aria-pressed={id === 'peek' ? active : undefined}
           >
             <img src={BOOSTER_IMAGE[id]} alt="" />
-            <span className={`booster-count${count === 0 ? ' is-empty' : ''}`}>{count}</span>
+            {count > 0 || !usable[id] ? (
+              <span className={`booster-count${count === 0 ? ' is-empty' : ''}`}>{count}</span>
+            ) : (
+              <span className={`booster-price${coins >= price ? '' : ' is-short'}`}>
+                <img src={UI_IMAGE.coin} alt="" />
+                {price}
+              </span>
+            )}
           </button>
         );
       })}

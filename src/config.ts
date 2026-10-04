@@ -14,6 +14,8 @@ export const TIMING = {
   select: 160,
   /** Wie lange die Lupe ein verpacktes Item zeigt. */
   peek: 2600,
+  /** Versand-Modus: Paket schließen, zukleben, wegfliegen (inkl. Flug der letzten Ware). */
+  ship: 1700,
   /** Verzögerung bis Win/Lose-Screen erscheint (Animationen sollen erst fertig sein). */
   endScreenDelay: 750,
 } as const;
@@ -25,6 +27,7 @@ export function applyTimingCssVars(root: HTMLElement = document.documentElement)
   root.style.setProperty('--t-shake', `${TIMING.shake}ms`);
   root.style.setProperty('--t-solved', `${TIMING.solved}ms`);
   root.style.setProperty('--t-select', `${TIMING.select}ms`);
+  root.style.setProperty('--t-ship', `${TIMING.ship}ms`);
 }
 
 /** localStorage-Schlüssel (versioniert, damit spätere Formatänderungen sauber migrierbar sind). */

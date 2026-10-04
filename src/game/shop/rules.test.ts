@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyMove, findShortage, hasAnyMove, isWon, listMoves, moveCount, openPositions } from './rules';
+import { applyMove, findShortage, hasAnyMove, isLegal, isWon, listMoves, moveCount, openPositions, whoNeeds } from './rules';
 import { shopBoard } from './testUtils';
 
 const stack = (index: number) => ({ kind: 'stack' as const, index });
@@ -100,6 +100,16 @@ describe('Versand: Niederlage', () => {
     expect(findShortage(b)).toBeNull();
     const wrong = applyMove(b, { from: stack(0), to: station(0) }).board;
     expect(findShortage(wrong)).toEqual({ type: 'bread' });
+  });
+
+  it('Züge, die einen Engpass erzeugen würden, sind nicht erlaubt', () => {
+    const b = shopBoard({ stacks: [['cheese', 'bread']], stations: ['series:breakfast:1', 'list:bread'] });
+    const wrong = { from: stack(0), to: station(0) };
+    expect(moveCount(b, wrong)).toBe(1); // passt eigentlich hinein …
+    expect(isLegal(b, wrong)).toBe(false); // … nimmt aber der Wunschliste das Brot weg
+    expect(listMoves(b)).not.toContainEqual(wrong);
+    expect(listMoves(b)).toContainEqual({ from: stack(0), to: station(1) });
+    expect(whoNeeds(b, { type: 'bread' })).toBe('Test');
   });
 
   it('Engpass: Serie reicht nicht mehr', () => {

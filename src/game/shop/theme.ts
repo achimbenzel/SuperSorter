@@ -20,7 +20,7 @@ export interface SeriesDef {
 
 export const SERIES: Record<SeriesId, SeriesDef> = {
   drinks: { id: 'drinks', label: 'Getränke', icon: '🥤', color: '#2f8fd0', members: ['cola-can', 'green-can', 'orange-juice'] },
-  breakfast: { id: 'breakfast', label: 'Frühstück', icon: '☀️', color: '#e89a12', members: ['bread', 'cheese', 'milk'] },
+  breakfast: { id: 'breakfast', label: 'Frühstück', icon: '☀️', color: '#3d9a3d', members: ['bread', 'cheese', 'milk'] },
   snacks: { id: 'snacks', label: 'Snacks', icon: '🍿', color: '#d6264b', members: ['chips', 'apple'] },
 };
 

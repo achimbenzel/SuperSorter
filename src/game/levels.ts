@@ -118,3 +118,9 @@ export const LEVEL_TIPS: Record<number, string> = {
 };
 
 export const PEEK_TIP = 'Lupe: Tippe auf ein verpacktes Paket.';
+
+/**
+ * Preise, wenn das Booster-Kontingent eines Levels aufgebraucht ist (in Münzen).
+ * Ein Sieg bringt 10-30 Münzen + Bonus, ein Booster kostet also etwa ein bis drei Level.
+ */
+export const BOOSTER_PRICES: BoosterCounts = { undo: 20, extra: 40, peek: 30, shuffle: 30 };

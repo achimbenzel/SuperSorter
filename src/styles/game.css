@@ -92,13 +92,18 @@
   padding: 0.15em 0.55em;
 }
 
-.hud-restart {
+.hud-icon {
+  flex: none;
   aspect-ratio: 1;
   padding: 0;
   justify-content: center;
   color: var(--c-accent-dark);
   font-size: 1.1em;
   transition: transform 120ms;
+}
+
+.hud-icon:active {
+  transform: scale(0.9);
 }
 
 .hud-restart:active {
@@ -521,6 +526,23 @@
   width: 34%;
   height: 34%;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+/* Aufkleber (Versand-Modus: Serie) unten rechts auf offenen Waren */
+.item-badge {
+  position: absolute;
+  right: -6%;
+  bottom: -4%;
+  width: 38%;
+  height: 38%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--badge);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  font-size: calc(var(--item) * 0.19);
+  line-height: 1;
 }
 
 /* Kategorie-Hinweis (hintMode) – unten, weil bei Stapeln nur der untere Rand sichtbar ist */

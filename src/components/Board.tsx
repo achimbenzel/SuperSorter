@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from 'react';
+import { CATEGORY_ICON } from '../assets';
+import { ITEM_CATEGORY } from '../game/items';
 import type { GameAction } from '../game/reducer';
 import { listTargets } from '../game/rules';
 import type { GameState, Move } from '../game/types';
 import { Cart } from './Cart';
 import { DeliveryBox } from './DeliveryBox';
+import type { ItemDecorator } from './Item';
 import { Shelf } from './Shelf';
 
 interface BoardProps {
@@ -26,6 +29,12 @@ export function Board({ state, dispatch, hint, xray, tip }: BoardProps) {
   const onTapStack = useCallback((index: number) => dispatch({ type: 'TAP_STACK', index }), [dispatch]);
   const onTapCart = useCallback((index: number) => dispatch({ type: 'TAP_CART', index }), [dispatch]);
   const onPeekItem = useCallback((itemId: number) => dispatch({ type: 'PEEK_ITEM', itemId }), [dispatch]);
+  const hintMode = state.config.hintMode;
+  // hintMode: verpackte Waren zeigen ihre Kategorie
+  const decorate = useMemo<ItemDecorator | undefined>(
+    () => (hintMode ? (it) => ({ hintIcon: CATEGORY_ICON[ITEM_CATEGORY[it.type]] }) : undefined),
+    [hintMode],
+  );
 
   return (
     <div className="board">
@@ -39,7 +48,7 @@ export function Board({ state, dispatch, hint, xray, tip }: BoardProps) {
         <DeliveryBox
           board={board}
           selection={selection}
-          hintMode={state.config.hintMode}
+          decorate={decorate}
           peekArmed={state.peekArmed}
           peekItemId={state.peekItemId}
           xray={xray}

@@ -1,12 +1,14 @@
+import type { CSSProperties } from 'react';
 import { BOARD_IMAGE } from '../assets';
-import { pickableItems } from '../game/rules';
-import type { Board, SourceRef } from '../game/types';
+import { pickableItems, type SourceBoard } from '../game/sources';
+import type { SourceRef } from '../game/types';
+import type { ItemDecorator } from './Item';
 import { Stack } from './Stack';
 
 interface DeliveryBoxProps {
-  board: Board;
+  board: SourceBoard;
   selection: SourceRef | null;
-  hintMode: boolean;
+  decorate?: ItemDecorator;
   peekArmed: boolean;
   peekItemId: number | null;
   xray: boolean;
@@ -16,23 +18,24 @@ interface DeliveryBoxProps {
 }
 
 /**
- * Lieferkarton mit 3-4 Stapeln. Drei Bildebenen: Schatten, Karton (hinten),
- * Stapel, Kartonfront (vorne, verdeckt den Fuß der Stapel -> Items stehen "im" Karton).
+ * Lieferkarton (Regal-Modus) bzw. Großhandelskarton (Versand-Modus) mit 3-4 Stapeln.
+ * Drei Bildebenen: Schatten, Karton (hinten), Stapel, Kartonfront (vorne, verdeckt den
+ * Fuß der Stapel -> Items stehen "im" Karton).
  */
-export function DeliveryBox({ board, selection, hintMode, peekArmed, peekItemId, xray, hintSource, onTapStack, onPeekItem }: DeliveryBoxProps) {
+export function DeliveryBox({ board, selection, decorate, peekArmed, peekItemId, xray, hintSource, onTapStack, onPeekItem }: DeliveryBoxProps) {
   const selectedRun = selection?.kind === 'stack' ? pickableItems(board, selection).length : 0;
   return (
     <section className={`box${peekArmed ? ' is-peek-mode' : ''}`} aria-label="Lieferkarton">
       <img className="box-shadow" src={BOARD_IMAGE.boxShadow} alt="" />
       <img className="box-back" src={BOARD_IMAGE.box} alt="" />
-      <div className="box-stacks" style={{ '--stacks': board.stacks.length } as React.CSSProperties}>
+      <div className="box-stacks" style={{ '--stacks': board.stacks.length } as CSSProperties}>
         {board.stacks.map((stack, i) => (
           <Stack
             key={i}
             index={i}
             items={stack}
             selectedCount={selection?.kind === 'stack' && selection.index === i ? selectedRun : 0}
-            hintMode={hintMode}
+            decorate={decorate}
             peekArmed={peekArmed}
             peekItemId={peekItemId}
             xray={xray}

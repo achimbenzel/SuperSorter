@@ -34,7 +34,7 @@ export function emptyStation(order: Order | null): Station {
   return { order, filled: order ? order.needs.map(() => null) : [] };
 }
 
-/** Anzahl Items, die dieser Zug bewegen würde. 0 = ungültig. */
+/** Anzahl Items, die dieser Zug bewegen würde. 0 = passt nicht (siehe auch isLegal). */
 export function moveCount(board: ShopBoard, move: ShopMove): number {
   const items = pickableItems(board, move.from);
   if (items.length === 0) return 0;
@@ -106,10 +106,41 @@ export function applyMove(board: ShopBoard, move: ShopMove): ShopMoveResult {
   };
 }
 
+/**
+ * Würde der Zug einen Engpass erzeugen (eine Ware landet im falschen Paket und fehlt
+ * dann einem anderen Auftrag)? Solche Züge sind nicht erlaubt: Statt das Level
+ * unbemerkt unlösbar zu machen, erklärt die UI, wer die Ware noch braucht.
+ */
+export function shortageAfter(board: ShopBoard, move: ShopMove): Shortage | null {
+  if (move.to.kind === 'cart' || moveCount(board, move) === 0) return null;
+  // Nur Züge blockieren, die einen Engpass *erzeugen* (generierte Level starten nie im Engpass).
+  if (findShortage(board)) return null;
+  return findShortage(applyMove(board, move).board);
+}
+
+/** Gültig = passt hinein UND erzeugt keinen Engpass. */
+export function isLegal(board: ShopBoard, move: ShopMove): boolean {
+  return moveCount(board, move) > 0 && !shortageAfter(board, move);
+}
+
+/** Erster Kunde (offene Pakete zuerst, dann Warteschlange), der die knappe Ware braucht. */
+export function whoNeeds(board: ShopBoard, shortage: Shortage): string | null {
+  const matches = (req: Requirement) =>
+    'type' in shortage
+      ? req.kind === 'type' && req.type === shortage.type
+      : req.kind === 'series'
+        ? req.series === shortage.series
+        : SERIES_OF[req.type] === shortage.series;
+  for (const st of board.stations) {
+    if (st.order?.needs.some((req, i) => !st.filled[i] && matches(req))) return st.order.customer;
+  }
+  return board.queue.find((o) => o.needs.some(matches))?.customer ?? null;
+}
+
 export function listTargets(board: ShopBoard, from: SourceRef): ShopTarget[] {
   const out: ShopTarget[] = [];
   board.stations.forEach((_, index) => {
-    if (moveCount(board, { from, to: { kind: 'station', index } }) > 0) out.push({ kind: 'station', index });
+    if (isLegal(board, { from, to: { kind: 'station', index } })) out.push({ kind: 'station', index });
   });
   if (from.kind === 'stack') {
     board.cart.forEach((c, index) => {

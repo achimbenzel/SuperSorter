@@ -1,25 +1,32 @@
 import { CART_ICON } from '../assets';
-import type { Item as ItemModel, SourceRef, TargetRef } from '../game/types';
-import { Item } from './Item';
+import type { Item as ItemModel, SourceRef } from '../game/types';
+import { Item, type ItemDecorator } from './Item';
+
+/** Ziel-Referenz, soweit der Wagen sie braucht (Regal: slot|cart, Versand: station|cart). */
+type AnyTarget = { kind: string; index: number };
 
 interface CartProps {
   cart: (ItemModel | null)[];
   selection: SourceRef | null;
-  validTargets: TargetRef[];
+  validTargets: AnyTarget[];
   hintSource: SourceRef | null;
-  hintTarget: TargetRef | null;
+  hintTarget: AnyTarget | null;
+  decorate?: ItemDecorator;
+  /** Symbol im Kopf (Regal: Einkaufswagen, Versand: Ablage). */
+  icon?: string;
+  label?: string;
   onTap: (index: number) => void;
 }
 
 /**
- * Einkaufswagen = Puffer. Jeder Platz hält ein Item. Platzhalter-Grafik (kein Asset):
- * 🛒-Emoji als Kopf und CSS-Mulden als Plätze.
+ * Puffer: Einkaufswagen (Regal) bzw. Ablage am Packtisch (Versand). Jeder Platz hält
+ * ein Item. Platzhalter-Grafik (kein Asset): Emoji als Kopf und CSS-Mulden als Plätze.
  */
-export function Cart({ cart, selection, validTargets, hintSource, hintTarget, onTap }: CartProps) {
+export function Cart({ cart, selection, validTargets, hintSource, hintTarget, decorate, icon = CART_ICON, label = 'Einkaufswagen', onTap }: CartProps) {
   return (
-    <section className="cart" aria-label="Einkaufswagen">
+    <section className="cart" aria-label={label}>
       <div className="cart-head" aria-hidden="true">
-        {CART_ICON}
+        {icon}
       </div>
       {cart.map((item, i) => {
         const selected = selection?.kind === 'cart' && selection.index === i;
@@ -33,9 +40,9 @@ export function Cart({ cart, selection, validTargets, hintSource, hintTarget, on
             className={`cart-spot${valid ? ' is-valid' : ''}${hinted ? ' is-hint' : ''}`}
             data-target={`cart-${i}`}
             onClick={() => onTap(i)}
-            aria-label={`Wagenplatz ${i + 1}${item ? ' belegt' : ' frei'}`}
+            aria-label={`${label} Platz ${i + 1}${item ? ' belegt' : ' frei'}`}
           >
-            {item && <Item item={item} selected={selected} />}
+            {item && <Item item={item} selected={selected} {...decorate?.(item)} />}
           </button>
         );
       })}

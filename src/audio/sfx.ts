@@ -15,6 +15,7 @@ export type SfxName =
   | 'invalid'
   | 'reveal'
   | 'solved'
+  | 'ship'
   | 'gold'
   | 'win'
   | 'lose'
@@ -44,6 +45,7 @@ export const playPlace = () => play('place');
 export const playInvalid = () => play('invalid');
 export const playReveal = () => play('reveal');
 export const playSolved = () => play('solved');
+export const playShip = () => play('ship');
 export const playGold = () => play('gold');
 export const playWin = () => play('win');
 export const playLose = () => play('lose');

@@ -14,13 +14,21 @@ import { TIMING } from '../config';
  * Struktur pro Item:  [data-flip-id] (Layout, nie animiert) > .flip (wird animiert)
  * Gemessen wird das äußere Element, damit laufende Animationen die Messung nicht verfälschen.
  */
+/** Wie viele Renders ein verschwundenes Item seine letzte Position behält. */
+const KEEP_MISSING_RENDERS = 3;
+
 export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string) {
   const rects = useRef(new Map<string, DOMRect>());
+  /** Alter (in Renders) von Positionen, deren Item gerade nicht im DOM ist. */
+  const missingAge = useRef(new Map<string, number>());
   const lastKey = useRef(resetKey);
 
   // Bei Größenänderung (Drehen, Adressleiste) verschiebt sich alles -> nicht animieren.
   useEffect(() => {
-    const clear = () => rects.current.clear();
+    const clear = () => {
+      rects.current.clear();
+      missingAge.current.clear();
+    };
     window.addEventListener('resize', clear);
     return () => window.removeEventListener('resize', clear);
   }, []);
@@ -31,6 +39,7 @@ export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string
     if (lastKey.current !== resetKey) {
       // Neues Level / Neustart: alte Positionen gehören zu anderen Items (IDs beginnen neu).
       rects.current.clear();
+      missingAge.current.clear();
       lastKey.current = resetKey;
     }
     const next = new Map<string, DOMRect>();
@@ -40,6 +49,7 @@ export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string
       const id = el.dataset.flipId!;
       const rect = el.getBoundingClientRect();
       next.set(id, rect);
+      missingAge.current.delete(id);
       const prev = rects.current.get(id);
       if (!prev || reduced) return;
       const dx = prev.left - rect.left;
@@ -60,6 +70,19 @@ export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string
         { duration: TIMING.hop, easing: 'cubic-bezier(.3,.7,.4,1)' },
       );
     });
+    // Items, die kurz aus dem DOM verschwinden und einen Render später woanders
+    // auftauchen (Versand: Paket wird verschickt, die letzte Ware erscheint erst in der
+    // "Geist"-Ebene des abfliegenden Pakets), behalten ihre alte Position ein paar Renders.
+    for (const [id, rect] of rects.current) {
+      if (next.has(id)) continue;
+      const age = (missingAge.current.get(id) ?? 0) + 1;
+      if (age > KEEP_MISSING_RENDERS) {
+        missingAge.current.delete(id);
+        continue;
+      }
+      missingAge.current.set(id, age);
+      next.set(id, rect);
+    }
     rects.current = next;
   });
 }

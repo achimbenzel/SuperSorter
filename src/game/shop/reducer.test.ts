@@ -60,7 +60,7 @@ describe('Versand: Verschicken, Münzen, Sieg', () => {
   });
 
   it('Gold-Rarität bringt Bonus', () => {
-    const b = shopBoard({ cart: ['$milk'], stations: ['bulk:milk:2'] });
+    const b = shopBoard({ cart: ['$milk', 'milk'], stations: ['bulk:milk:2'] });
     const s = run(start(b), { type: 'TAP_CART', index: 0 }, { type: 'TAP_STATION', index: 0 });
     expect(s.levelCoins).toBe(SHOP_GOLD_BONUS);
   });
@@ -77,14 +77,20 @@ describe('Versand: Niederlage und Booster', () => {
     expect(s.board.cart).toHaveLength(2);
   });
 
-  it('Engpass -> verloren; Undo rettet und nimmt Münzen zurück', () => {
+  it('Zug mit Engpass wird blockiert und erklärt, Auswahl bleibt', () => {
     const b = shopBoard({ stacks: [['cheese', 'bread']], stations: ['series:breakfast:1', 'list:bread'] });
+    const s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_STATION', index: 0 });
+    expect(s.board).toBe(b);
+    expect(s.status).toBe('playing');
+    expect(s.selection).toEqual({ kind: 'stack', index: 0 });
+    expect(s.fx).toEqual([expect.objectContaining({ kind: 'blocked', message: 'Brot wird noch für Test gebraucht!' })]);
+  });
+
+  it('Undo nimmt Versand-Münzen zurück', () => {
+    const b = shopBoard({ stacks: [['milk', 'milk'], ['bread']], stations: ['bulk:milk:2'], queue: ['bulk:bread:1'] });
     let s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_STATION', index: 0 });
-    expect(s.status).toBe('lost');
-    expect(s.loseReason).toBe('shortage');
     expect(s.levelCoins).toBe(COINS_PER_ORDER);
     s = run(s, { type: 'UNDO' });
-    expect(s.status).toBe('playing');
     expect(s.levelCoins).toBe(0);
     expect(s.board).toBe(b);
   });

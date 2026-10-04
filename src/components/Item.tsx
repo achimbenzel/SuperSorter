@@ -1,14 +1,26 @@
 import { memo, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { CATEGORY_ICON, ITEM_IMAGE, MYSTERY_IMAGE, UI_IMAGE } from '../assets';
-import { ITEM_CATEGORY, ITEM_LABEL } from '../game/items';
+import { ITEM_IMAGE, MYSTERY_IMAGE, UI_IMAGE } from '../assets';
+import { ITEM_LABEL } from '../game/items';
 import type { Item as ItemModel } from '../game/types';
+
+/** Aufkleber auf einer offenen Ware (Versand-Modus: Serie). */
+export interface ItemBadge {
+  icon: string;
+  color: string;
+  label: string;
+}
+
+/** Je Ware: Hinweis-Symbol auf der Verpackung (hintMode) und Aufkleber. */
+export type ItemDecorator = (item: ItemModel) => { hintIcon?: string; badge?: ItemBadge };
 
 interface ItemProps {
   item: ItemModel;
   /** Angehoben + leuchtend (ausgewählt). */
   selected?: boolean;
-  /** Kategorie-Hinweis auf der Verpackung anzeigen (Level-Flag hintMode). */
-  hintMode?: boolean;
+  /** Hinweis-Symbol auf der Verpackung (Kategorie bzw. Serie), nur bei verpackten Waren. */
+  hintIcon?: string;
+  /** Aufkleber auf der offenen Ware. */
+  badge?: ItemBadge;
   /** Lupe zeigt dieses verpackte Item gerade. */
   peeked?: boolean;
   /** Lupe ist aktiv und dieses Item kann angetippt werden. */
@@ -31,7 +43,7 @@ const SHREDS = [
  *   [data-flip-id] -> .flip (Flug-Animation) -> .item (Auswahl-Lift, Reveal, Glow)
  * Positioniert wird das äußere Element vom Elternteil (Stapel, Fach, Wagen).
  */
-export const Item = memo(function Item({ item, selected, hintMode, peeked, peekable, xray, style }: ItemProps) {
+export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked, peekable, xray, style }: ItemProps) {
   // Reveal erkennen: hidden wechselt von true auf false, solange das Item an seinem Platz bleibt.
   const wasHidden = useRef(item.hidden);
   const [revealKey, setRevealKey] = useState(0);
@@ -59,12 +71,15 @@ export const Item = memo(function Item({ item, selected, hintMode, peeked, peeka
   return (
     <div className="item-pos" data-flip-id={item.id} style={style}>
       <div className="flip">
-        <div className={classes} aria-label={item.hidden ? 'verpackte Ware' : ITEM_LABEL[item.type]}>
+        <div
+          className={classes}
+          aria-label={item.hidden ? 'verpackte Ware' : `${ITEM_LABEL[item.type]}${badge ? ` (${badge.label})` : ''}`}
+        >
           <span className="item-glow" />
           {item.hidden ? (
             <>
               <img className="item-img" src={wrap} alt="" draggable={false} />
-              {hintMode && <span className="item-hint">{CATEGORY_ICON[ITEM_CATEGORY[item.type]]}</span>}
+              {hintIcon && <span className="item-hint">{hintIcon}</span>}
               {(peeked || xray) && (
                 <span className={`item-xray${peeked ? ' is-peek' : ''}`}>
                   <img src={ITEM_IMAGE[item.type]} alt="" draggable={false} />
@@ -75,6 +90,11 @@ export const Item = memo(function Item({ item, selected, hintMode, peeked, peeka
             <>
               <img className="item-img" src={ITEM_IMAGE[item.type]} alt="" draggable={false} />
               {item.gold && <img className="item-gold-badge" src={UI_IMAGE.coin} alt="" />}
+              {badge && (
+                <span className="item-badge" style={{ '--badge': badge.color } as CSSProperties} title={badge.label}>
+                  {badge.icon}
+                </span>
+              )}
             </>
           )}
           {revealKey > 0 && (

@@ -6,7 +6,9 @@ import { hasHiddenItems } from '../sources';
 import { sameSource } from '../rules';
 import { shuffleShopBox } from './generator';
 import { COINS_PER_ORDER, SHOP_GOLD_BONUS } from './levels';
-import { applyMove, findShortage, hasAnyMove, isWon, moveCount } from './rules';
+import { applyMove, findShortage, hasAnyMove, isWon, moveCount, shortageAfter, whoNeeds } from './rules';
+import { ITEM_LABEL } from '../items';
+import { SERIES } from './theme';
 import type { ShopBoard, ShopFx, ShopGameState, ShopLevelConfig, ShopLoseReason, ShopMove, SourceRef } from './types';
 
 export type ShopAction =
@@ -150,6 +152,16 @@ type FxInput = ShopFx extends infer E ? (E extends { seq: number } ? Omit<E, 'se
 
 function tryMove(state: ShopGameState, move: ShopMove): ShopGameState {
   if (moveCount(state.board, move) === 0) return emit(state, [{ kind: 'invalid', target: move.to }]);
+  const shortage = shortageAfter(state.board, move);
+  if (shortage) {
+    // Nicht ausführen, sondern erklären, wer die Ware noch braucht. Auswahl bleibt.
+    const who = whoNeeds(state.board, shortage);
+    const message =
+      'type' in shortage
+        ? `${ITEM_LABEL[shortage.type]} wird noch${who ? ` für ${who}` : ''} gebraucht!`
+        : `${who ? `${who} braucht` : 'Es fehlt'} sonst eine Ware der Serie ${SERIES[shortage.series].label}!`;
+    return emit(state, [{ kind: 'blocked', target: move.to, message }]);
+  }
   const result = applyMove(state.board, move);
   const events: FxInput[] = [];
   if (result.revealed) events.push({ kind: 'revealed', itemId: result.revealed.id });

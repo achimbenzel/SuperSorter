@@ -80,6 +80,8 @@ export type ShopLoseReason = 'deadlock' | 'shortage';
 
 export type ShopFx =
   | { seq: number; kind: 'invalid'; target: ShopTarget }
+  /** Zug passt, würde aber eine Ware wegnehmen, die ein anderer Auftrag braucht. */
+  | { seq: number; kind: 'blocked'; target: ShopTarget; message: string }
   | { seq: number; kind: 'revealed'; itemId: number }
   | { seq: number; kind: 'shipped'; station: number; order: Order; items: Item[] }
   | { seq: number; kind: 'coins'; coinTarget: string; amount: number }

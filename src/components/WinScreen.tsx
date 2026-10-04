@@ -1,22 +1,21 @@
 import confetti from 'canvas-confetti';
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { UI_IMAGE } from '../assets';
-import { REWARD_LEVEL_BONUS, winCoins } from '../game/levels';
-import { starRating } from '../game/reducer';
-import type { GameState } from '../game/types';
 import { EndPanel } from './EndPanel';
 import { GameButton } from './GameButton';
 
 interface WinScreenProps {
-  state: GameState;
+  title?: string;
+  stars: 1 | 2 | 3;
+  /** Münzen, die dieser Sieg insgesamt bringt. */
+  total: number;
+  /** Zeile unter dem Panel (Level, Züge, Bonus …). */
+  detail: ReactNode;
+  nextLabel?: string;
   onNext: () => void;
 }
 
-export function WinScreen({ state, onNext }: WinScreenProps) {
-  const stars = starRating(state);
-  const base = winCoins(state.config);
-  const total = base + state.levelCoins;
-
+export function WinScreen({ title = 'Geschafft!', stars, total, detail, nextLabel = 'Weiter', onNext }: WinScreenProps) {
   useEffect(() => {
     confetti({
       particleCount: 140,
@@ -31,20 +30,14 @@ export function WinScreen({ state, onNext }: WinScreenProps) {
   return (
     <EndPanel
       tone="win"
-      title="Geschafft!"
+      title={title}
       actions={
         <GameButton variant="green" icon={UI_IMAGE.check} onClick={onNext}>
-          Weiter
+          {nextLabel}
         </GameButton>
       }
       backdrop={<img className="end-confetti" src={UI_IMAGE.confetti} alt="" />}
-      footer={
-        <p className="end-detail">
-          Level {state.config.level} · {state.moves} Züge
-          {state.levelCoins > 0 && <> · Gold +{state.levelCoins}</>}
-          {state.config.reward && <> · Bonus +{REWARD_LEVEL_BONUS}</>}
-        </p>
-      }
+      footer={<p className="end-detail">{detail}</p>}
     >
       <div className="end-stars" aria-label={`${stars} von 3 Sternen`}>
         {[1, 2, 3].map((n) => (

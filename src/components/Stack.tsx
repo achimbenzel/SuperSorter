@@ -1,13 +1,13 @@
-import type { MouseEvent } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
 import type { Item as ItemModel } from '../game/types';
-import { Item } from './Item';
+import { Item, type ItemDecorator } from './Item';
 
 interface StackProps {
   index: number;
   items: ItemModel[];
   /** Anzahl oberster Items, die gerade ausgewählt (angehoben) sind; 0 = nicht ausgewählt. */
   selectedCount: number;
-  hintMode: boolean;
+  decorate?: ItemDecorator;
   peekArmed: boolean;
   peekItemId: number | null;
   xray: boolean;
@@ -22,7 +22,7 @@ interface StackProps {
  * überlappen sich, damit auch hohe Stapel ins Layout passen. Der ganze Stapel ist
  * Tap-Fläche (größeres Ziel für den Daumen als nur das oberste Item).
  */
-export function Stack({ index, items, selectedCount, hintMode, peekArmed, peekItemId, xray, hinted, onTap, onPeekItem }: StackProps) {
+export function Stack({ index, items, selectedCount, decorate, peekArmed, peekItemId, xray, hinted, onTap, onPeekItem }: StackProps) {
   const handleClick = (e: MouseEvent) => {
     if (peekArmed) {
       // Lupe: Tap auf ein bestimmtes verpacktes Item.
@@ -42,7 +42,7 @@ export function Stack({ index, items, selectedCount, hintMode, peekArmed, peekIt
       type="button"
       className={`stack${hinted ? ' is-hint' : ''}${items.length === 0 ? ' is-empty' : ''}`}
       data-target={`stack-${index}`}
-      style={{ '--h': items.length } as React.CSSProperties}
+      style={{ '--h': items.length } as CSSProperties}
       onClick={handleClick}
       aria-label={`Stapel ${index + 1}`}
     >
@@ -51,11 +51,11 @@ export function Stack({ index, items, selectedCount, hintMode, peekArmed, peekIt
           key={it.id}
           item={it}
           selected={selectedCount > 0 && j >= items.length - selectedCount}
-          hintMode={hintMode}
+          {...decorate?.(it)}
           peeked={peekItemId === it.id}
           peekable={peekArmed}
           xray={xray}
-          style={{ '--j': j, zIndex: j + 1 } as React.CSSProperties}
+          style={{ '--j': j, zIndex: j + 1 } as CSSProperties}
         />
       ))}
     </button>
