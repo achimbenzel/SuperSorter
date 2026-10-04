@@ -4,11 +4,37 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "levels:report": "tsx scripts/level-report.ts",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "assets:icons": "node scripts/generate-icons.mjs",
     "assets": "npm run assets:optimize && npm run assets:icons"
   },
   "devDependencies": {
-    "sharp": "^0.35.5"
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^26.6.4",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "sharp": "^0.35.5",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.2",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "description": "Super Sorter – Sortier-Puzzle im Supermarkt (React + Vite PWA, Prototyp)",
+  "engines": {
+    "node": ">=20.19"
   }
 }
