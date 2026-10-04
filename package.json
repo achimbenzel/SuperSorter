@@ -1,0 +1,14 @@
+{
+  "name": "super-sorter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "assets:optimize": "node scripts/optimize-assets.mjs",
+    "assets:icons": "node scripts/generate-icons.mjs",
+    "assets": "npm run assets:optimize && npm run assets:icons"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}
