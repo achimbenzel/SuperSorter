@@ -129,7 +129,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         peekArmed: false,
         boosters: { ...state.boosters, undo: state.boosters.undo - 1 },
         boostersUsed: state.boostersUsed + 1,
-        moves: state.moves + 1,
       });
     }
 
@@ -180,6 +179,7 @@ function tryMove(state: GameState, move: Move): GameState {
   if (move.to.kind === 'slot' && goldCoins > 0) events.push({ kind: 'gold', slot: move.to.index, amount: goldCoins });
   if (result.solvedSlot !== null) events.push({ kind: 'solved', slot: result.solvedSlot });
   if (result.openedSlot !== null) events.push({ kind: 'opened', slot: result.openedSlot });
+  if (result.revealed) events.push({ kind: 'revealed', itemId: result.revealed.id });
 
   return emit(
     withStatus({

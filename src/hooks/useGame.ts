@@ -15,6 +15,7 @@ export interface Progress {
 }
 
 const DEFAULT_PROGRESS: Progress = { level: 1, coins: 0, highest: 1 };
+const BOOSTER_ACTIONS = new Set<GameAction['type']>(['UNDO', 'USE_EXTRA', 'TOGGLE_PEEK', 'SHUFFLE']);
 
 // Generierte Level werden pro Sitzung gecacht (Generierung ist deterministisch).
 const cache = new Map<number, GeneratedLevel>();
@@ -42,6 +43,7 @@ export function useGame() {
 
   const dispatch = useCallback((action: GameAction) => {
     if (action.type.startsWith('TAP_')) sfx.playTap();
+    if (BOOSTER_ACTIONS.has(action.type)) sfx.playBooster();
     rawDispatch(action);
   }, []);
 
@@ -84,6 +86,7 @@ export function useGame() {
       if (ev.kind === 'invalid' || ev.kind === 'denied') sfx.playInvalid();
       if (ev.kind === 'solved') sfx.playSolved();
       if (ev.kind === 'gold') sfx.playGold();
+      if (ev.kind === 'revealed') sfx.playReveal();
     }
   }, [state.fx]);
   useEffect(() => {

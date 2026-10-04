@@ -29,6 +29,7 @@ describe('Tap-Steuerung', () => {
     const s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 0 });
     expect(s.board.slots[0].items.map((i) => i.type)).toEqual(['milk']);
     expect(s.board.stacks[0][0]).toMatchObject({ type: 'apple', hidden: false });
+    expect(s.fx).toContainEqual(expect.objectContaining({ kind: 'revealed', itemId: s.board.stacks[0][0].id }));
     expect(s.selection).toBeNull();
     expect(s.moves).toBe(1);
     expect(s.history).toHaveLength(1);
@@ -128,6 +129,7 @@ describe('Booster', () => {
     expect(u2.board).toBe(s0.board);
     expect(u2.boosters.undo).toBe(1);
     expect(u2.boostersUsed).toBe(2);
+    expect(u2.moves).toBe(2); // Undo zählt nicht als Zug
     expect(run(u2, { type: 'UNDO' })).toBe(u2); // keine History mehr
   });
 

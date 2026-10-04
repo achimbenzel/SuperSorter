@@ -94,6 +94,7 @@ export type FxEvent =
   | { seq: number; kind: 'gold'; slot: number; amount: number }
   | { seq: number; kind: 'solved'; slot: number }
   | { seq: number; kind: 'opened'; slot: number }
+  | { seq: number; kind: 'revealed'; itemId: number }
   | { seq: number; kind: 'shuffled' }
   | { seq: number; kind: 'denied'; booster: keyof BoosterCounts };
 
