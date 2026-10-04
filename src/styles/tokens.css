@@ -33,11 +33,15 @@
   --c-cart-dark: #6f8396;
 
   /* Maße
-   * --item ist die Kantenlänge einer Ware. Sie skaliert mit Breite UND Höhe des
-   * Viewports, damit das Layout vom iPhone SE (375x667) bis Pro Max (430x932)
-   * ohne Scrollen passt. Zielbereich laut Spec: 56-72 px, Untergrenze 44 px für SE.
+   * --item ist die Kantenlänge einer Ware. Sie skaliert mit Breite UND nutzbarer
+   * Höhe (ohne Notch/Home-Indikator), damit das Layout vom iPhone SE (375x667) bis
+   * Pro Max (430x932) ohne Scrollen passt. Zielbereich laut Spec: 56-72 px,
+   * Untergrenze 44 px für das SE. Das Regal verkleinert --item lokal, falls zwei
+   * Fächer mit Kapazität 4 sonst nicht nebeneinander passen (siehe game.css).
    */
-  --item: clamp(44px, min(15.5vw, 7.1dvh), 72px);
+  --usable-h: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  --item-base: clamp(44px, min(15.5vw, calc(var(--usable-h) * 0.071)), 72px);
+  --item: var(--item-base);
   --gap: clamp(6px, 1.6vw, 10px);
   --radius: 14px;
   --hud-h: calc(var(--item) * 0.78);

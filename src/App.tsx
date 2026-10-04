@@ -1,15 +1,24 @@
-import { ITEM_IMAGE } from './assets';
-import { ITEM_TYPES } from './game/items';
+import { useRef } from 'react';
+import { Board } from './components/Board';
+import { HUD } from './components/HUD';
+import { useFlip } from './hooks/useFlip';
+import { useFxAnimations } from './hooks/useFxAnimations';
+import { useGame } from './hooks/useGame';
+import './styles/game.css';
 
-/** Platzhalter bis die Spiel-UI steht (Schritt 4). */
 export default function App() {
+  const game = useGame();
+  const { state, dispatch } = game;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const layoutKey = `${state.config.level}-${game.attempt}`;
+
+  useFlip(rootRef, layoutKey);
+  useFxAnimations(rootRef, state.fx, state.fxSeq);
+
   return (
-    <main style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, maxWidth: 320, justifyContent: 'center' }}>
-        {ITEM_TYPES.map((t) => (
-          <img key={t} src={ITEM_IMAGE[t]} alt={t} width={64} height={64} />
-        ))}
-      </div>
-    </main>
+    <div className="app" ref={rootRef}>
+      <HUD level={state.config.level} reward={state.config.reward} coins={game.displayCoins} onRestart={game.restart} />
+      <Board key={layoutKey} state={state} dispatch={dispatch} hint={null} xray={false} />
+    </div>
   );
 }
