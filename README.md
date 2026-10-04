@@ -1,18 +1,31 @@
 # Super Sorter
 
-Spielbarer Prototyp eines Mobile-Puzzle-Games: Eine Lieferung kommt im Karton an, und du räumst sie sortenrein ins Supermarktregal. Das Prinzip ist *Water Sort / Magic Sort*, mit verpackten Mystery-Waren, goldenen Bonus-Paketen und Boostern. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+Spielbarer Prototyp eines Mobile-Puzzle-Games mit zwei Spielprinzipien zum Vergleichen:
 
-![Gameplay: Level 12, Level 16 mit Safe Area, Win-Screen](docs/screenshots/gameplay.webp)
+- **Onlineshop** (Standard): Du packst Ware aus dem Großhandelskarton in Pakete für deine Kunden (Sammelbestellungen, Serien-Sets, Wunschlisten) und verschickst sie. Jedes verschickte Paket macht Platz für den nächsten Auftrag. → [docs/SHOP_MODE.md](docs/SHOP_MODE.md)
+- **Regal** (klassisch): Du räumst die Lieferung sortenrein ins Supermarktregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
+
+Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Pakete und Booster. Umgeschaltet wird über das Menü (☰ oben links). Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+
+![Onlineshop-Modus: Packtische mit Aufträgen, Paket wird verschickt, blockierter Zug mit Erklärung, Modus-Menü](docs/screenshots/shop.webp)
+
+<details>
+<summary>Regal-Modus</summary>
+
+![Regal-Modus: Level 12, Level 16 mit Safe Area, Win-Screen](docs/screenshots/gameplay.webp)
+
+</details>
 
 ## Features
 
 - **Tap-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
 - **Mystery-Layering:** Nur die oberste Ware je Stapel ist sichtbar. Darunter liegt Packpapier, das beim Freilegen mit Papierfetzen aufreißt. **Gold-Pakete** bringen Bonus-Münzen.
 - **Gelöste Fächer** leuchten, sprühen Sterne, zeigen ein Schloss und öffnen das nächste geschlossene Fach.
-- **20 handkonfigurierte Level + Endlosmodus**, seed-basiert generiert und per **Solver garantiert lösbar**. Die Schwierigkeitskurve wird über simulierte Spieler gesteuert. Alle 4 Level ein Belohnungslevel.
-- **Booster:** Undo (mehrstufig), Extra-Platz, Lupe, Mischen (bleibt garantiert lösbar), jeweils mit Kontingent pro Level.
+- **Je 20 handkonfigurierte Level/Tage + Endlosmodus**, seed-basiert generiert und per **Solver garantiert lösbar**. Die Schwierigkeitskurve wird über simulierte Spieler gesteuert. Alle 4 Level ein Belohnungslevel.
+- **Onlineshop-Modus:** Packtische mit Kundenaufträgen, Serien-Aufkleber, Versand-Animation, Auftragsvorschau. Züge, die einem anderen Auftrag eine Ware wegnehmen würden, werden erklärt statt bestraft.
+- **Booster:** Undo (mehrstufig), Extra-Platz, Lupe, Mischen (bleibt garantiert lösbar), jeweils mit Kontingent pro Level. Ist es aufgebraucht, kann man den Booster für Münzen nachkaufen.
 - **Win-/Lose-Screens** mit Sternen, Münzen, Konfetti; Lose-Screen mit Extra-Platz, Rückgängig, Nochmal.
-- **Fortschritt** (Level, Münzen) in `localStorage`.
+- **Fortschritt** (Level je Modus, gemeinsame Münzen) in `localStorage`.
 - **PWA:** Homescreen-Icon, Vollbild, Safe Areas, offline spielbar, kein Zoom, kein Scroll-Bounce, keine Textmarkierung.
 - **Debug-Modus** `?debug=1`: Level-Sprung, Live-Lösbarkeit, Solver-Hinweis, Auto-Lösen, Röntgenblick.
 
@@ -32,7 +45,8 @@ Weitere Scripts:
 
 | Script | Zweck |
 |---|---|
-| `npm run levels:report` | Tabelle aller Level: Lösbarkeit, simulierte Gewinnquote, Generierungszeit (zum Feintuning) |
+| `npm run levels:report` | Regal-Modus: Tabelle aller Level (Lösbarkeit, simulierte Gewinnquote, Generierungszeit) |
+| `npm run shop:report` | Onlineshop-Modus: dasselbe für alle Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
 | `npm run typecheck` | nur TypeScript prüfen |
 | `npm run test:watch` | Tests im Watch-Modus |
@@ -110,6 +124,7 @@ SuperSorter/
 ├─ docs/
 │  ├─ ARCHITECTURE.md             Aufbau, Datenfluss, Zustandsmodell, Solver/Generator, Erweitern
 │  ├─ GAME_DESIGN.md              Regeln, Mystery, Booster, Progression, Annahmen
+│  ├─ SHOP_MODE.md                Onlineshop-Modus: Aufträge, Regeln, Tage, neues Thema anlegen
 │  ├─ ASSETS.md                   Asset-Zuordnung, Größen, Platzhalter
 │  ├─ ROADMAP.md                  nächste Schritte
 │  └─ screenshots/
@@ -119,14 +134,19 @@ SuperSorter/
 │  ├─ asset-map.mjs               Zuordnung Original → Ziel
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
-│  └─ level-report.ts             npm run levels:report
+│  ├─ level-report.ts             npm run levels:report
+│  └─ shop-report.ts              npm run shop:report
 ├─ src/
-│  ├─ game/                       reine Spiellogik + Tests (types, rules, reducer, solver, generator, levels)
+│  ├─ game/                       reine Spiellogik + Tests, Regal-Modus (types, rules, reducer, solver, generator, levels)
+│  │  ├─ sources.ts               gemeinsame Karton-/Ablage-Regeln beider Modi
+│  │  └─ shop/                    Onlineshop-Modus (theme, types, rules, reducer, solver, generator, levels + Tests)
+│  ├─ modes/                      ShopGame, ShelfGame (je ein kompletter Spielbildschirm)
 │  ├─ components/                 Board, Shelf, ShelfSlot, DeliveryBox, Stack, Item, Cart,
-│  │                              BoosterBar, HUD, WinScreen, LoseScreen, DebugPanel, …
-│  ├─ hooks/                      useGame, usePersistedState, useFlip, useFxAnimations, useDelayedFlag
+│  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, ModeMenu, DebugPanel, …
+│  │  └─ shop/                    ShopBoard, PackingStation, OrderRail, RequirementIcon
+│  ├─ hooks/                      useGame, useShopGame, progress, usePersistedState, useFlip, useFxAnimations, …
 │  ├─ audio/sfx.ts                Sound-Schnittstelle (Platzhalter)
-│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css
+│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, shop.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
 │  ├─ config.ts                   UI-Zeiten, Storage-Key, Debug-Flag
 │  ├─ iosGuards.ts                Schutz vor Zoom/Bounce/Long-Press
@@ -150,7 +170,8 @@ SuperSorter/
 
 ## Dokumentation
 
-- [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md): Regeln, Booster, Level-Tabelle, **getroffene Annahmen**
+- [docs/SHOP_MODE.md](docs/SHOP_MODE.md): Onlineshop-Modus – Aufträge, Regeln, Tage, neues Thema (z. B. Card Shop) anlegen
+- [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md): Regal-Modus – Regeln, Booster, Level-Tabelle, **getroffene Annahmen**
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Code-Aufbau, Solver, Generator, Animationen, Kochrezepte zum Erweitern
 - [docs/ASSETS.md](docs/ASSETS.md): welches Bild wofür, fehlende Assets
 - [docs/ROADMAP.md](docs/ROADMAP.md): nächste Schritte (Audio, Meta-Ebene, Spezialfächer, Aufträge)

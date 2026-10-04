@@ -2,6 +2,16 @@
 
 Was bewusst noch fehlt und sinnvolle nächste Schritte, grob nach Priorität.
 
+## 0. Onlineshop-Konzept (aktueller Fokus)
+
+Der Onlineshop-Modus ([SHOP_MODE.md](SHOP_MODE.md)) ist als Vergleichs-Prototyp umgesetzt. Nächste Schritte, falls er sich besser anfühlt:
+
+1. **Playtesten und entscheiden:** Onlineshop vs. Regal. Danach den unterlegenen Modus entfernen (`src/game/*.ts` ohne `sources.ts`, `modes/ShelfGame.tsx`, `components/Board.tsx`, `Shelf*.tsx`) oder als Bonus-Minispiel behalten.
+2. **Themen-Kapitel:** `shop/theme.ts` zu einer Auswahl pro Tag machen (Kapitel 1 Feinkost, Kapitel 2 Card Shop, Kapitel 3 Spielzeug …) und `items.ts` je Thema erweitern. Card Shop: Serien = Editionen (Booster, Hülle, Figur derselben Edition), Händler bestellen Displays (Sammelbestellung), Sammler Wunschlisten.
+3. **Story & Figuren:** Kurze Dialogkarten zwischen Tagen (Mentor-Figur, Stammkunden mit Persönlichkeit), Shop-Ausbau als Meta (mehr Packtische/Ablage als dauerhafte Upgrades, Deko).
+4. **Rangliste:** Tägliche Herausforderung mit gleichem Seed für alle (der Generator ist deterministisch), Wertung nach Zeit/Zügen. In der App über Game Center/Google Play Games; gegen Schummeln die Zugfolge serverseitig mit dem Reducer nachspielen (läuft ohne DOM).
+5. **Auftragswahl:** Optional entscheiden lassen, welcher wartende Auftrag als Nächstes an einen freien Packtisch kommt (mehr Strategie).
+
 ## 1. Spielgefühl und Feedback (kurzfristig)
 
 - **Audio:** Die Schnittstelle `src/audio/sfx.ts` ist an allen Stellen verdrahtet (tap, select, place, invalid, reveal, solved, gold, win, lose, booster). Es fehlt nur eine Implementierung, z. B. Web Audio API mit kleinen OGG/M4A-Samples (iOS: AudioContext beim ersten Tap entsperren). Dazu ein Lautstärke-/Stumm-Schalter.
@@ -11,7 +21,7 @@ Was bewusst noch fehlt und sinnvolle nächste Schritte, grob nach Priorität.
 
 ## 2. Meta-Ebene
 
-- **Münzen ausgeben:** Booster kaufen, wenn das Level-Kontingent leer ist.
+- ~~**Münzen ausgeben:** Booster kaufen, wenn das Level-Kontingent leer ist.~~ (umgesetzt, Preise in `BOOSTER_PRICES`)
 - **Supermarkt ausbauen:** Zwischen Leveln Abteilungen freischalten/dekorieren (klassische Casual-Meta). Neue Abteilungen bringen neue Warentypen.
 - **Level-Karte / Level-Auswahl:** `progress.highest` wird bereits gespeichert.
 - **Tägliche Lieferung:** ein Tageslevel mit Datum als Seed (Generator ist deterministisch).

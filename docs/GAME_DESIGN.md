@@ -1,4 +1,6 @@
-# Game Design – Super Sorter
+# Game Design – Super Sorter (Regal-Modus)
+
+> Es gibt zwei Spielprinzipien. Dieses Dokument beschreibt den **Regal-Modus** (das ursprüngliche Konzept). Der neuere **Onlineshop-Modus** (Pakete packen und verschicken) steht in [SHOP_MODE.md](SHOP_MODE.md). Booster, Mystery, Gold und Münzen funktionieren in beiden gleich.
 
 Sortier-Puzzle im Supermarkt nach dem Prinzip *Water Sort / Magic Sort*: Eine Lieferung kommt im Karton an und muss sortenrein ins Regal geräumt werden. Ein Level dauert 30–60 Sekunden.
 
@@ -63,7 +65,7 @@ Lösung im Sinne der Vorgabe: **Zu Beginn sind nur einige Fächer offen.** Jedes
 
 ## Booster
 
-Kostenlos im Prototyp, Kontingent pro Level (Zähler-Badge in der Leiste, ausgegraut bei 0 oder wenn nicht anwendbar):
+Kontingent pro Level (Zähler-Badge in der Leiste). Ist es aufgebraucht, zeigt der Knopf einen Preis und kann für Münzen nachgekauft werden (`BOOSTER_PRICES` in `src/game/levels.ts`: Undo 20, Extra 40, Lupe 30, Mischen 30):
 
 | Booster | Standard | Wirkung |
 |---|---|---|
@@ -108,7 +110,7 @@ Aktuelle Werte jederzeit mit `npm run levels:report`.
 
 - Sieg: **+10 Münzen**, Belohnungslevel **+20** extra, Gold-Items **+5** je Stück.
 - Sterne: 3 ohne Booster, 2 mit höchstens zwei Boostern, sonst 1.
-- Münzen haben im Prototyp noch keinen Verwendungszweck (siehe [ROADMAP.md](ROADMAP.md)).
+- Münzen sind eine gemeinsame Geldbörse beider Modi und kaufen Booster nach, wenn das Kontingent leer ist.
 
 ## Einführungstexte
 

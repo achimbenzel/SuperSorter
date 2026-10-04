@@ -4,6 +4,20 @@
 
 Strikte Trennung zwischen **Spiellogik** (reines TypeScript, ohne DOM/React) und **UI** (React-Komponenten, CSS-Animationen).
 
+Es gibt **zwei Spielmodi** mit eigener Logik, die sich Assets, Komponenten, Animationen, Booster und Münzen teilen:
+
+| | Regal-Modus | Onlineshop-Modus |
+|---|---|---|
+| Logik | `src/game/*.ts` | `src/game/shop/*.ts` |
+| Bildschirm | `src/modes/ShelfGame.tsx` | `src/modes/ShopGame.tsx` |
+| Hook | `src/hooks/useGame.ts` | `src/hooks/useShopGame.ts` |
+| Spielfeld | `components/Board.tsx` (+ Shelf, ShelfSlot) | `components/shop/ShopBoard.tsx` (+ PackingStation, OrderRail) |
+| Design | [GAME_DESIGN.md](GAME_DESIGN.md) | [SHOP_MODE.md](SHOP_MODE.md) |
+
+Gemeinsam: Karton-/Ablage-Regeln (`src/game/sources.ts`: Multi-Move, Mystery-Reveal), `random.ts`, `items.ts`, Komponenten `DeliveryBox`, `Stack`, `Item`, `Cart`, `HUD`, `BoosterBar`, `WinScreen`, `LoseScreen`, `DebugPanel`, Hooks `useFlip`, `useFxAnimations`. `App.tsx` wählt nur den Modus (gespeichert unter `super-sorter/mode/v1`) und zeigt das Modus-Menü.
+
+**Spielstand** (`hooks/progress.ts`, Schlüssel `super-sorter/progress/v1`): `level`/`highest` (Regal), `shopDay`/`shopHighest` (Onlineshop), `coins` (gemeinsame Geldbörse). Es ist immer nur ein Modus gemountet, der den Stand schreibt.
+
 ```
 src/
 ├─ game/            ← reine Logik, vollständig per Vitest getestet, kennt kein React/DOM
@@ -113,6 +127,22 @@ Laufzeit: 2–25 ms pro Level (Node). In der App werden Level pro Sitzung gecach
 
 **Seeds ändern:** `SEED_SALT` in `generator.ts` anpassen → alle Level werden neu gewürfelt (Tests prüfen weiterhin Lösbarkeit).
 
+## Onlineshop-Modus (`src/game/shop/`)
+
+| Datei | Inhalt |
+|---|---|
+| `theme.ts` | Serien (Aufkleber: Symbol, Farbe, Waren) und Kunden – austauschbar für andere Themen |
+| `types.ts` | `Order` (Positionen: bestimmte Ware oder Serie), `Station` (Auftrag + gefüllte Positionen), `ShopBoard` (Stapel, Ablage, Stationen, Warteschlange) |
+| `rules.ts` | Passt eine Ware? (`openPositions`), `applyMove` inkl. **Versand + Nachrücken**, `findShortage` (Hall-Bedingung), `isLegal` (passt **und** erzeugt keinen Engpass), `whoNeeds` für den Hinweistext |
+| `solver.ts` | DFS wie im Regal-Modus. Kompakt: Station = sortierte Liste offener Positions-Schlüssel (Typ 0–7, Serie 100+). Pruning per Hall-Bedingung. Dazu `simulateShopWinRate` (schnelle Simulation auf derselben Darstellung) |
+| `generator.ts` | Sortiment wählen → Aufträge würfeln (mit Kunden) → Waren daraus ableiten → Stapel; Solver + Simulation wie gehabt; `shuffleShopBox` |
+| `levels.ts` | 20 Tage + Endlos, Münzwerte, Einführungstexte |
+| `reducer.ts` | `TAP_STATION` statt `TAP_SLOT`; blockierte Züge erzeugen ein `blocked`-FX-Event mit Erklärtext |
+
+**Engpass-Prüfung (Warum genügt sie?):** Jede Ware gehört zu genau einer Serie, Positionen verlangen eine bestimmte Ware oder eine Serie. Die Waren decken die Positionen genau dann, wenn (a) jede bestimmte Ware oft genug da ist und (b) pro Serie danach genug übrig bleibt (Heiratssatz von Hall für diese verschachtelte Struktur). Der Brute-Force-Abgleich in `shop/solver.test.ts` (400 Zufallsboards) bestätigt das.
+
+**Versand-Animation:** Der Reducer verschickt das Paket sofort (Logik bleibt einfach und testbar). `ShopBoard` hält verschickte Pakete per `useShipGhosts` für `TIMING.ship` als „Geist“-Ebene über dem Packtisch (Klappen, Klebeband, Häkchen, Abflug), während darunter der neue Auftrag hereinrutscht. Damit die letzte Ware sichtbar ins Paket fliegt, merkt sich `useFlip` die Position kurz verschwundener Items einige Renders lang.
+
 ## Animationen
 
 Regel: nur `transform` und `opacity` animieren (GPU, 60 fps).
@@ -145,7 +175,7 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 ## Tests
 
-`npm test` (Vitest, Node-Umgebung, ca. 1 s):
+`npm test` (Vitest, Node-Umgebung, ca. 2 s, 155 Tests):
 
 | Datei | Inhalt |
 |---|---|
@@ -153,6 +183,10 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 | `solver.test.ts` | einfache/unlösbare Boards, Multi-Move vs. verdeckt, Regressionstest doppelte Sorten, **Abgleich mit Brute-Force auf 600 Zufallsboards** |
 | `reducer.test.ts` | Tap-Steuerung, Auswahlwechsel, Shake-Event, Wagen, Sieg/Niederlage, Undo (mehrstufig, Gold), Extra-Platz, Lupe, Mischen, komplettes Level über den Reducer |
 | `generator.test.ts` | Progression (Mystery ab 4, Gold ab 10, Belohnungslevel), Determinismus, **Level 1–30 lösbar** und konfigurationstreu, Generierungszeit |
+| `shop/rules.test.ts` | Sammel/Serie/Wunschliste, Multi-Move, Versand + Nachrücken, Engpass, blockierte Züge |
+| `shop/solver.test.ts` | einfache/unlösbare Boards, **Abgleich mit Brute-Force auf 400 Zufallsboards** |
+| `shop/reducer.test.ts` | Taps, Versand-Event + Münzen, Blockade mit Erklärtext, Undo, Extra-Ablage, Lupe, Mischen, Booster kaufen, kompletter Tag |
+| `shop/generator.test.ts` | Progression, Determinismus, **Tage 1–30 lösbar**, Waren = Positionen, Auftragsarten wie konfiguriert |
 
 ## Erweitern – Kochrezepte
 
