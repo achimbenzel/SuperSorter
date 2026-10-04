@@ -1,11 +1,12 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { UI_IMAGE } from '../assets';
 import { TIMING } from '../config';
-import type { ShopFx } from '../game/shop/types';
+import { closeAt } from '../components/pack/timeline';
+import type { PackFx } from '../game/pack/types';
 import type { FxEvent } from '../game/types';
 
 /** FX-Events beider Spielmodi. */
-type AnyFx = FxEvent | ShopFx;
+type AnyFx = FxEvent | PackFx;
 
 const SHAKE: Keyframe[] = [
   { transform: 'translateX(0)' },
@@ -35,9 +36,9 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: AnyF
       if (ev.seq <= handled.current) continue;
       handled.current = ev.seq;
       switch (ev.kind) {
-        case 'invalid':
-        case 'blocked': {
-          shake(root.querySelector(`[data-target="${ev.target.kind}-${ev.target.index}"]`));
+        case 'invalid': {
+          const target = 'stack' in ev ? `stack-${ev.stack}` : `${ev.target.kind}-${ev.target.index}`;
+          shake(root.querySelector(`[data-target="${target}"]`));
           root.querySelectorAll('.item.is-selected').forEach(shake);
           break;
         }
@@ -50,12 +51,39 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: AnyF
         case 'coins':
           flyCoins(root, ev.coinTarget, ev.amount);
           break;
+        case 'combo':
+          // Packband: ab dem zweiten Paket im selben Zug "Kombo ×n" beim Zuklappen.
+          for (let n = 2; n <= ev.count; n++) floatText(root, `spot-${ev.spot}`, `Kombo ×${n}!`, closeAt(n - 1) + 200);
+          break;
         default:
           break;
       }
     }
     // fxSeq als Abhängigkeit: neue Events haben immer eine höhere seq.
   }, [rootRef, fx, fxSeq]);
+}
+
+/** Kurzer Schriftzug, der über einem Ziel aufsteigt (z. B. Kombo). */
+function floatText(root: HTMLElement, target: string, text: string, delay: number) {
+  const from = root.querySelector(`[data-target="${target}"]`)?.getBoundingClientRect();
+  if (!from) return;
+  const label = document.createElement('div');
+  label.className = 'fx-combo';
+  label.textContent = text;
+  label.style.left = `${from.left + from.width / 2}px`;
+  label.style.top = `${from.top + from.height * 0.35}px`;
+  root.appendChild(label);
+  label
+    .animate(
+      [
+        { transform: 'translate(-50%, -50%) scale(.4) rotate(-8deg)', opacity: 0 },
+        { transform: 'translate(-50%, -80%) scale(1.2) rotate(-4deg)', opacity: 1, offset: 0.25 },
+        { transform: 'translate(-50%, -110%) scale(1) rotate(-4deg)', opacity: 1, offset: 0.7 },
+        { transform: 'translate(-50%, -170%) scale(.9) rotate(-4deg)', opacity: 0 },
+      ],
+      { duration: 1100, delay, easing: 'ease-out', fill: 'both' },
+    )
+    .finished.finally(() => label.remove());
 }
 
 /** Münzen fliegen vom Fach/Paket zum Münzzähler im HUD, dazu ein "+N". */

@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { PRELOAD_IMAGES } from './assets';
 import { ModeMenu } from './components/ModeMenu';
-import { DEFAULT_MODE, MODE_KEY } from './hooks/progress';
+import { DEFAULT_MODE, MODE_KEY, normalizeMode } from './hooks/progress';
 import { usePersistedState } from './hooks/usePersistedState';
+import { PackGame } from './modes/PackGame';
 import { ShelfGame } from './modes/ShelfGame';
-import { ShopGame } from './modes/ShopGame';
 import './styles/game.css';
 import './styles/screens.css';
-import './styles/shop.css';
+import './styles/pack.css';
 
 /**
  * Wählt den Spielmodus. Beide Modi teilen Assets, Animationen, Booster und Münzen,
- * haben aber eigene Regeln (src/game/ bzw. src/game/shop/).
+ * haben aber eigene Regeln (src/game/ bzw. src/game/pack/). Zum Testen sind sie
+ * getrennt wählbar; später sollen sie sich abwechseln (Wareneingang / Versand).
  */
 export default function App() {
   const [modeState, setModeState] = usePersistedState(MODE_KEY, DEFAULT_MODE);
@@ -26,12 +27,13 @@ export default function App() {
   }, []);
 
   const openMenu = () => setMenuOpen(true);
+  const mode = normalizeMode(modeState.mode);
   return (
     <>
-      {modeState.mode === 'shop' ? <ShopGame key="shop" onMenu={openMenu} /> : <ShelfGame key="shelf" onMenu={openMenu} />}
+      {mode === 'pack' ? <PackGame key="pack" onMenu={openMenu} /> : <ShelfGame key="shelf" onMenu={openMenu} />}
       {menuOpen && (
         <ModeMenu
-          mode={modeState.mode}
+          mode={mode}
           onSelect={(mode) => {
             setModeState({ mode });
             setMenuOpen(false);

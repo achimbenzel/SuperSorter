@@ -10,7 +10,7 @@
 import { listSources, pickableItems, takeFromSource } from './sources';
 import type { Board, Item, ItemType, Move, Slot, SourceRef, TargetRef } from './types';
 
-// Quellen-Regeln (Multi-Move, Reveal) sind mit dem Versand-Modus geteilt.
+// Quellen-Regeln (Multi-Move, Reveal) liegen in sources.ts (auch vom Packband genutzt).
 export { listSources, pickableItems } from './sources';
 
 export function topOf<T>(list: readonly T[]): T | undefined {

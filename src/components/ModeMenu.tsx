@@ -7,22 +7,22 @@ interface ModeMenuProps {
   onClose: () => void;
 }
 
-/** Menü zum Umschalten zwischen den beiden Spielprinzipien (zum Vergleichen). */
+/** Menü zum Umschalten zwischen den beiden Modi (zum Testen getrennt wählbar). */
 export function ModeMenu({ mode, onSelect, onClose }: ModeMenuProps) {
   const progress = readProgress(STORAGE_KEY);
   const options: { id: GameMode; icon: string; title: string; text: string; progress: string }[] = [
     {
-      id: 'shop',
+      id: 'pack',
       icon: '📦',
-      title: 'Onlineshop',
-      text: 'Pakete für Kunden packen und verschicken: Sammelbestellungen, Serien-Sets, Wunschlisten.',
-      progress: `Tag ${progress.shopDay}`,
+      title: 'Packband (Versand)',
+      text: 'Waren verkaufen: Kundenpakete auf dem Band packen und verschicken – Kettenreaktionen bringen Kombo-Münzen.',
+      progress: `Tag ${progress.packDay}`,
     },
     {
       id: 'shelf',
       icon: '🗄️',
-      title: 'Regal (klassisch)',
-      text: 'Die Lieferung sortenrein ins Supermarktregal räumen.',
+      title: 'Regal (Wareneingang)',
+      text: 'Waren in den Bestand aufnehmen: die Lieferung sortenrein ins Supermarktregal räumen.',
       progress: `Level ${progress.level}`,
     },
   ];

@@ -3,7 +3,7 @@ import { ITEM_IMAGE, MYSTERY_IMAGE, UI_IMAGE } from '../assets';
 import { ITEM_LABEL } from '../game/items';
 import type { Item as ItemModel } from '../game/types';
 
-/** Aufkleber auf einer offenen Ware (Versand-Modus: Serie). */
+/** Aufkleber auf einer offenen Ware (derzeit ungenutzt, z. B. für Serien/Events). */
 export interface ItemBadge {
   icon: string;
   color: string;
@@ -27,6 +27,8 @@ interface ItemProps {
   peekable?: boolean;
   /** Debug: verpackte Items durchsichtig anzeigen. */
   xray?: boolean;
+  /** Flug-Animation erst nach so vielen ms starten (siehe useFlip, Packband-Kette). */
+  flipDelay?: number;
   style?: CSSProperties;
 }
 
@@ -43,7 +45,7 @@ const SHREDS = [
  *   [data-flip-id] -> .flip (Flug-Animation) -> .item (Auswahl-Lift, Reveal, Glow)
  * Positioniert wird das äußere Element vom Elternteil (Stapel, Fach, Wagen).
  */
-export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked, peekable, xray, style }: ItemProps) {
+export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked, peekable, xray, flipDelay, style }: ItemProps) {
   // Reveal erkennen: hidden wechselt von true auf false, solange das Item an seinem Platz bleibt.
   const wasHidden = useRef(item.hidden);
   const [revealKey, setRevealKey] = useState(0);
@@ -69,7 +71,7 @@ export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked
     .join(' ');
 
   return (
-    <div className="item-pos" data-flip-id={item.id} style={style}>
+    <div className="item-pos" data-flip-id={item.id} data-flip-delay={flipDelay} style={style}>
       <div className="flip">
         <div
           className={classes}

@@ -10,18 +10,21 @@ export interface Progress {
   level: number;
   /** Höchstes erreichtes Regal-Level. */
   highest: number;
-  /** Versand-Modus: Tag, der als Nächstes gespielt wird. */
-  shopDay: number;
-  shopHighest: number;
+  /** Packband-Modus: Versand-Tag, der als Nächstes gespielt wird. */
+  packDay: number;
+  packHighest: number;
   /** Gemeinsame Geldbörse. */
   coins: number;
 }
 
-export const DEFAULT_PROGRESS: Progress = { level: 1, highest: 1, shopDay: 1, shopHighest: 1, coins: 0 };
+export const DEFAULT_PROGRESS: Progress = { level: 1, highest: 1, packDay: 1, packHighest: 1, coins: 0 };
 
-export type GameMode = 'shop' | 'shelf';
+export type GameMode = 'pack' | 'shelf';
 export const MODE_KEY = 'super-sorter/mode/v1';
-export const DEFAULT_MODE: { mode: GameMode } = { mode: 'shop' };
+export const DEFAULT_MODE: { mode: GameMode } = { mode: 'pack' };
+
+/** Gespeicherter Modus -> gültiger Modus (alte Stände kennen noch 'shop'). */
+export const normalizeMode = (mode: unknown): GameMode => (mode === 'shelf' ? 'shelf' : 'pack');
 
 /** Liest den Stand direkt aus localStorage (für das Menü, ohne eigenen State). */
 export function readProgress(key: string): Progress {

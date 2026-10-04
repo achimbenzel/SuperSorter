@@ -67,7 +67,7 @@ export type PackFx =
   /** Waren sprangen automatisch vom Packtisch ins Paket (nach `chain` Versänden). */
   | { seq: number; kind: 'fed'; itemIds: number[]; chain: number }
   | { seq: number; kind: 'coins'; coinTarget: string; amount: number }
-  | { seq: number; kind: 'combo'; count: number; bonus: number }
+  | { seq: number; kind: 'combo'; spot: number; count: number; bonus: number }
   | { seq: number; kind: 'shuffled' }
   | { seq: number; kind: 'denied'; booster: keyof BoosterCounts };
 

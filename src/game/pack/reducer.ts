@@ -137,7 +137,7 @@ function tap(state: PackGameState, stack: number): PackGameState {
   }
   coins += comboBonus;
   for (const f of r.fed) events.push({ kind: 'fed', itemIds: f.itemIds, chain: f.chain });
-  if (r.shipped.length >= 2) events.push({ kind: 'combo', count: r.shipped.length, bonus: comboBonus });
+  if (r.shipped.length >= 2) events.push({ kind: 'combo', spot: r.shipped[0].spot, count: r.shipped.length, bonus: comboBonus });
   const coinSpot = r.shipped[0]?.spot ?? (r.route.kind === 'spot' ? r.route.index : null);
   if (coins > 0 && coinSpot !== null) events.push({ kind: 'coins', coinTarget: `spot-${coinSpot}`, amount: coins });
 

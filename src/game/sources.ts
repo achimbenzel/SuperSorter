@@ -1,5 +1,5 @@
-// Gemeinsame Quellen-Regeln für beide Spielmodi (Regal und Versand):
-// Karton-Stapel (oberstes Item sichtbar, darunter evtl. verpackt) und Ablage/Wagen.
+// Gemeinsame Quellen-Regeln für beide Spielmodi (Regal und Packband):
+// Karton-Stapel (oberstes Item sichtbar, darunter evtl. verpackt) und Wagen/Packtisch.
 
 import type { Item, SourceRef } from './types';
 

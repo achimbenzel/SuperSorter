@@ -528,7 +528,7 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
-/* Aufkleber (Versand-Modus: Serie) unten rechts auf offenen Waren */
+/* Aufkleber (optional, z. B. Serie/Event) unten rechts auf offenen Waren */
 .item-badge {
   position: absolute;
   right: -6%;

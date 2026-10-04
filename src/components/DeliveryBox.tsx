@@ -18,7 +18,7 @@ interface DeliveryBoxProps {
 }
 
 /**
- * Lieferkarton (Regal-Modus) bzw. Großhandelskarton (Versand-Modus) mit 3-4 Stapeln.
+ * Lieferkarton (Regal-Modus) bzw. Lagerkisten (Packband-Modus) mit 3-4 Stapeln.
  * Drei Bildebenen: Schatten, Karton (hinten), Stapel, Kartonfront (vorne, verdeckt den
  * Fuß der Stapel -> Items stehen "im" Karton).
  */
