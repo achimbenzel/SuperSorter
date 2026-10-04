@@ -102,3 +102,19 @@ export function getLevelConfig(level: number): LevelConfig {
 export function winCoins(config: LevelConfig): number {
   return COINS_PER_WIN + (config.reward ? REWARD_LEVEL_BONUS : 0);
 }
+
+/** Kurze Einführungstexte für neue Mechaniken (werden bis zum ersten Zug angezeigt). */
+export const LEVEL_TIPS: Record<number, string> = {
+  1: 'Tippe auf eine Ware im Karton und dann auf ein Regalfach.',
+  2: 'Gleiche Waren oben auf einem Stapel wandern gemeinsam ins Fach.',
+  3: 'Ein volles Fach mit nur einer Sorte ist fertig. Der Wagen ist dein Zwischenlager.',
+  4: 'Neu: Verpackte Waren! Das Symbol verrät die Kategorie.',
+  5: 'Bonus-Level: Hier gibt es extra Münzen.',
+  6: 'Neu: Geschlossene Fächer öffnen sich, sobald ein anderes Fach voll ist.',
+  7: 'Mehr Sorten: Überlege, welches Fach du zuerst anfängst.',
+  8: 'Nur noch ein Wagenplatz. Die Lupe zeigt, was in einem Paket steckt.',
+  9: 'Bonus-Level: Durchatmen und Münzen sammeln.',
+  10: 'Neu: Goldene Pakete bringen Bonus-Münzen, sobald sie im Regal liegen.',
+};
+
+export const PEEK_TIP = 'Lupe: Tippe auf ein verpacktes Paket.';

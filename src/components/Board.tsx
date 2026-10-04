@@ -13,10 +13,12 @@ interface BoardProps {
   hint: Move | null;
   /** Debug: verpackte Items durchsichtig zeigen. */
   xray: boolean;
+  /** Kurzer Hinweistext (Level-Einführung, Lupe aktiv). */
+  tip?: string;
 }
 
 /** Spielfeld: Regal oben, darunter Lieferkarton und Einkaufswagen nebeneinander. */
-export function Board({ state, dispatch, hint, xray }: BoardProps) {
+export function Board({ state, dispatch, hint, xray, tip }: BoardProps) {
   const { board, selection } = state;
   const validTargets = useMemo(() => (selection ? listTargets(board, selection) : []), [board, selection]);
 
@@ -29,6 +31,11 @@ export function Board({ state, dispatch, hint, xray }: BoardProps) {
     <div className="board">
       <Shelf slots={board.slots} validTargets={validTargets} hintTarget={hint?.to ?? null} onTapSlot={onTapSlot} />
       <div className="board-bottom">
+        {tip && (
+          <p className="tip" key={tip}>
+            {tip}
+          </p>
+        )}
         <DeliveryBox
           board={board}
           selection={selection}
