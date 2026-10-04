@@ -5,6 +5,7 @@
 // ohne UI testbar (reducer.test.ts) und Undo ist trivial (alte Boards aufheben).
 
 import { shuffleBox } from './generator';
+import { hasHiddenItems } from './sources';
 import { GOLD_BONUS } from './levels';
 import {
   applyMove,
@@ -14,7 +15,7 @@ import {
   moveCount,
   sameSource,
 } from './rules';
-import type { Board, FxEvent, GameState, GameStatus, LevelConfig, LoseReason, Move, SourceRef } from './types';
+import type { Board, BoosterCounts, FxEvent, GameState, GameStatus, LevelConfig, LoseReason, Move, SourceRef } from './types';
 
 export type GameAction =
   | { type: 'TAP_STACK'; index: number }
@@ -29,6 +30,8 @@ export type GameAction =
   | { type: 'SHUFFLE' }
   | { type: 'RESTART' }
   | { type: 'LOAD_LEVEL'; config: LevelConfig; board: Board }
+  /** Booster für Münzen gekauft (Münzen zieht die App ab). */
+  | { type: 'GRANT_BOOSTER'; booster: keyof BoosterCounts }
   /** Direkter Zug (Debug-Hinweis "Zug ausführen", Tests). */
   | { type: 'APPLY_MOVE'; move: Move };
 
@@ -61,6 +64,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return createGameState(state.config, state.initialBoard);
     case 'END_PEEK':
       return state.peekItemId === null ? state : { ...state, peekItemId: null };
+    case 'GRANT_BOOSTER':
+      return { ...state, boosters: { ...state.boosters, [action.booster]: state.boosters[action.booster] + 1 } };
   }
 
   // Ab hier nur, solange gespielt wird. Ausnahme: Undo und Extra-Platz retten
@@ -224,9 +229,7 @@ function padCart(board: Board, length: number): Board {
   return { ...board, cart: [...board.cart, ...Array.from({ length: length - board.cart.length }, () => null)] };
 }
 
-export function hasHiddenItems(board: Board): boolean {
-  return board.stacks.some((s) => s.some((it) => it.hidden));
-}
+export { hasHiddenItems } from './sources';
 
 /** Sterne im Win-Screen: 3 ohne Booster, 2 mit höchstens zwei, sonst 1. */
 export function starRating(state: GameState): 1 | 2 | 3 {

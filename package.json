@@ -13,7 +13,8 @@
     "levels:report": "tsx scripts/level-report.ts",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "assets:icons": "node scripts/generate-icons.mjs",
-    "assets": "npm run assets:optimize && npm run assets:icons"
+    "assets": "npm run assets:optimize && npm run assets:icons",
+    "shop:report": "tsx scripts/shop-report.ts"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",

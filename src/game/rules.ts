@@ -7,7 +7,11 @@
 //   Typ hat und noch Platz ist. Dadurch ist jedes Fach jederzeit sortenrein.
 // - Ein volles Fach ist gelöst und gesperrt; dabei öffnet sich das nächste geschlossene Fach.
 
+import { listSources, pickableItems, takeFromSource } from './sources';
 import type { Board, Item, ItemType, Move, Slot, SourceRef, TargetRef } from './types';
+
+// Quellen-Regeln (Multi-Move, Reveal) sind mit dem Versand-Modus geteilt.
+export { listSources, pickableItems } from './sources';
 
 export function topOf<T>(list: readonly T[]): T | undefined {
   return list[list.length - 1];
@@ -28,29 +32,6 @@ export function slotSpaceFor(slot: Slot, type: ItemType): number {
   const top = topOf(slot.items);
   if (top && top.type !== type) return 0;
   return slot.capacity - slot.items.length;
-}
-
-/**
- * Die Items, die von einer Quelle mitgenommen würden, oberstes zuerst.
- *
- * Multi-Move: Liegen oben im Stapel mehrere gleiche, *sichtbare* Items, wandern sie
- * zusammen. Verdeckte Items zählen nie dazu – der Spieler kann sie ja nicht sehen.
- */
-export function pickableItems(board: Board, from: SourceRef): Item[] {
-  if (from.kind === 'cart') {
-    const item = board.cart[from.index];
-    return item ? [item] : [];
-  }
-  const stack = board.stacks[from.index];
-  if (!stack || stack.length === 0) return [];
-  const top = stack[stack.length - 1];
-  const run: Item[] = [top];
-  for (let i = stack.length - 2; i >= 0; i--) {
-    const it = stack[i];
-    if (it.hidden || it.type !== top.type) break;
-    run.push(it);
-  }
-  return run;
 }
 
 /** Anzahl Items, die dieser Zug bewegen würde. 0 bedeutet: ungültiger Zug. */
@@ -91,26 +72,13 @@ export function applyMove(board: Board, move: Move): MoveResult {
   if (count === 0) throw new Error(`Ungültiger Zug: ${JSON.stringify(move)}`);
 
   const moved = pickableItems(board, move.from).slice(0, count);
-  let stacks = board.stacks;
-  let cart = board.cart;
   let slots = board.slots;
-  let revealed: Item | null = null;
 
-  // 1) Aus der Quelle entfernen
-  if (move.from.kind === 'stack') {
-    const i = move.from.index;
-    const rest = board.stacks[i].slice(0, board.stacks[i].length - count);
-    // Mystery: Das neue oberste Item wird ausgepackt.
-    const newTop = rest[rest.length - 1];
-    if (newTop && newTop.hidden) {
-      revealed = { ...newTop, hidden: false };
-      rest[rest.length - 1] = revealed;
-    }
-    stacks = board.stacks.map((s, idx) => (idx === i ? rest : s));
-  } else {
-    const i = move.from.index;
-    cart = board.cart.map((c, idx) => (idx === i ? null : c));
-  }
+  // 1) Aus der Quelle entfernen (Mystery: neues oberstes Item wird ausgepackt)
+  const taken = takeFromSource(board, move.from, count);
+  const stacks = taken.stacks;
+  let cart = taken.cart;
+  const revealed = taken.revealed;
 
   // 2) Ins Ziel legen
   let solvedSlot: number | null = null;
@@ -137,18 +105,6 @@ export function applyMove(board: Board, move: Move): MoveResult {
   }
 
   return { board: { stacks, cart, slots }, moved, revealed, solvedSlot, openedSlot, goldPlaced };
-}
-
-/** Alle Quellen, aus denen gerade etwas genommen werden kann. */
-export function listSources(board: Board): SourceRef[] {
-  const out: SourceRef[] = [];
-  board.stacks.forEach((s, index) => {
-    if (s.length > 0) out.push({ kind: 'stack', index });
-  });
-  board.cart.forEach((c, index) => {
-    if (c) out.push({ kind: 'cart', index });
-  });
-  return out;
 }
 
 /** Alle gültigen Ziele für eine Quelle. */
