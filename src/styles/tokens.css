@@ -29,6 +29,7 @@
   --c-overlay: rgba(36, 20, 8, 0.55);
   --c-closed-a: #8a5a33;
   --c-closed-b: #7a4c2a;
+  --c-statusbar: #1d5d94; /* = theme-color in index.html/vite.config.ts */
   --c-cart: #c9d6e2;
   --c-cart-dark: #6f8396;
 
