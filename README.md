@@ -62,6 +62,43 @@ Der Service Worker und die Homescreen-App brauchen HTTPS. Deshalb wird über Git
 
 **Schneller Test ohne Deployment (im WLAN):** `npm run dev` auf dem Rechner starten und auf dem iPhone `http://<IP-des-Rechners>:5173` öffnen (die IP zeigt Vite als „Network“ an). Das Gameplay funktioniert, Service Worker und Offline-Modus aber nicht (kein HTTPS).
 
+### Test über Tailscale (empfohlen für lokales Testen)
+
+`tailscale serve` stellt den lokalen Server per **HTTPS mit gültigem Zertifikat** im Tailnet bereit. Die Windows-Firewall spielt dabei keine Rolle, weil Tailscale selbst die Verbindung annimmt und an `localhost` weiterreicht.
+
+Einmalig: In der Tailscale-Admin-Konsole unter **DNS** „MagicDNS“ und „HTTPS Certificates“ aktivieren. Auf dem iPhone muss die Tailscale-App verbunden sein.
+
+```powershell
+# Terminal 1: Dev-Server
+npm run dev
+
+# Terminal 2: per HTTPS ins Tailnet freigeben (läuft im Hintergrund weiter)
+tailscale serve --bg 5173
+# -> zeigt https://<pc-name>.<tailnet>.ts.net an, diese URL auf dem iPhone öffnen
+
+tailscale serve reset   # Freigabe später wieder beenden
+```
+
+Für den **vollständigen PWA-Test** (Homescreen, Service Worker, offline) den Production-Build freigeben:
+
+```powershell
+npm run build
+npm run preview          # Port 4173
+tailscale serve --bg 4173
+# -> https://<pc-name>.<tailnet>.ts.net/SuperSorter/ öffnen, dann Teilen -> Zum Home-Bildschirm
+```
+
+`*.ts.net`-Hostnamen sind in `vite.config.ts` (`allowedHosts`) freigeschaltet; andere Hostnamen blockt Vite mit „Blocked request“.
+
+**Direkt über die Tailscale-IP (`http://100.x.y.z:5173`) lädt nichts?** Meist blockt die Windows-Firewall. Typische Ursache: Beim ersten Start von Node.js hat Windows gefragt, und dabei wurde nur „Private Netzwerke“ erlaubt. Windows legt dann für öffentliche Netzwerke eine **Block-Regel für node.exe** an, und Block-Regeln haben Vorrang vor jeder Allow-Regel für den Port. Das Tailscale-Netz zählt unter Windows oft als „öffentlich“. Lösung (PowerShell als Administrator):
+
+```powershell
+Get-NetConnectionProfile                                    # Ist "Tailscale" Public?
+Set-NetConnectionProfile -InterfaceAlias "Tailscale" -NetworkCategory Private
+# oder die Block-Regeln für Node.js abschalten:
+Get-NetFirewallRule | Where-Object { $_.DisplayName -like "*Node*" -and $_.Action -eq "Block" } | Disable-NetFirewallRule
+```
+
 **Debug-Modus:** URL mit `?debug=1` öffnen, z. B. `https://achimbenzel.github.io/SuperSorter/?debug=1`. Das Panel lässt sich über ✕ einklappen und über 🐞 wieder öffnen.
 
 ## Ordnerübersicht

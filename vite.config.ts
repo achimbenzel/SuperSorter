@@ -24,6 +24,9 @@ function resolveBase(useBuildBase: boolean): string {
 const THEME_COLOR = '#1d5d94';
 const BACKGROUND_COLOR = '#fff4dc';
 
+/** Hostnamen, unter denen Dev-Server und Preview zusätzlich erreichbar sein dürfen. */
+const TAILSCALE_HOSTS = ['.ts.net'];
+
 export default defineConfig(({ command, isPreview }) => {
   // `vite preview` läuft mit command "serve", muss aber den Build-Pfad verwenden.
   const base = resolveBase(command === 'build' || isPreview === true);
@@ -65,7 +68,10 @@ export default defineConfig(({ command, isPreview }) => {
     ],
     // Gebündeltes JS/CSS getrennt von public/assets/ ablegen (übersichtlicheres dist/).
     build: { assetsDir: 'static' },
-    server: { host: true },
-    preview: { host: true },
+    // host: true -> auch über LAN-/Tailscale-IP erreichbar.
+    // allowedHosts: Vite blockt unbekannte Hostnamen (Schutz vor DNS-Rebinding).
+    // ".ts.net" erlaubt Tailscale-MagicDNS-Namen, z. B. für `tailscale serve` (HTTPS aufs iPhone).
+    server: { host: true, allowedHosts: TAILSCALE_HOSTS },
+    preview: { host: true, allowedHosts: TAILSCALE_HOSTS },
   };
 });
