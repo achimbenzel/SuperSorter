@@ -88,13 +88,23 @@ Nur nach Änderungen an `assets-src/` oder an `scripts/asset-map.mjs` muss das S
 
 | Benötigt für | Platzhalter im Prototyp | Wo definiert |
 |---|---|---|
-| Einkaufswagen (Puffer-Plätze) | 🛒-Emoji als Kopf + CSS-Mulden als Plätze | `src/components/Cart.tsx`, `src/styles/game.css` |
-| Spielhintergrund (Supermarkt) | CSS-Verlauf (Wandfliesen-Muster + Boden) | `src/styles/tokens.css` (`--bg-*`) |
+| Einkaufswagen (Puffer-Plätze) | 🛒-Emoji als Kopf, CSS-Gitterkorb mit Rädern, Mulden als Plätze | `src/components/Cart.tsx`, `.cart` in `src/styles/game.css` |
+| Spielhintergrund (Supermarkt) | CSS-Verlauf mit Fliesenraster (Farben `--c-bg-*`) | `.app` in `src/styles/game.css`, `src/styles/tokens.css` |
+| Regalrahmen | CSS (dunkles Holz, Schatten), die Fächer selbst nutzen `shelf-slot.webp` | `.shelf` in `src/styles/game.css` |
 | Restart-Icon (HUD) | Inline-SVG (Lucide „rotate-ccw“) | `src/components/icons.tsx` |
-| Geschlossenes Regalfach | CSS-Abdeckung mit Text „Geschlossen“ | `src/components/ShelfSlot.tsx` |
-| Auswahl-Glow / Fach-Glow | CSS (vorgerenderter Glow als Pseudo-Element, nur `opacity` animiert) | `src/styles/game.css` |
-| Papierfetzen-Partikel | Ausschnitte aus `paper-shreds.webp` per CSS `clip-path` | `src/components/Item.tsx` |
-| Kategorie-Hinweis auf verpackten Items (`hintMode`) | Emoji (🥤 🍿 🍎 🥖 🧀) | `src/assets.ts` (`CATEGORY_ICON`) |
-| Booster-Zähler-Badge | CSS | `src/components/BoosterBar.tsx` |
-| Sound-Effekte | leere Funktionen | `src/audio/sfx.ts` |
-| Debug-Panel | reines HTML/CSS | `src/components/DebugPanel.tsx` |
+| Geschlossenes Regalfach | CSS-Holzabdeckung mit Schild „Geschlossen“ | `src/components/ShelfSlot.tsx`, `.slot-cover` |
+| Auswahl-, Fach- und Gold-Glow | CSS (vorgerenderte Verläufe/Schatten, nur `opacity` animiert) | `src/styles/game.css` |
+| Papierfetzen beim Aufreißen | 4 Ausschnitte der jeweiligen Verpackung (`paper-wrap`/`paper-gold`) per `clip-path`, dazu `paper-shreds.webp` als Burst | `src/components/Item.tsx` |
+| Kategorie-Hinweis auf verpackten Items (`hintMode`) | Emoji (🥤 🍿 🍎 🥖 🧀) | `CATEGORY_ICON` in `src/assets.ts` |
+| Statusleisten-Hintergrund (iOS) | CSS-Band in Theme-Farbe | `.app::before` in `src/styles/game.css` |
+| Booster-Zähler-Badge | CSS | `src/components/BoosterBar.tsx`, `src/styles/screens.css` |
+| Hinweistexte, Debug-Panel | HTML/CSS | `src/styles/screens.css` |
+| Sound-Effekte | leere Funktionen (Schnittstelle) | `src/audio/sfx.ts` |
+| iOS-Splash-Screens | keine (iOS zeigt kurz die Hintergrundfarbe) | – |
+
+### Derzeit ungenutzte Assets (Reserve)
+
+| Datei | Mögliche Verwendung |
+|---|---|
+| `board/shelf.webp` | Deko, Level-Auswahl, Ladebildschirm |
+| `ui/button-square-green.webp`, `ui/button-square-red.webp` | eckige Icon-Buttons (z. B. Einstellungen, Pause) |
