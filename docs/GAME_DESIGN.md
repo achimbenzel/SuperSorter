@@ -1,6 +1,6 @@
 # Game Design – Super Sorter (Regal-Modus)
 
-> Es gibt zwei Spielprinzipien. Dieses Dokument beschreibt den **Regal-Modus** (das ursprüngliche Konzept). Der neuere **Onlineshop-Modus** (Pakete packen und verschicken) steht in [SHOP_MODE.md](SHOP_MODE.md). Booster, Mystery, Gold und Münzen funktionieren in beiden gleich.
+> Es gibt zwei Spielprinzipien. Dieses Dokument beschreibt den **Regal-Modus** („Wareneingang“, das ursprüngliche Konzept). Der **Packband-Modus** („Versand“: Kundenpakete packen und verschicken) steht in [PACK_MODE.md](PACK_MODE.md). Booster, Mystery, Gold und Münzen funktionieren in beiden gleich. Später sollen sich die Modi abwechseln.
 
 Sortier-Puzzle im Supermarkt nach dem Prinzip *Water Sort / Magic Sort*: Eine Lieferung kommt im Karton an und muss sortenrein ins Regal geräumt werden. Ein Level dauert 30–60 Sekunden.
 

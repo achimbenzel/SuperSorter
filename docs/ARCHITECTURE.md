@@ -6,17 +6,17 @@ Strikte Trennung zwischen **Spiellogik** (reines TypeScript, ohne DOM/React) und
 
 Es gibt **zwei Spielmodi** mit eigener Logik, die sich Assets, Komponenten, Animationen, Booster und Münzen teilen:
 
-| | Regal-Modus | Onlineshop-Modus |
+| | Regal-Modus (Wareneingang) | Packband-Modus (Versand) |
 |---|---|---|
-| Logik | `src/game/*.ts` | `src/game/shop/*.ts` |
-| Bildschirm | `src/modes/ShelfGame.tsx` | `src/modes/ShopGame.tsx` |
-| Hook | `src/hooks/useGame.ts` | `src/hooks/useShopGame.ts` |
-| Spielfeld | `components/Board.tsx` (+ Shelf, ShelfSlot) | `components/shop/ShopBoard.tsx` (+ PackingStation, OrderRail) |
-| Design | [GAME_DESIGN.md](GAME_DESIGN.md) | [SHOP_MODE.md](SHOP_MODE.md) |
+| Logik | `src/game/*.ts` | `src/game/pack/*.ts` |
+| Bildschirm | `src/modes/ShelfGame.tsx` | `src/modes/PackGame.tsx` |
+| Hook | `src/hooks/useGame.ts` | `src/hooks/usePackGame.ts` |
+| Spielfeld | `components/Board.tsx` (+ Shelf, ShelfSlot, Cart) | `components/pack/PackBoard.tsx` (+ PackBox, plan, timeline) |
+| Design | [GAME_DESIGN.md](GAME_DESIGN.md) | [PACK_MODE.md](PACK_MODE.md) |
 
-Gemeinsam: Karton-/Ablage-Regeln (`src/game/sources.ts`: Multi-Move, Mystery-Reveal), `random.ts`, `items.ts`, Komponenten `DeliveryBox`, `Stack`, `Item`, `Cart`, `HUD`, `BoosterBar`, `WinScreen`, `LoseScreen`, `DebugPanel`, Hooks `useFlip`, `useFxAnimations`. `App.tsx` wählt nur den Modus (gespeichert unter `super-sorter/mode/v1`) und zeigt das Modus-Menü.
+Gemeinsam: Karton-Regeln (`src/game/sources.ts`: Multi-Move, Mystery-Reveal, Lupe), `random.ts`, `items.ts`, Komponenten `DeliveryBox`, `Stack`, `Item`, `HUD`, `BoosterBar`, `WinScreen`, `LoseScreen`, `DebugPanel`, Hooks `useFlip`, `useFxAnimations`. `App.tsx` wählt nur den Modus (gespeichert unter `super-sorter/mode/v1`, Werte `pack` | `shelf`; Unbekanntes wie das alte `shop` wird zu `pack`) und zeigt das Modus-Menü.
 
-**Spielstand** (`hooks/progress.ts`, Schlüssel `super-sorter/progress/v1`): `level`/`highest` (Regal), `shopDay`/`shopHighest` (Onlineshop), `coins` (gemeinsame Geldbörse). Es ist immer nur ein Modus gemountet, der den Stand schreibt.
+**Spielstand** (`hooks/progress.ts`, Schlüssel `super-sorter/progress/v1`): `level`/`highest` (Regal), `packDay`/`packHighest` (Packband), `coins` (gemeinsame Geldbörse). Es ist immer nur ein Modus gemountet, der den Stand schreibt.
 
 ```
 src/
@@ -127,21 +127,28 @@ Laufzeit: 2–25 ms pro Level (Node). In der App werden Level pro Sitzung gecach
 
 **Seeds ändern:** `SEED_SALT` in `generator.ts` anpassen → alle Level werden neu gewürfelt (Tests prüfen weiterhin Lösbarkeit).
 
-## Onlineshop-Modus (`src/game/shop/`)
+## Packband-Modus (`src/game/pack/`)
 
 | Datei | Inhalt |
 |---|---|
-| `theme.ts` | Serien (Aufkleber: Symbol, Farbe, Waren) und Kunden – austauschbar für andere Themen |
-| `types.ts` | `Order` (Positionen: bestimmte Ware oder Serie), `Station` (Auftrag + gefüllte Positionen), `ShopBoard` (Stapel, Ablage, Stationen, Warteschlange) |
-| `rules.ts` | Passt eine Ware? (`openPositions`), `applyMove` inkl. **Versand + Nachrücken**, `findShortage` (Hall-Bedingung), `isLegal` (passt **und** erzeugt keinen Engpass), `whoNeeds` für den Hinweistext |
-| `solver.ts` | DFS wie im Regal-Modus. Kompakt: Station = sortierte Liste offener Positions-Schlüssel (Typ 0–7, Serie 100+). Pruning per Hall-Bedingung. Dazu `simulateShopWinRate` (schnelle Simulation auf derselben Darstellung) |
-| `generator.ts` | Sortiment wählen → Aufträge würfeln (mit Kunden) → Waren daraus ableiten → Stapel; Solver + Simulation wie gehabt; `shuffleShopBox` |
-| `levels.ts` | 20 Tage + Endlos, Münzwerte, Einführungstexte |
-| `reducer.ts` | `TAP_STATION` statt `TAP_SLOT`; blockierte Züge erzeugen ein `blocked`-FX-Event mit Erklärtext |
+| `types.ts` | `PackBox` (Kunde + konkrete Waren), `PackSpot` (Paket am Packplatz + gefüllte Positionen), `PackBoard` (Kisten, Packtisch = `cart`, Packplätze, Band-Warteschlange), `PackFx` |
+| `rules.ts` | `routeOf` (erstes Paket, das die Ware braucht, sonst erster freier Packtisch-Platz), `applyTap` → Ware nehmen (Reveal über `sources.ts`), ablegen, dann `settle`: volle Pakete verschicken, nächstes Paket an denselben Platz, Packtisch-Waren nachfüttern – bis sich nichts mehr ändert. Liefert `shipped[]` (mit `chain`) und `fed[]` für die Animation |
+| `solver.ts` | DFS mit Gedächtnis direkt auf den echten Regeln (≤ 4 Verzweigungen pro Zug, Taps direkt ins Paket zuerst). Schlüssel: Kistenhöhen, sortierte Packtisch-Waren, Paket-IDs + Füllmaske, Länge der Warteschlange |
+| `generator.ts` | Sortiment wählen → Sammel-/gemischte Pakete mit Kunden würfeln → Waren = alle Paketinhalte, gemischt auf die Kisten → Mystery/Gold → Band-Reihenfolge mischen. Solver + Simulation wie im Regal; `shufflePackBox` |
+| `levels.ts` | 20 Tage + Endlos, Münzwerte (Paket, Kombo, Gold, Tag), Einführungstexte |
+| `customers.ts` | Geschäftskunden (Sammelpakete) und Privatkunden (gemischt) mit Emoji-Avatar |
+| `reducer.ts` | `TAP_STACK` ist ein kompletter Zug; Booster wie im Regal (Extra-Platz bleibt nach Rückgängig erhalten) |
 
-**Engpass-Prüfung (Warum genügt sie?):** Jede Ware gehört zu genau einer Serie, Positionen verlangen eine bestimmte Ware oder eine Serie. Die Waren decken die Positionen genau dann, wenn (a) jede bestimmte Ware oft genug da ist und (b) pro Serie danach genug übrig bleibt (Heiratssatz von Hall für diese verschachtelte Struktur). Der Brute-Force-Abgleich in `shop/solver.test.ts` (400 Zufallsboards) bestätigt das.
+**Verifikation:** `pack/solver.test.ts` gleicht den Solver auf 300 Zufallsboards mit einer erschöpfenden Suche ohne Gedächtnis ab; jede Lösung wird mit `applyTap` nachgespielt.
 
-**Versand-Animation:** Der Reducer verschickt das Paket sofort (Logik bleibt einfach und testbar). `ShopBoard` hält verschickte Pakete per `useShipGhosts` für `TIMING.ship` als „Geist“-Ebene über dem Packtisch (Klappen, Klebeband, Häkchen, Abflug), während darunter der neue Auftrag hereinrutscht. Damit die letzte Ware sichtbar ins Paket fliegt, merkt sich `useFlip` die Position kurz verschwundener Items einige Renders lang.
+**Kettenreaktion in der UI:** Der Reducer wertet den ganzen Zug sofort aus – das Board zeigt danach schon das *letzte* Paket. `components/pack/plan.ts` leitet aus den FX-Events einen Animationsplan ab (welche Ware/welches Paket wann startet; Zeitplan in `timeline.ts`, CSS nutzt dieselben Abstände):
+
+- Verschickte Pakete (auch Zwischenpakete, die nie im Board-State stehen) bleiben als „Geister“ (`useShipGhosts`) über dem Packplatz: Klappen, Klebeband, Häkchen, Abflug ab `closeAt(chain)`.
+- Pakete fahren per FLIP von ihrer Band-Karte heran (`data-flip-kind="box"`: gleichmäßig skaliert, eingeblendet). Die Karte bleibt bis zur Abfahrt auf dem Band stehen.
+- Nachgefütterte Waren fliegen mit `data-flip-delay` vom Packtisch los; bis dahin hält die Animation sie (`fill: backwards`) sichtbar an ihrem alten Platz. Deshalb liegen Karton und Waren in getrennten Ebenen (`.pk-shell` / `.pk-contents`): Die Karton-Ebene darf sich bewegen, ohne die wartenden Waren mitzunehmen.
+- Der Plan gilt nur für genau das Board, das mit den Events entstanden ist (Rückgängig/Extra-Platz bewegen sofort).
+- `useFlip` läuft in `PackBoard`, weil Geister und abfahrende Karten State dieser Komponente sind – nur so werden auch diese Renders animiert.
+- Tippt der Spieler während einer Kette, spult `finishAnimations` alle laufenden Animationen ans Ende.
 
 ## Animationen
 
@@ -156,6 +163,7 @@ Regel: nur `transform` und `opacity` animieren (GPU, 60 fps).
 | Fach gelöst | CSS: Glow-Ebene (opacity), Lichtschimmer (translate), Stern-Partikel, Schloss-Pop; startet nach `--t-hop` |
 | Fach öffnet sich | Abdeckung klappt weg (Transition) |
 | Münzflug | temporäre `<img>`-Elemente, WAAPI, danach entfernt |
+| Packband: Paket verschicken, Kette, Kombo | Geister-Ebene + CSS-Keyframes relativ zu `--close`, verzögerte FLIPs, „Kombo ×n“ per `useFxAnimations` (siehe Packband-Abschnitt) |
 | Konfetti | `canvas-confetti` (respektiert `prefers-reduced-motion`) |
 
 Alle Zeiten stehen in `src/config.ts` (`TIMING`) und werden als CSS-Variablen `--t-*` gespiegelt.
@@ -175,7 +183,7 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 ## Tests
 
-`npm test` (Vitest, Node-Umgebung, ca. 2 s, 155 Tests):
+`npm test` (Vitest, Node-Umgebung, ca. 2 s, 124 Tests):
 
 | Datei | Inhalt |
 |---|---|
@@ -183,10 +191,10 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 | `solver.test.ts` | einfache/unlösbare Boards, Multi-Move vs. verdeckt, Regressionstest doppelte Sorten, **Abgleich mit Brute-Force auf 600 Zufallsboards** |
 | `reducer.test.ts` | Tap-Steuerung, Auswahlwechsel, Shake-Event, Wagen, Sieg/Niederlage, Undo (mehrstufig, Gold), Extra-Platz, Lupe, Mischen, komplettes Level über den Reducer |
 | `generator.test.ts` | Progression (Mystery ab 4, Gold ab 10, Belohnungslevel), Determinismus, **Level 1–30 lösbar** und konfigurationstreu, Generierungszeit |
-| `shop/rules.test.ts` | Sammel/Serie/Wunschliste, Multi-Move, Versand + Nachrücken, Engpass, blockierte Züge |
-| `shop/solver.test.ts` | einfache/unlösbare Boards, **Abgleich mit Brute-Force auf 400 Zufallsboards** |
-| `shop/reducer.test.ts` | Taps, Versand-Event + Münzen, Blockade mit Erklärtext, Undo, Extra-Ablage, Lupe, Mischen, Booster kaufen, kompletter Tag |
-| `shop/generator.test.ts` | Progression, Determinismus, **Tage 1–30 lösbar**, Waren = Positionen, Auftragsarten wie konfiguriert |
+| `pack/rules.test.ts` | Routing (Paket/Packtisch/ungültig), zwei Packplätze, gemischte Pakete, Reveal, Versand + Nachrücken, Nachfüttern, Kettenreaktion über 3 Pakete, Gold per Kette, Sieg, Niederlage |
+| `pack/solver.test.ts` | einfache/unlösbare Boards, Hinweis, **Abgleich mit erschöpfender Suche auf 300 Zufallsboards** |
+| `pack/reducer.test.ts` | Tap, ungültiger Tap, Versand/Kette/Kombo/Münzen, Gold, Niederlage, Rückgängig, Extra-Platz, Lupe, Mischen, Booster kaufen, kompletter Tag |
+| `pack/generator.test.ts` | Progression (Mystery ab 4, 2 Packplätze ab 6, gemischt ab 8, Gold ab 10), Determinismus, **Tage 1–30 lösbar**, Waren = Paketinhalte, Generierungszeit, Mischen |
 
 ## Erweitern – Kochrezepte
 
@@ -196,6 +204,6 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 **Neuer Booster:** Zähler in `BoosterCounts` (`types.ts`) und `DEFAULT_BOOSTERS` (`levels.ts`), Aktion im `gameReducer`, Eintrag in `BOOSTERS` (`components/BoosterBar.tsx`) und Bild in `BOOSTER_IMAGE` (`assets.ts`), Test in `reducer.test.ts`.
 
-**Sound einhängen:** In `main.tsx` `setSfxHandler((name) => …)` aufrufen (z. B. Web Audio API). Alle Aufrufstellen existieren bereits (`useGame.ts`). iOS: AudioContext beim ersten Tap mit `resume()` entsperren.
+**Sound einhängen:** In `main.tsx` `setSfxHandler((name) => …)` aufrufen (z. B. Web Audio API). Alle Aufrufstellen existieren bereits (`useGame.ts`, `usePackGame.ts`). iOS: AudioContext beim ersten Tap mit `resume()` entsperren.
 
 **Neue Regel:** zuerst in `rules.ts` (+ Test), dann die kompakte Spiegelung in `solver.ts → apply/candidateMoves` nachziehen. Der Brute-Force-Abgleich in `solver.test.ts` deckt Abweichungen zwischen beiden auf.

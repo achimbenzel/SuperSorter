@@ -1,13 +1,13 @@
 # Super Sorter
 
-Spielbarer Prototyp eines Mobile-Puzzle-Games mit zwei Spielprinzipien zum Vergleichen:
+Spielbarer Prototyp eines Mobile-Puzzle-Games im Supermarkt mit zwei Modi:
 
-- **Onlineshop** (Standard): Du packst Ware aus dem Großhandelskarton in Pakete für deine Kunden (Sammelbestellungen, Serien-Sets, Wunschlisten) und verschickst sie. Jedes verschickte Paket macht Platz für den nächsten Auftrag. → [docs/SHOP_MODE.md](docs/SHOP_MODE.md)
-- **Regal** (klassisch): Du räumst die Lieferung sortenrein ins Supermarktregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
+- **Packband – Waren verkaufen** (Standard): Kundenpakete laufen auf einem Band vorbei und verlangen konkrete Waren. Ein Tap auf eine Lagerkiste nimmt die oberste Ware: Passt sie, fliegt sie ins Paket, sonst auf den Packtisch. Volle Pakete werden verschickt, und Waren vom Packtisch springen automatisch ins nächste Paket – Kettenreaktionen geben Kombo-Münzen. → [docs/PACK_MODE.md](docs/PACK_MODE.md)
+- **Regal – Waren in den Bestand aufnehmen:** Du räumst die Lieferung sortenrein ins Supermarktregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 
-Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Pakete und Booster. Umgeschaltet wird über das Menü (☰ oben links). Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und teilen sich die Münzen. Zum Testen sind sie getrennt über das Menü (☰ oben links) wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
 
-![Onlineshop-Modus: Packtische mit Aufträgen, Paket wird verschickt, blockierter Zug mit Erklärung, Modus-Menü](docs/screenshots/shop.webp)
+![Packband-Modus: Band mit allen wartenden Paketen, Kettenreaktion mit Kombo, Tag 20 mit zwei Packplätzen, Modus-Menü](docs/screenshots/pack.webp)
 
 <details>
 <summary>Regal-Modus</summary>
@@ -18,11 +18,11 @@ Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Pakete und Booster. Umge
 
 ## Features
 
-- **Tap-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
+- **Packband:** Ein Tap pro Zug, alle wartenden Pakete sichtbar, Versand-Animation (Klappen, Klebeband, Abflug), Pakete fahren vom Band heran, Kettenreaktionen werden Schritt für Schritt abgespielt („Kombo ×2!“).
+- **Regal-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
 - **Mystery-Layering:** Nur die oberste Ware je Stapel ist sichtbar. Darunter liegt Packpapier, das beim Freilegen mit Papierfetzen aufreißt. **Gold-Pakete** bringen Bonus-Münzen.
-- **Gelöste Fächer** leuchten, sprühen Sterne, zeigen ein Schloss und öffnen das nächste geschlossene Fach.
+- **Gelöste Fächer** (Regal) leuchten, sprühen Sterne, zeigen ein Schloss und öffnen das nächste geschlossene Fach.
 - **Je 20 handkonfigurierte Level/Tage + Endlosmodus**, seed-basiert generiert und per **Solver garantiert lösbar**. Die Schwierigkeitskurve wird über simulierte Spieler gesteuert. Alle 4 Level ein Belohnungslevel.
-- **Onlineshop-Modus:** Packtische mit Kundenaufträgen, Serien-Aufkleber, Versand-Animation, Auftragsvorschau. Züge, die einem anderen Auftrag eine Ware wegnehmen würden, werden erklärt statt bestraft.
 - **Booster:** Undo (mehrstufig), Extra-Platz, Lupe, Mischen (bleibt garantiert lösbar), jeweils mit Kontingent pro Level. Ist es aufgebraucht, kann man den Booster für Münzen nachkaufen.
 - **Win-/Lose-Screens** mit Sternen, Münzen, Konfetti; Lose-Screen mit Extra-Platz, Rückgängig, Nochmal.
 - **Fortschritt** (Level je Modus, gemeinsame Münzen) in `localStorage`.
@@ -36,7 +36,7 @@ Voraussetzung: Node.js ≥ 20.19 (empfohlen: aktuelle LTS).
 ```bash
 npm install
 npm run dev        # Dev-Server: http://localhost:5173 (auch im LAN erreichbar)
-npm test           # Unit-Tests (Vitest): Regeln, Multi-Move, Reveal, Solver, Generator, Reducer
+npm test           # Unit-Tests (Vitest): Regeln, Kettenreaktion, Reveal, Solver, Generator, Reducer
 npm run build      # Typecheck + Production-Build nach dist/ (Basis-Pfad /SuperSorter/)
 npm run preview    # Build lokal ansehen: http://localhost:4173/SuperSorter/
 ```
@@ -46,7 +46,7 @@ Weitere Scripts:
 | Script | Zweck |
 |---|---|
 | `npm run levels:report` | Regal-Modus: Tabelle aller Level (Lösbarkeit, simulierte Gewinnquote, Generierungszeit) |
-| `npm run shop:report` | Onlineshop-Modus: dasselbe für alle Tage |
+| `npm run pack:report` | Packband-Modus: dasselbe für alle Versand-Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
 | `npm run typecheck` | nur TypeScript prüfen |
 | `npm run test:watch` | Tests im Watch-Modus |
@@ -124,7 +124,7 @@ SuperSorter/
 ├─ docs/
 │  ├─ ARCHITECTURE.md             Aufbau, Datenfluss, Zustandsmodell, Solver/Generator, Erweitern
 │  ├─ GAME_DESIGN.md              Regeln, Mystery, Booster, Progression, Annahmen
-│  ├─ SHOP_MODE.md                Onlineshop-Modus: Aufträge, Regeln, Tage, neues Thema anlegen
+│  ├─ PACK_MODE.md                Packband-Modus: Regeln, Kettenreaktion, Tage, Playtest-Erkenntnisse
 │  ├─ ASSETS.md                   Asset-Zuordnung, Größen, Platzhalter
 │  ├─ ROADMAP.md                  nächste Schritte
 │  └─ screenshots/
@@ -135,18 +135,18 @@ SuperSorter/
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
 │  ├─ level-report.ts             npm run levels:report
-│  └─ shop-report.ts              npm run shop:report
+│  └─ pack-report.ts              npm run pack:report
 ├─ src/
 │  ├─ game/                       reine Spiellogik + Tests, Regal-Modus (types, rules, reducer, solver, generator, levels)
-│  │  ├─ sources.ts               gemeinsame Karton-/Ablage-Regeln beider Modi
-│  │  └─ shop/                    Onlineshop-Modus (theme, types, rules, reducer, solver, generator, levels + Tests)
-│  ├─ modes/                      ShopGame, ShelfGame (je ein kompletter Spielbildschirm)
+│  │  ├─ sources.ts               gemeinsame Karton-Regeln beider Modi
+│  │  └─ pack/                    Packband-Modus (types, rules, reducer, solver, generator, levels, customers + Tests)
+│  ├─ modes/                      PackGame, ShelfGame (je ein kompletter Spielbildschirm)
 │  ├─ components/                 Board, Shelf, ShelfSlot, DeliveryBox, Stack, Item, Cart,
 │  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, ModeMenu, DebugPanel, …
-│  │  └─ shop/                    ShopBoard, PackingStation, OrderRail, RequirementIcon
-│  ├─ hooks/                      useGame, useShopGame, progress, usePersistedState, useFlip, useFxAnimations, …
+│  │  └─ pack/                    PackBoard, PackBox, plan (Animationsplan), timeline (Zeitplan der Kette)
+│  ├─ hooks/                      useGame, usePackGame, progress, usePersistedState, useFlip, useFxAnimations, …
 │  ├─ audio/sfx.ts                Sound-Schnittstelle (Platzhalter)
-│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, shop.css
+│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
 │  ├─ config.ts                   UI-Zeiten, Storage-Key, Debug-Flag
 │  ├─ iosGuards.ts                Schutz vor Zoom/Bounce/Long-Press
@@ -170,8 +170,8 @@ SuperSorter/
 
 ## Dokumentation
 
-- [docs/SHOP_MODE.md](docs/SHOP_MODE.md): Onlineshop-Modus – Aufträge, Regeln, Tage, neues Thema (z. B. Card Shop) anlegen
+- [docs/PACK_MODE.md](docs/PACK_MODE.md): Packband-Modus – Regeln, Kettenreaktion, Tage, was aus dem Onlineshop-Playtest gelernt wurde
 - [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md): Regal-Modus – Regeln, Booster, Level-Tabelle, **getroffene Annahmen**
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Code-Aufbau, Solver, Generator, Animationen, Kochrezepte zum Erweitern
 - [docs/ASSETS.md](docs/ASSETS.md): welches Bild wofür, fehlende Assets
-- [docs/ROADMAP.md](docs/ROADMAP.md): nächste Schritte (Audio, Meta-Ebene, Spezialfächer, Aufträge)
+- [docs/ROADMAP.md](docs/ROADMAP.md): nächste Schritte (Modi abwechseln, Audio, Meta-Ebene, Spezialfächer)
