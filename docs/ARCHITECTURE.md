@@ -31,7 +31,7 @@ src/
 │  ├─ reducer.ts      gameReducer: Taps/Booster → neuer GameState
 │  └─ *.test.ts       Unit-Tests
 ├─ hooks/           ← Brücke Logik ↔ React
-│  ├─ useGame.ts      useReducer + Level-Cache + Persistenz + Sound-Hooks + Lupen-Timer
+│  ├─ useGame.ts      useReducer + Level laden + Persistenz + Sound-Hooks + Lupen-Timer
 │  ├─ usePersistedState.ts  localStorage mit Fehlertoleranz
 │  ├─ useFlip.ts      Flug-Animation von Items zwischen Containern (FLIP)
 │  ├─ useFxAnimations.ts    Shake, Münzflug (Web Animations API)
@@ -40,6 +40,8 @@ src/
 ├─ audio/sfx.ts     ← Sound-Schnittstelle (Platzhalter)
 ├─ styles/          ← tokens.css (Farben/Maße), global.css (iOS), game.css, screens.css
 ├─ assets.ts        ← einzige Stelle mit Bildpfaden
+├─ imageLoader.ts   ← Bilder vorladen, dekodieren, festhalten; Ladefehler wiederholen
+├─ levelStore.ts    ← Level-Cache beider Modi; nächstes Level per Web Worker (levelWorker.ts)
 ├─ config.ts        ← UI-Zeiten, Storage-Key, Debug-Flag
 ├─ iosGuards.ts     ← Pinch/Bounce/Long-Press-Schutz
 ├─ App.tsx / main.tsx
@@ -123,7 +125,7 @@ Pipeline pro Level (`generateLevel(config)`):
 4. **Schwierigkeit schätzen** (`estimateWinRate`): 48 simulierte Spiele mit einer plausiblen, aber unwissenden Strategie (füllt angefangene Fächer, startet sonst zu 70 % ein neues Fach, zu 30 % parkt sie im Wagen, verteilt nie absichtlich eine Sorte auf zwei Fächer). Die Gewinnquote muss im Zielbereich `targetWinRate` der Config liegen.
 5. Erster Kandidat im Zielbereich gewinnt; sonst nach 60 Versuchen der nächstbeste lösbare. Rückfallebene (praktisch nie nötig): alle Fächer offen → garantiert lösbar.
 
-Laufzeit: 2–25 ms pro Level (Node). In der App werden Level pro Sitzung gecacht, das nächste Level wird im Leerlauf vorberechnet.
+Laufzeit: 2–25 ms pro Level (Node), Packband-Tage bis ca. 60 ms. In der App cacht `levelStore.ts` die Level pro Sitzung. Das aktuelle Level wird bei Bedarf sofort erzeugt, das nächste rechnet ein **Web Worker** (`levelWorker.ts`) im Hintergrund vor – vorher lief das im Haupt-Thread und war auf dem Handy als Ruckler kurz nach Levelstart spürbar. Ohne Worker-Unterstützung fällt der Store auf den Haupt-Thread zurück. Weil die Generierung deterministisch ist, liefern Worker und Haupt-Thread dasselbe Level.
 
 **Seeds ändern:** `SEED_SALT` in `generator.ts` anpassen → alle Level werden neu gewürfelt (Tests prüfen weiterhin Lösbarkeit).
 
@@ -167,6 +169,16 @@ Regel: nur `transform` und `opacity` animieren (GPU, 60 fps).
 | Konfetti | `canvas-confetti` (respektiert `prefers-reduced-motion`) |
 
 Alle Zeiten stehen in `src/config.ts` (`TIMING`) und werden als CSS-Variablen `--t-*` gespiegelt.
+
+## Performance und Bilder (Handy)
+
+Gemessen mit Playwright und 4-fach gedrosselter CPU über 8 Packband-Tage:
+
+- **Kein Generator im Haupt-Thread während des Spiels** (Web Worker, s. o.). Längster Timer-Task vorher 222 ms, jetzt < 2 ms.
+- **Keine Dauer-GPU-Ebene pro Ware:** `.flip` hat bewusst kein `will-change`. Eine Ebene pro Ware kostet auf iOS viel Grafikspeicher; unter Speicherdruck zeichnet Safari dann Bilder nicht mehr. Während einer Animation legt der Browser die Ebene selbst an.
+- **Aufgedeckte Waren räumen auf:** Papier und Fetzen der Reveal-Animation werden danach entfernt.
+- **Bilder** (`imageLoader.ts`): Alle Spielbilder werden beim Start geladen, dekodiert und für die Sitzung festgehalten (der Browser darf sie so nicht verwerfen und später neu laden). Scheitert ein `<img>` trotzdem, wird es bis zu dreimal mit Pause neu angefordert.
+- **Dev-Server:** Vite schickt `public/` im Dev-Modus mit `no-cache`; das Plugin `devAssetCache` in `vite.config.ts` erlaubt für `/assets/` eine Stunde Caching, damit das Handy Bilder nicht ständig neu über WLAN anfragt. Zum Beurteilen von Tempo trotzdem immer den Production-Build nehmen (`npm run phone`): React im Dev-Modus ist um ein Vielfaches langsamer.
 
 ## Layout und Skalierung
 

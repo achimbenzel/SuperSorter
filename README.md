@@ -48,6 +48,7 @@ Weitere Scripts:
 | `npm run levels:report` | Regal-Modus: Tabelle aller Level (Lösbarkeit, simulierte Gewinnquote, Generierungszeit) |
 | `npm run pack:report` | Packband-Modus: dasselbe für alle Versand-Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
+| `npm run phone` | Production-Build bauen und im Netz bereitstellen (Port 4173) – zum Testen auf dem Handy |
 | `npm run typecheck` | nur TypeScript prüfen |
 | `npm run test:watch` | Tests im Watch-Modus |
 
@@ -74,7 +75,9 @@ Der Service Worker und die Homescreen-App brauchen HTTPS. Deshalb wird über Git
 - Zeigt die App weiterhin die alte Version: App-Icon lange drücken → **App entfernen**, optional in den iOS-Einstellungen unter Safari → Erweitert → Websitedaten die Daten von `github.io` löschen, und dann Schritt 4–5 wiederholen.
 - Achtung: Homescreen-Apps haben auf iOS einen eigenen Speicher. Beim Entfernen der App geht der Spielstand (Level, Münzen) verloren.
 
-**Schneller Test ohne Deployment (im WLAN):** `npm run dev` auf dem Rechner starten und auf dem iPhone `http://<IP-des-Rechners>:5173` öffnen (die IP zeigt Vite als „Network“ an). Das Gameplay funktioniert, Service Worker und Offline-Modus aber nicht (kein HTTPS).
+**Schneller Test ohne Deployment (im WLAN):** `npm run phone` auf dem Rechner starten (Production-Build + Vorschau) und auf dem iPhone `http://<IP-des-Rechners>:4173/SuperSorter/` öffnen (die IP zeigt Vite als „Network“ an). Service Worker und Offline-Modus laufen ohne HTTPS nicht, das Gameplay schon.
+
+> **Dev-Server (`npm run dev`, Port 5173) nicht zum Beurteilen von Tempo nutzen.** Er liefert React im Entwicklungsmodus (deutlich langsamer, Komponenten werden doppelt gerendert), lädt hunderte einzelne Module und hat keinen Service Worker. Ruckler und fehlende Bilder über WLAN sind dort normal und kein Fehler der App. Bilder unter `/assets/` werden im Dev-Server seit diesem Update eine Stunde gecacht; nach dem Austauschen von Assets einmal ohne Cache neu laden. Der Dev-Server ist für schnelles Ausprobieren von Änderungen (Hot Reload) gedacht.
 
 ### Test über Tailscale (empfohlen für lokales Testen)
 
@@ -93,11 +96,10 @@ tailscale serve --bg 5173
 tailscale serve reset   # Freigabe später wieder beenden
 ```
 
-Für den **vollständigen PWA-Test** (Homescreen, Service Worker, offline) den Production-Build freigeben:
+Für den **vollständigen PWA-Test** (Homescreen, Service Worker, offline – und realistisches Tempo) den Production-Build freigeben:
 
 ```powershell
-npm run build
-npm run preview          # Port 4173
+npm run phone            # = npm run build + npm run preview, Port 4173
 tailscale serve --bg 4173
 # -> https://<pc-name>.<tailnet>.ts.net/SuperSorter/ öffnen, dann Teilen -> Zum Home-Bildschirm
 ```
@@ -148,6 +150,8 @@ SuperSorter/
 │  ├─ audio/sfx.ts                Sound-Schnittstelle (Platzhalter)
 │  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
+│  ├─ imageLoader.ts              Bilder vorladen/dekodieren/festhalten, Ladefehler wiederholen
+│  ├─ levelStore.ts, levelWorker.ts  Level-Cache beider Modi, Vorberechnung im Web Worker
 │  ├─ config.ts                   UI-Zeiten, Storage-Key, Debug-Flag
 │  ├─ iosGuards.ts                Schutz vor Zoom/Bounce/Long-Press
 │  ├─ App.tsx, main.tsx

@@ -23,6 +23,9 @@ import { TIMING } from '../config';
 /** Wie viele Renders ein verschwundenes Item seine letzte Position behält. */
 const KEEP_MISSING_RENDERS = 3;
 
+/** Einmal anlegen statt bei jedem Render (matchMedia ist nicht ganz billig). */
+const reducedMotion = typeof window !== 'undefined' ? window.matchMedia?.('(prefers-reduced-motion: reduce)') : undefined;
+
 export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string) {
   const rects = useRef(new Map<string, DOMRect>());
   /** Alter (in Renders) von Positionen, deren Item gerade nicht im DOM ist. */
@@ -48,7 +51,7 @@ export function useFlip(rootRef: RefObject<HTMLElement | null>, resetKey: string
       missingAge.current.clear();
       lastKey.current = resetKey;
     }
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduced = reducedMotion?.matches ?? false;
 
     // Erst alles messen, dann animieren: Verschachtelte Elemente (Paket > Ware) würden
     // sonst von der gerade gestarteten Animation des Elternteils verfälscht gemessen.

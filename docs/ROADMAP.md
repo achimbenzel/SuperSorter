@@ -46,7 +46,8 @@ Jede neue Regel: zuerst `rules.ts` + Test, dann Solver-Spiegelung, dann Generato
 
 ## 5. Technik
 
-- **Generator in Web Worker oder zur Build-Zeit:** Aktuell 2–25 ms pro Level im Main-Thread (gecacht + Vorberechnung). Bei komplexeren Regeln Level vorab generieren und als JSON ausliefern.
+- ~~**Generator in Web Worker:**~~ umgesetzt (`levelStore.ts`). Bei deutlich komplexeren Regeln Level zur Build-Zeit generieren und als JSON ausliefern.
+- **Mischen-Booster im Worker:** `shufflePackBox`/`shuffleBox` lösen bis zu 40 Kandidaten im Haupt-Thread (selten, aber auf alten Handys spürbar).
 - **Update-Hinweis:** Statt stillem Auto-Update ein „Neue Version – neu laden?“-Toast (`registerType: 'prompt'` in `vite-plugin-pwa`).
 - **Komponenten-Tests** (React Testing Library) und ein Playwright-Smoke-Test im CI (Level 1 per Taps lösen).
 - **Barrierefreiheit:** Farbenblind-Modus (Formen/Muster zusätzlich zu Bildern), größere Tap-Ziele optional, VoiceOver-Labels prüfen.

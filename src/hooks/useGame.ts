@@ -2,23 +2,12 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import * as sfx from '../audio/sfx';
 import type { BoosterId } from '../assets';
 import { STORAGE_KEY, TIMING } from '../config';
-import { generateLevel, type GeneratedLevel } from '../game/generator';
-import { BOOSTER_PRICES, getLevelConfig, winCoins } from '../game/levels';
+import { BOOSTER_PRICES, winCoins } from '../game/levels';
 import { createGameState, gameReducer, type GameAction } from '../game/reducer';
+import { getShelfLevel, prefetchLevel } from '../levelStore';
 import { DEFAULT_PROGRESS, type Progress } from './progress';
 import { usePersistedState } from './usePersistedState';
 const BOOSTER_ACTIONS = new Set<GameAction['type']>(['UNDO', 'USE_EXTRA', 'TOGGLE_PEEK', 'SHUFFLE']);
-
-// Generierte Level werden pro Sitzung gecacht (Generierung ist deterministisch).
-const cache = new Map<number, GeneratedLevel>();
-export function getGeneratedLevel(level: number): GeneratedLevel {
-  let g = cache.get(level);
-  if (!g) {
-    g = generateLevel(getLevelConfig(level));
-    cache.set(level, g);
-  }
-  return g;
-}
 
 /**
  * Verbindet die reine Spiellogik (Reducer) mit der App: Level laden, Fortschritt
@@ -27,7 +16,7 @@ export function getGeneratedLevel(level: number): GeneratedLevel {
  */
 export function useGame() {
   const [progress, setProgress] = usePersistedState<Progress>(STORAGE_KEY, DEFAULT_PROGRESS);
-  const [generated, setGenerated] = useState(() => getGeneratedLevel(progress.level));
+  const [generated, setGenerated] = useState(() => getShelfLevel(progress.level));
   const [state, rawDispatch] = useReducer(gameReducer, generated, (g) => createGameState(g.config, g.board));
   /** Ändert sich bei jedem neuen Versuch -> Board wird neu gemountet (keine Flug-Animationen von alten Positionen). */
   const [attempt, setAttempt] = useState(0);
@@ -41,7 +30,7 @@ export function useGame() {
 
   const loadLevel = useCallback(
     (level: number) => {
-      const g = getGeneratedLevel(level);
+      const g = getShelfLevel(level);
       setGenerated(g);
       rawDispatch({ type: 'LOAD_LEVEL', config: g.config, board: g.board });
       setAttempt((a) => a + 1);
@@ -95,10 +84,9 @@ export function useGame() {
     return () => window.clearTimeout(t);
   }, [state.peekItemId]);
 
-  // Nächstes Level im Leerlauf vorberechnen, damit "Weiter" ohne Verzögerung lädt.
+  // Nächstes Level im Hintergrund (Web Worker) vorberechnen, damit "Weiter" sofort lädt.
   useEffect(() => {
-    const next = state.config.level + 1;
-    const t = window.setTimeout(() => getGeneratedLevel(next), 1200);
+    const t = window.setTimeout(() => prefetchLevel('shelf', state.config.level + 1), 600);
     return () => window.clearTimeout(t);
   }, [state.config.level]);
 

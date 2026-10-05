@@ -4,28 +4,18 @@ import * as sfx from '../audio/sfx';
 import { closeAt } from '../components/pack/timeline';
 import { STORAGE_KEY, TIMING } from '../config';
 import { BOOSTER_PRICES } from '../game/levels';
-import { generatePackLevel, type GeneratedPackLevel } from '../game/pack/generator';
-import { getPackLevelConfig, packWinCoins } from '../game/pack/levels';
+import { packWinCoins } from '../game/pack/levels';
 import { createPackState, packReducer, type PackAction } from '../game/pack/reducer';
+import { getPackLevel, prefetchLevel } from '../levelStore';
 import { DEFAULT_PROGRESS, type Progress } from './progress';
 import { usePersistedState } from './usePersistedState';
 
 const BOOSTER_ACTIONS = new Set<PackAction['type']>(['UNDO', 'USE_EXTRA', 'TOGGLE_PEEK', 'SHUFFLE']);
 
-const cache = new Map<number, GeneratedPackLevel>();
-export function getGeneratedPackLevel(day: number): GeneratedPackLevel {
-  let g = cache.get(day);
-  if (!g) {
-    g = generatePackLevel(getPackLevelConfig(day));
-    cache.set(day, g);
-  }
-  return g;
-}
-
 /** Wie useGame, aber für den Packband-Modus (Fortschritt = Versand-Tag). */
 export function usePackGame() {
   const [progress, setProgress] = usePersistedState<Progress>(STORAGE_KEY, DEFAULT_PROGRESS);
-  const [generated, setGenerated] = useState(() => getGeneratedPackLevel(progress.packDay));
+  const [generated, setGenerated] = useState(() => getPackLevel(progress.packDay));
   const [state, rawDispatch] = useReducer(packReducer, generated, (g) => createPackState(g.config, g.board));
   const [attempt, setAttempt] = useState(0);
   const winHandledFor = useRef<number | null>(null);
@@ -38,7 +28,7 @@ export function usePackGame() {
 
   const loadLevel = useCallback(
     (day: number) => {
-      const g = getGeneratedPackLevel(day);
+      const g = getPackLevel(day);
       setGenerated(g);
       rawDispatch({ type: 'LOAD_LEVEL', config: g.config, board: g.board });
       setAttempt((a) => a + 1);
@@ -90,9 +80,9 @@ export function usePackGame() {
     return () => window.clearTimeout(t);
   }, [state.peekItemId]);
 
-  // Nächsten Tag im Leerlauf vorberechnen.
+  // Nächsten Tag im Hintergrund (Web Worker) vorberechnen, damit er sofort lädt.
   useEffect(() => {
-    const t = window.setTimeout(() => getGeneratedPackLevel(state.config.level + 1), 1200);
+    const t = window.setTimeout(() => prefetchLevel('pack', state.config.level + 1), 600);
     return () => window.clearTimeout(t);
   }, [state.config.level]);
 

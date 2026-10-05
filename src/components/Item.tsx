@@ -1,5 +1,6 @@
-import { memo, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { ITEM_IMAGE, MYSTERY_IMAGE, UI_IMAGE } from '../assets';
+import { TIMING } from '../config';
 import { ITEM_LABEL } from '../game/items';
 import type { Item as ItemModel } from '../game/types';
 
@@ -57,6 +58,15 @@ export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked
     }
     wasHidden.current = item.hidden;
   }, [item.hidden, item.gold]);
+  // Nach dem Aufreißen Papier und Fetzen wieder entfernen (spart DOM-Knoten und
+  // Grafikebenen – sonst trägt jede aufgedeckte Ware sechs unsichtbare Elemente mit).
+  const [tearDone, setTearDone] = useState(0);
+  useEffect(() => {
+    if (revealKey === 0) return;
+    const t = window.setTimeout(() => setTearDone(revealKey), TIMING.reveal + 120);
+    return () => window.clearTimeout(t);
+  }, [revealKey]);
+  const tearing = revealKey > 0 && tearDone !== revealKey;
 
   const wrap = item.gold ? MYSTERY_IMAGE.gold : MYSTERY_IMAGE.paper;
   const classes = [
@@ -65,7 +75,7 @@ export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked
     item.gold && 'is-gold',
     selected && 'is-selected',
     peekable && item.hidden && 'is-peekable',
-    revealKey > 0 && 'is-revealing',
+    tearing && 'is-revealing',
   ]
     .filter(Boolean)
     .join(' ');
@@ -99,7 +109,7 @@ export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked
               )}
             </>
           )}
-          {revealKey > 0 && (
+          {tearing && (
             <span className="tear" key={revealKey} aria-hidden="true">
               <img className="tear-paper" src={revealedGold ? MYSTERY_IMAGE.gold : MYSTERY_IMAGE.paper} alt="" />
               <img className="tear-burst" src={MYSTERY_IMAGE.shreds} alt="" />

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { PRELOAD_IMAGES } from './assets';
+import { useState } from 'react';
 import { ModeMenu } from './components/ModeMenu';
 import { DEFAULT_MODE, MODE_KEY, normalizeMode } from './hooks/progress';
 import { usePersistedState } from './hooks/usePersistedState';
@@ -17,14 +16,6 @@ import './styles/pack.css';
 export default function App() {
   const [modeState, setModeState] = usePersistedState(MODE_KEY, DEFAULT_MODE);
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Bilder vorladen, damit Reveal und Screens nicht flackern.
-  useEffect(() => {
-    PRELOAD_IMAGES.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
 
   const openMenu = () => setMenuOpen(true);
   const mode = normalizeMode(modeState.mode);

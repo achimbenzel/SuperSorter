@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+import type { ServerResponse } from 'node:http';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -27,6 +28,38 @@ const BACKGROUND_COLOR = '#fff4dc';
 /** Hostnamen, unter denen Dev-Server und Preview zusätzlich erreichbar sein dürfen. */
 const TAILSCALE_HOSTS = ['.ts.net'];
 
+/**
+ * Dev-Server: Bilder unter /assets/ eine Stunde cachen lassen.
+ *
+ * Vite schickt Dateien aus public/ im Dev-Modus mit "Cache-Control: no-cache". Das
+ * Handy fragt dann jedes Bild erneut über WLAN an (ohne Service Worker, der läuft nur
+ * im Build). Bei wackeligem WLAN fehlen dadurch mitten im Spiel Bilder. Nach dem
+ * Austauschen von Assets einmal neu laden ohne Cache (oder Server neu starten).
+ */
+function devAssetCache(): Plugin {
+  const CACHE = 'public, max-age=3600';
+  return {
+    name: 'super-sorter:dev-asset-cache',
+    apply: 'serve',
+    configureServer(server) {
+      const prefix = `${server.config.base}assets/`;
+      server.middlewares.use((req, res, next) => {
+        if (req.url?.startsWith(prefix)) {
+          // sirv setzt den Header per writeHead(code, headers) -> dort überschreiben.
+          const writeHead = res.writeHead.bind(res) as (...args: unknown[]) => ServerResponse;
+          res.writeHead = ((code: number, ...rest: unknown[]) => {
+            const headers = rest.find((r): r is Record<string, unknown> => typeof r === 'object' && r !== null);
+            if (headers) headers['Cache-Control'] = CACHE;
+            else res.setHeader('Cache-Control', CACHE);
+            return writeHead(code, ...rest);
+          }) as typeof res.writeHead;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig(({ command, isPreview }) => {
   // `vite preview` läuft mit command "serve", muss aber den Build-Pfad verwenden.
   const base = resolveBase(command === 'build' || isPreview === true);
@@ -34,6 +67,7 @@ export default defineConfig(({ command, isPreview }) => {
     base,
     plugins: [
       react(),
+      devAssetCache(),
       VitePWA({
         // Neue Versionen werden im Hintergrund geladen und beim nächsten Start aktiv.
         registerType: 'autoUpdate',

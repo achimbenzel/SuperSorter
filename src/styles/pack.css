@@ -155,10 +155,6 @@
   animation: pk-ship-away 380ms cubic-bezier(0.5, 0, 0.75, 0.4) calc(var(--close) + 560ms) both;
 }
 
-.pk-shell .flip {
-  will-change: transform;
-}
-
 .pk-contents {
   position: relative;
   z-index: 2;
