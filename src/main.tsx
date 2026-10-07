@@ -6,10 +6,12 @@ import { PRELOAD_IMAGES } from './assets';
 import { applyTimingCssVars } from './config';
 import { installImageRetry, preloadImages } from './imageLoader';
 import { installIosGuards } from './iosGuards';
+import { installStandaloneViewportFix } from './viewport';
 import './styles/tokens.css';
 import './styles/global.css';
 
 applyTimingCssVars();
+installStandaloneViewportFix();
 installIosGuards();
 installImageRetry();
 // Alle Spielbilder vorladen, dekodieren und festhalten (kein Nachladen mitten im Spiel).

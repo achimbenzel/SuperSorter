@@ -26,21 +26,33 @@
   overflow: hidden;
 }
 
-/* Band hinter der iOS-Statusleiste: Mit "black-translucent" ist die Statusleiste
-   transparent mit weißer Schrift. Auf dem hellen Hintergrund wäre sie unlesbar,
-   deshalb liegt genau in der Safe-Area oben ein dunkles Band. Im Browser-Modus
-   ist der Inset 0 -> unsichtbar. */
+/* Hinter der iOS-Statusleiste: Mit "black-translucent" ist die Statusleiste
+   transparent mit weißer Schrift und die App reicht bis an die Oberkante. Damit die
+   Schrift lesbar bleibt, ohne dass oben ein abgetrennter Streifen entsteht, läuft
+   der Hintergrund dort in einem weichen Verlauf ins Dunkle (ohne Kante, ohne
+   Schatten). Liegt hinter dem Inhalt (isolation + z-index -1). Im Browser ist der
+   Inset 0 -> nur ein Hauch am oberen Rand. */
+.app {
+  isolation: isolate;
+}
+
 .app::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: env(safe-area-inset-top);
-  background: var(--c-statusbar);
-  background: linear-gradient(180deg, var(--c-statusbar), color-mix(in srgb, var(--c-statusbar) 80%, #000));
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  z-index: 50;
+  height: calc(env(safe-area-inset-top) * 2.1);
+  background: linear-gradient(
+    180deg,
+    var(--c-statusbar) 0,
+    var(--c-statusbar) 30%,
+    /* über ein helles Himmelblau ausblenden, sonst wird der Übergang grau */
+    color-mix(in srgb, #3f84bf 85%, transparent) 50%,
+    color-mix(in srgb, #8cc4ef 50%, transparent) 75%,
+    transparent 100%
+  );
+  z-index: -1;
   pointer-events: none;
 }
 

@@ -14,12 +14,14 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  /* --app-h: echte Bildschirmhöhe in der iOS-Homescreen-App (siehe src/viewport.ts) */
+  height: var(--app-h, 100%);
   overflow: hidden;
   /* verhindert Scroll-Bounce in Safari / Standalone-Modus */
   overscroll-behavior: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
   background: var(--c-bg-wall-bottom);
   color: var(--c-text);
   font-family: var(--font);
@@ -64,9 +66,10 @@ button:focus-visible {
 
 #root {
   width: 100%;
-  /* dvh berücksichtigt ein- und ausfahrende Browserleisten; 100vh als Fallback */
+  /* dvh berücksichtigt ein- und ausfahrende Browserleisten; 100vh als Fallback.
+     In der iOS-Homescreen-App gilt die echte Bildschirmhöhe (--app-h). */
   height: 100vh;
-  height: 100dvh;
+  height: var(--app-h, 100dvh);
   overflow: hidden;
 }
 

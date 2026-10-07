@@ -197,6 +197,11 @@ Alles hängt an `--item` (Kantenlänge einer Ware), berechnet aus Viewport-Breit
 
 Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPhone 13/14 (390×844), Pro Max (430×932). Mindestanforderung: iOS 16 (Container Queries, `dvh`).
 
+**Homescreen-App randlos:** Die Statusleiste ist `black-translucent` (transparent, weiße Schrift), die App reicht bis an die Oberkante. Zwei Details dazu:
+
+- *Höhe:* iOS meldet in diesem Modus als Viewport-Höhe den Bildschirm minus Statusleiste, zeichnet aber ab der Oberkante – unten blieb ein Streifen frei. `src/viewport.ts` setzt deshalb im iOS-Standalone-Modus `--app-h` auf die echte Bildschirmhöhe (nur wenn die Lücke etwa Statusleisten-Höhe hat); `html`, `body`, `#root` und `--usable-h` nutzen sie. Im Browser und auf Android bleibt alles bei `100%`/`100dvh`.
+- *Lesbarkeit oben:* Statt eines abgetrennten Bandes läuft der Hintergrund hinter der Statusleiste in einem weichen Verlauf ins Blaue (`.app::before`, hinter dem Inhalt, ohne Kante/Schatten). Die Menüleiste unten reicht bis unter den Home-Indikator.
+
 ## PWA und Deployment
 
 - `vite-plugin-pwa` erzeugt Manifest und Service Worker (Workbox, `generateSW`). Alle Assets werden vorab gecacht → offline spielbar.

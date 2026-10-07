@@ -27,7 +27,7 @@ Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und te
 - **Booster:** Undo (mehrstufig), Extra-Platz, Lupe, Mischen (bleibt garantiert lösbar), jeweils mit Kontingent pro Level. Ist es aufgebraucht, kann man den Booster für Münzen nachkaufen.
 - **Win-/Lose-Screens** mit Sternen, Münzen, Konfetti; Lose-Screen mit Extra-Platz, Rückgängig, Nochmal.
 - **Fortschritt** (Level je Modus, gemeinsame Münzen) in `localStorage`.
-- **PWA:** Homescreen-Icon, Vollbild, Safe Areas, offline spielbar, kein Zoom, kein Scroll-Bounce, keine Textmarkierung.
+- **PWA:** Homescreen-Icon, randloses Vollbild (Inhalt bis unter Statusleiste und Home-Indikator), Safe Areas, offline spielbar, kein Zoom, kein Scroll-Bounce, keine Textmarkierung.
 - **Debug-Modus** `?debug=1`: Level-Sprung, Live-Lösbarkeit, Solver-Hinweis, Auto-Lösen, Röntgenblick.
 
 ## Quickstart

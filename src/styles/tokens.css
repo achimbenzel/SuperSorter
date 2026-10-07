@@ -40,7 +40,7 @@
    * Untergrenze 44 px für das SE. Das Regal verkleinert --item lokal, falls zwei
    * Fächer mit Kapazität 4 sonst nicht nebeneinander passen (siehe game.css).
    */
-  --usable-h: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  --usable-h: calc(var(--app-h, 100dvh) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   --item-base: clamp(44px, min(15.5vw, calc(var(--usable-h) * 0.071)), 72px);
   --item: var(--item-base);
   --gap: clamp(6px, 1.6vw, 10px);
