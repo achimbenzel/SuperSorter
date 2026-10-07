@@ -44,7 +44,7 @@ export function Stack({ index, items, selectedCount, decorate, peekArmed, peekIt
       data-target={`stack-${index}`}
       style={{ '--h': items.length } as CSSProperties}
       onClick={handleClick}
-      aria-label={`Stapel ${index + 1}`}
+      aria-label={`Crate ${index + 1}`}
     >
       {items.map((it, j) => (
         <Item

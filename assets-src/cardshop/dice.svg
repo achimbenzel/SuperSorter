@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="216" viewBox="0 0 216 216">
+<defs>
+  <filter id="drop" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#000" flood-opacity="0.28"/></filter>
+  <linearGradient id="d20" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7ab6"/><stop offset="1" stop-color="#c2185b"/></linearGradient>
+</defs>
+
+<g filter="url(#drop)"><path d="M108 34 L170 70 L170 146 L108 182 L46 146 L46 70 Z" fill="#fff" stroke="#fff" stroke-width="20" stroke-linejoin="round"/></g>
+
+  <path d="M108 34 L170 70 L170 146 L108 182 L46 146 L46 70 Z" fill="url(#d20)"/>
+  <path d="M108 34 L170 70 L134 82 Z M170 70 L170 146 L134 82 Z" fill="#fff" opacity=".18"/>
+  <path d="M46 146 L82 82 L108 182 Z M170 146 L134 82 L108 182 Z" fill="#000" opacity=".12"/>
+  <path d="M82 82 L134 82 L108 140 Z" fill="#ff9ccb"/>
+  <path d="M108 34 L82 82 L46 70 M108 34 L134 82 L170 70 M82 82 L134 82 L108 140 Z M46 146 L82 82 M170 146 L134 82 M108 140 L108 182 M46 146 L108 140 L170 146" fill="none" stroke="#3a2416" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M108 34 L170 70 L170 146 L108 182 L46 146 L46 70 Z" fill="none" stroke="#3a2416" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+  <text x="108" y="118" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="900" font-size="26" fill="#fff" stroke="#3a2416" stroke-width="4" paint-order="stroke">20</text>
+</svg>

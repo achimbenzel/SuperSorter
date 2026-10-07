@@ -77,7 +77,7 @@ export const PackBox = memo(function PackBox({ box, filled, plan, close }: PackB
       className={`pk-box${ghost ? ' is-ghost' : ''}`}
       style={ghost ? ({ '--close': `${close}ms` } as CSSProperties) : undefined}
       role={ghost ? undefined : 'img'}
-      aria-label={ghost ? undefined : `Paket für ${box.customer}: ${describeNeeds(box.needs)}`}
+      aria-label={ghost ? undefined : `Parcel for ${box.customer}: ${describeNeeds(box.needs)}`}
       aria-hidden={ghost || undefined}
     >
       <div className="pk-shell" data-flip-id={`b${box.id}`} data-flip-kind="box" data-flip-delay={plan.boxDelay.get(box.id)}>

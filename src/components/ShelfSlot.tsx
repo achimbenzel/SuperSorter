@@ -48,7 +48,7 @@ export const ShelfSlot = memo(function ShelfSlot({ index, slot, validTarget, hin
       data-target={`slot-${index}`}
       style={{ '--cap': slot.capacity } as CSSProperties}
       onClick={() => onTap(index)}
-      aria-label={`Regalfach ${index + 1}${solved ? ', gelöst' : slot.closed ? ', geschlossen' : ''}`}
+      aria-label={`Shelf ${index + 1}${solved ? ', complete' : slot.closed ? ', closed' : ''}`}
     >
       <img className="slot-bg" src={BOARD_IMAGE.shelfSlot} alt="" />
       <span className="slot-glow" />
@@ -75,7 +75,7 @@ export const ShelfSlot = memo(function ShelfSlot({ index, slot, validTarget, hin
       <span className="slot-cover" aria-hidden={!slot.closed}>
         <span className="slot-cover-sign">
           Geschlossen
-          <small>öffnet, wenn ein Fach voll ist</small>
+          <small>opens when a shelf is full</small>
         </span>
       </span>
     </button>

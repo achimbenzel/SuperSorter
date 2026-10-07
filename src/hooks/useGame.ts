@@ -23,7 +23,6 @@ export function useGame() {
   const winHandledFor = useRef<number | null>(null);
 
   const dispatch = useCallback((action: GameAction) => {
-    if (action.type.startsWith('TAP_')) sfx.playTap();
     if (BOOSTER_ACTIONS.has(action.type)) sfx.playBooster();
     rawDispatch(action);
   }, []);
@@ -73,8 +72,11 @@ export function useGame() {
   useEffect(() => {
     if (state.selection) sfx.playSelect();
   }, [state.selection]);
+  // Ware landet erst nach dem Flug -> Sound passend dazu.
   useEffect(() => {
-    if (state.moves > 0) sfx.playPlace();
+    if (state.moves === 0) return;
+    const t = window.setTimeout(sfx.playPlace, TIMING.hop * 0.8);
+    return () => window.clearTimeout(t);
   }, [state.moves]);
 
   // Lupe: verpacktes Item nur kurz zeigen.

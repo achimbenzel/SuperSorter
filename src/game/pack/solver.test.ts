@@ -17,12 +17,12 @@ describe('Packband-Solver', () => {
   it('löst ein einfaches Board; die Lösung gewinnt mit den echten Regeln', () => {
     const b = packBoard({
       stacks: [
-        ['milk', 'cola-can'],
-        ['cola-can', 'milk'],
+        ['sleeves', 'pack-fire'],
+        ['pack-fire', 'sleeves'],
       ],
       table: [null],
-      spots: ['cola-can*2'],
-      queue: ['milk*2'],
+      spots: ['pack-fire*2'],
+      queue: ['sleeves*2'],
     });
     const res = solvePack(b);
     expect(res.solvable).toBe(true);
@@ -30,14 +30,14 @@ describe('Packband-Solver', () => {
   });
 
   it('erkennt Unlösbarkeit (benötigte Ware vergraben, Packtisch zu klein)', () => {
-    const b = packBoard({ stacks: [['cola-can', 'milk', 'bread']], table: [null], spots: ['cola-can*1'], queue: ['milk*1', 'bread*1'] });
+    const b = packBoard({ stacks: [['pack-fire', 'sleeves', 'deck-box']], table: [null], spots: ['pack-fire*1'], queue: ['sleeves*1', 'deck-box*1'] });
     expect(solvePack(b).solvable).toBe(false);
     const roomy = { ...b, cart: [null, null] };
     expect(solvePack(roomy).solvable).toBe(true);
   });
 
   it('nextPackHint liefert eine antippbare Kiste', () => {
-    const b = packBoard({ stacks: [['milk'], ['cola-can']], table: [null], spots: ['cola-can*1'], queue: ['milk*1'] });
+    const b = packBoard({ stacks: [['sleeves'], ['pack-fire']], table: [null], spots: ['pack-fire*1'], queue: ['sleeves*1'] });
     expect(listTaps(b)).toContain(nextPackHint(b));
   });
 

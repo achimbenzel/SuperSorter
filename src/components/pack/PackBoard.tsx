@@ -70,18 +70,18 @@ function useLeavingCards(plan: PackPlan) {
 function Conveyor({ state, leaving }: { state: PackGameState; leaving: PackPlan['leaving'] }) {
   const { queue, shipped, totalBoxes } = state.board;
   return (
-    <section className="pk-band" aria-label="Packband">
-      <span className="pk-progress" aria-label={`${shipped} von ${totalBoxes} Paketen verschickt`}>
+    <section className="pk-band" aria-label="Conveyor">
+      <span className="pk-progress" aria-label={`${shipped} of ${totalBoxes} parcels shipped`}>
         <span aria-hidden="true">🚚</span> {shipped}/{totalBoxes}
       </span>
-      <div className="pk-queue" role="list" aria-label="Wartende Pakete">
+      <div className="pk-queue" role="list" aria-label="Waiting parcels">
         {leaving.map((l) => (
           <QueueCard key={`l${l.box.id}`} box={l.box} next={false} leaveAt={l.delay} />
         ))}
         {queue.map((b, i) => (
           <QueueCard key={b.id} box={b} next={i === 0 && leaving.length === 0} />
         ))}
-        {queue.length + leaving.length === 0 && <span className="pk-queue-empty">Keine weiteren Pakete</span>}
+        {queue.length + leaving.length === 0 && <span className="pk-queue-empty">No more parcels</span>}
       </div>
     </section>
   );
@@ -96,7 +96,7 @@ function Spot({ index, state, ghosts, plan }: { index: number; state: PackGameSt
       ) : (
         <div className="pk-done" style={{ '--delay': `${plan.settleAt}ms` } as CSSProperties}>
           <span aria-hidden="true">✅</span>
-          <small>Alles gepackt</small>
+          <small>All packed</small>
         </div>
       )}
       {ghosts.map((g) => (
@@ -111,8 +111,8 @@ function PackTable({ state, plan }: { state: PackGameState; plan: PackPlan }) {
   const { cart } = state.board;
   const free = cart.filter((c) => !c).length;
   return (
-    <section className={`pk-table${free === 0 ? ' is-full' : ''}`} aria-label={`Packtisch, ${free} von ${cart.length} Plätzen frei`}>
-      <span className="pk-table-label">Packtisch</span>
+    <section className={`pk-table${free === 0 ? ' is-full' : ''}`} aria-label={`Packing table, ${free} of ${cart.length} slots free`}>
+      <span className="pk-table-label">Table</span>
       <div className="pk-table-slots" style={{ '--n': cart.length } as CSSProperties}>
         {cart.map((it, i) => (
           <div className="pk-slot" key={i} data-target={`cart-${i}`}>
@@ -142,7 +142,7 @@ export function PackBoard({ state, dispatch, hint, xray, tip, tipTone = 'info' }
   return (
     <div className="board pk-board" ref={rootRef}>
       <Conveyor state={state} leaving={leaving} />
-      <section className={`pk-spots pk-spots--${board.spots.length}`} aria-label="Packplätze">
+      <section className={`pk-spots pk-spots--${board.spots.length}`} aria-label="Packing spots">
         {board.spots.map((_, i) => (
           <Spot key={i} index={i} state={state} ghosts={ghosts.filter((g) => g.spot === i)} plan={plan} />
         ))}

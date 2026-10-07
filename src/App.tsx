@@ -8,6 +8,7 @@ import './styles/game.css';
 import './styles/screens.css';
 import './styles/pack.css';
 import './styles/home.css';
+import './styles/cards.css';
 
 /**
  * Start im Hauptmenü (untere Menüleiste, "Play" im mittleren Reiter). Dort wird

@@ -4,7 +4,7 @@ import type { Board, Item, ItemType, Slot } from './types';
 
 let nextId = 1000;
 
-/** Item-Kurzschreibweise: "cola-can" (offen), "?cola-can" (verdeckt), "$cola-can" (verdeckt + Gold). */
+/** Item-Kurzschreibweise: "pack-fire" (offen), "?pack-fire" (verdeckt), "$pack-fire" (verdeckt + Gold). */
 export function item(spec: string): Item {
   const gold = spec.startsWith('$');
   const hidden = gold || spec.startsWith('?');

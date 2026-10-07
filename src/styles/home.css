@@ -13,13 +13,28 @@
 .home-top {
   flex: none;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
   height: var(--hud-h);
   font-size: calc(var(--item) * 0.32);
 }
 
+.home-top .hud-icon svg {
+  width: 52%;
+  height: 52%;
+  color: var(--c-accent-dark);
+}
+
 /* ------------------------------------------------------------------ Seiten */
+
+/* Seite + Play-Knopf (liegt unten über der Seite, nur auf "Home" sichtbar). */
+.home-main {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
 
 .home-page {
   flex: 1 1 auto;
@@ -31,6 +46,11 @@
   gap: 22px;
   padding: 0 16px;
   animation: home-page-in 340ms cubic-bezier(0.25, 1.2, 0.4, 1) both;
+}
+
+/* Platz für den Play-Knopf lassen */
+.home-page--home {
+  padding-bottom: 104px;
 }
 
 .home-title {
@@ -46,6 +66,32 @@
 .home-title span {
   display: block;
   color: #008cff;
+}
+
+.home-title small {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #ff3d6e;
+  color: #fff;
+  font-size: clamp(14px, 4.4vw, 18px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: none;
+  transform: rotate(-3deg);
+  box-shadow: 0 3px 0 rgba(140, 20, 50, 0.35);
+}
+
+.home-diag {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(20, 24, 32, 0.86);
+  color: #b8f7c4;
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre-wrap;
 }
 
 .home-modes {
@@ -156,7 +202,10 @@
 /* ------------------------------------------------------------------ Play */
 
 .home-play {
-  flex: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   justify-content: center;
   padding: 8px 0 14px;
@@ -269,6 +318,23 @@
 .tabbar-btn.is-active .tabbar-icon {
   transform: scale(1);
   opacity: 1;
+}
+
+.tabbar-badge {
+  position: absolute;
+  top: -4%;
+  right: -10%;
+  min-width: 46%;
+  padding: 0 6%;
+  border-radius: 999px;
+  background: #ff3d6e;
+  box-shadow: 0 0 0 2px #fff;
+  color: #fff;
+  font-size: 3.2cqw;
+  font-weight: 900;
+  line-height: 1.5;
+  text-align: center;
+  animation: badge-pop 420ms cubic-bezier(0.3, 1.8, 0.5, 1) both;
 }
 
 .tabbar-icon svg {

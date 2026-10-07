@@ -22,7 +22,7 @@ interface CartProps {
  * Puffer: Einkaufswagen (Regal) bzw. Ablage am Packtisch (Versand). Jeder Platz hält
  * ein Item. Platzhalter-Grafik (kein Asset): Emoji als Kopf und CSS-Mulden als Plätze.
  */
-export function Cart({ cart, selection, validTargets, hintSource, hintTarget, decorate, icon = CART_ICON, label = 'Einkaufswagen', onTap }: CartProps) {
+export function Cart({ cart, selection, validTargets, hintSource, hintTarget, decorate, icon = CART_ICON, label = 'Shopping cart', onTap }: CartProps) {
   return (
     <section className="cart" aria-label={label}>
       <div className="cart-head" aria-hidden="true">
@@ -40,7 +40,7 @@ export function Cart({ cart, selection, validTargets, hintSource, hintTarget, de
             className={`cart-spot${valid ? ' is-valid' : ''}${hinted ? ' is-hint' : ''}`}
             data-target={`cart-${i}`}
             onClick={() => onTap(i)}
-            aria-label={`${label} Platz ${i + 1}${item ? ' belegt' : ' frei'}`}
+            aria-label={`${label} slot ${i + 1}${item ? ', taken' : ', free'}`}
           >
             {item && <Item item={item} selected={selected} {...decorate?.(item)} />}
           </button>

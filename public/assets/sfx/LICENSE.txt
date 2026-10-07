@@ -1,0 +1,4 @@
+Sound effects in this folder: "UI SFX" by Romain Simon (https://uisfx.com, npm package uisfx 0.4.0).
+Dedicated to the public domain under CC0 1.0 Universal:
+https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Files were renamed after the in-game event they are used for (mapping: docs/ASSETS.md).

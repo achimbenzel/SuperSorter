@@ -26,7 +26,7 @@ const BOOSTER_ACTION: Record<BoosterId, PackAction> = {
   shuffle: { type: 'SHUFFLE' },
 };
 
-const INVALID_TIP = 'Packtisch voll – diese Ware passt gerade in kein Paket.';
+const INVALID_TIP = 'Table is full – this item fits no parcel right now.';
 
 /** Packband-Modus: Waren von den Lagerkisten in die Kundenpakete auf dem Band packen. */
 export function PackGame({ onMenu }: { onMenu: () => void }) {
@@ -74,14 +74,14 @@ export function PackGame({ onMenu }: { onMenu: () => void }) {
 
   return (
     <div className="app app--pack" ref={rootRef}>
-      <HUD label="Tag" level={state.config.level} reward={state.config.reward} coins={game.displayCoins} onRestart={game.restart} onMenu={onMenu} />
+      <HUD label="Day" level={state.config.level} reward={state.config.reward} coins={game.displayCoins} onRestart={game.restart} onMenu={onMenu} />
       {DEBUG && (
         <DebugPanel
           level={state.config.level}
           status={state.status}
           board={state.board}
           solve={() => solvePack(state.board, { maxNodes: 100_000 })}
-          formatMove={(t: number) => `Kiste ${t + 1}`}
+          formatMove={(t: number) => `Crate ${t + 1}`}
           applyMove={(t) => dispatch({ type: 'TAP_STACK', index: t })}
           hint={hint}
           setHint={setHint}
@@ -94,11 +94,11 @@ export function PackGame({ onMenu }: { onMenu: () => void }) {
           }}
           meta={
             <>
-              Seed {game.generated.seed} · Versuche {game.generated.attempts} · Gewinnquote {Math.round(game.generated.winRate * 100)}% (Ziel{' '}
+              Seed {game.generated.seed} · Attempts {game.generated.attempts} · Win rate {Math.round(game.generated.winRate * 100)}% (target{' '}
               {Math.round(state.config.targetWinRate[0] * 100)}–{Math.round(state.config.targetWinRate[1] * 100)}%)
               <br />
-              Pakete {state.config.boxes.bulk}/{state.config.boxes.mixed} (Sammel/gemischt) à {state.config.boxSize} · {state.config.spots}{' '}
-              Packplätze · Packtisch {state.board.cart.length} · Tag {state.config.level}/{PACK_LEVEL_COUNT}+ · Züge {state.moves}
+              Parcels {state.config.boxes.bulk}/{state.config.boxes.mixed} (bulk/mixed) of {state.config.boxSize} · {state.config.spots}{' '}
+              spots · Table {state.board.cart.length} · Day {state.config.level}/{PACK_LEVEL_COUNT}+ · Moves {state.moves}
             </>
           }
         />
@@ -115,31 +115,31 @@ export function PackGame({ onMenu }: { onMenu: () => void }) {
         playing={state.status === 'playing'}
         peekArmed={state.peekArmed}
         coins={progress.coins}
-        extraLabel="Extra-Platz"
+        extraLabel="Extra slot"
         onUse={applyBooster}
         onBuy={buyBooster}
       />
       {showWin && state.status === 'won' && (
         <WinScreen
-          title="Feierabend!"
+          title="Closing time!"
           stars={packStarRating(state)}
           total={packWinCoins(state.config) + state.levelCoins}
           detail={
             <>
-              Tag {state.config.level} · {state.board.shipped} Pakete verschickt
+              Day {state.config.level} · {state.board.shipped} parcels shipped
               {state.config.reward && <> · Bonus +{REWARD_PACK_DAY_BONUS}</>}
             </>
           }
-          nextLabel="Nächster Tag"
+          nextLabel="Next day"
           onNext={() => game.loadLevel(progress.packDay)}
         />
       )}
       {showLose && state.status === 'lost' && (
         <LoseScreen
-          title="Packtisch voll!"
-          text="Keine sichtbare Ware passt in ein Paket, und auf dem Packtisch ist kein Platz mehr."
+          title="Table is full!"
+          text="No visible item fits a parcel and there is no room left on the packing table."
           canExtra={extraOk}
-          extraLabel={state.boosters.extra > 0 ? 'Extra-Platz (Booster)' : `Extra-Platz (${BOOSTER_PRICES.extra} Münzen)`}
+          extraLabel={state.boosters.extra > 0 ? 'Extra slot (power-up)' : `Extra slot (${BOOSTER_PRICES.extra} coins)`}
           canUndo={state.history.length > 0 && state.boosters.undo > 0}
           undoCount={state.boosters.undo}
           onExtra={() => rescue('extra')}

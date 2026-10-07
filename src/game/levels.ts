@@ -105,19 +105,19 @@ export function winCoins(config: LevelConfig): number {
 
 /** Kurze Einführungstexte für neue Mechaniken (werden bis zum ersten Zug angezeigt). */
 export const LEVEL_TIPS: Record<number, string> = {
-  1: 'Tippe auf eine Ware im Karton und dann auf ein Regalfach.',
-  2: 'Gleiche Waren oben auf einem Stapel wandern gemeinsam ins Fach.',
-  3: 'Ein volles Fach mit nur einer Sorte ist fertig. Der Wagen ist dein Zwischenlager.',
-  4: 'Neu: Verpackte Waren! Das Symbol verrät die Kategorie.',
-  5: 'Bonus-Level: Hier gibt es extra Münzen.',
-  6: 'Neu: Geschlossene Fächer öffnen sich, sobald ein anderes Fach voll ist.',
-  7: 'Mehr Sorten: Überlege, welches Fach du zuerst anfängst.',
-  8: 'Nur noch ein Wagenplatz. Die Lupe zeigt, was in einem Paket steckt.',
-  9: 'Bonus-Level: Durchatmen und Münzen sammeln.',
-  10: 'Neu: Goldene Pakete bringen Bonus-Münzen, sobald sie im Regal liegen.',
+  1: 'Tap an item in the box, then tap a shelf.',
+  2: 'Matching items on top of a crate move together.',
+  3: 'A full shelf with one kind of item is complete. The cart is your spare storage.',
+  4: 'New: Wrapped items! The symbol shows the category.',
+  5: 'Bonus level: extra coins!',
+  6: 'New: Closed shelves open as soon as another shelf is full.',
+  7: 'More products: plan which shelf to start first.',
+  8: 'Only one cart slot left. Peek shows what is inside a wrapped item.',
+  9: 'Bonus level: relax and collect coins.',
+  10: 'New: Golden items give bonus coins once they are on a shelf.',
 };
 
-export const PEEK_TIP = 'Lupe: Tippe auf ein verpacktes Paket.';
+export const PEEK_TIP = 'Peek: tap a wrapped item.';
 
 /**
  * Preise, wenn das Booster-Kontingent eines Levels aufgebraucht ist (in Münzen).

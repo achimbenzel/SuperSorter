@@ -69,7 +69,7 @@ export interface MoveResult {
  */
 export function applyMove(board: Board, move: Move): MoveResult {
   const count = moveCount(board, move);
-  if (count === 0) throw new Error(`Ungültiger Zug: ${JSON.stringify(move)}`);
+  if (count === 0) throw new Error(`Invalid move: ${JSON.stringify(move)}`);
 
   const moved = pickableItems(board, move.from).slice(0, count);
   let slots = board.slots;

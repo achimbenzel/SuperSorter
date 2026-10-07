@@ -18,14 +18,6 @@ const BOX_CROP = { left: 61, top: 156, width: 902, height: 718 };
 
 export const ASSET_MAP = [
   // Waren: werden auf 56-72 CSS-px angezeigt -> 216 px reicht für 3x-Retina.
-  { src: 'Item_01_Cola_Red.png', out: 'items/cola-can', kind: 'sprite', size: 216 },
-  { src: 'Item_02_Energy_Green.png', out: 'items/green-can', kind: 'sprite', size: 216 },
-  { src: 'Item_03_Orange_Juice.png', out: 'items/orange-juice', kind: 'sprite', size: 216 },
-  { src: 'Item_04_Chips_Blue.png', out: 'items/chips', kind: 'sprite', size: 216 },
-  { src: 'Item_05_Apple.png', out: 'items/apple', kind: 'sprite', size: 216 },
-  { src: 'Item_06_Bread.png', out: 'items/bread', kind: 'sprite', size: 216 },
-  { src: 'Item_07_Cheese.png', out: 'items/cheese', kind: 'sprite', size: 216 },
-  { src: 'Item_08_Milk.png', out: 'items/milk', kind: 'sprite', size: 216 },
 
   // Mystery-Verpackungen (gleiche Darstellungsgröße wie Waren).
   { src: 'Mystery_01_Paperbag.png', out: 'mystery/paper-wrap', kind: 'sprite', size: 216 },

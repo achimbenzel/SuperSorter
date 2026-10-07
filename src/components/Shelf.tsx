@@ -11,7 +11,7 @@ interface ShelfProps {
 /** Das Regal: Holzrahmen mit 2 Spalten Fächern (ungerade Anzahl -> letztes zentriert). */
 export function Shelf({ slots, validTargets, hintTarget, onTapSlot }: ShelfProps) {
   return (
-    <section className="shelf" aria-label="Regal" style={{ '--cap': slots[0]?.capacity ?? 3 } as React.CSSProperties}>
+    <section className="shelf" aria-label="Shelf" style={{ '--cap': slots[0]?.capacity ?? 3 } as React.CSSProperties}>
       {slots.map((slot, i) => (
         <ShelfSlot
           key={i}

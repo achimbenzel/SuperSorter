@@ -15,7 +15,7 @@ interface HUDProps {
 export function HUD({ label, level, reward, coins, onRestart, onMenu }: HUDProps) {
   return (
     <header className="hud">
-      <button type="button" className="hud-pill hud-icon" onClick={onMenu} aria-label="Hauptmenü">
+      <button type="button" className="hud-pill hud-icon" onClick={onMenu} aria-label="Main menu">
         <MenuIcon />
       </button>
       <div className="hud-pill hud-level">
@@ -23,10 +23,10 @@ export function HUD({ label, level, reward, coins, onRestart, onMenu }: HUDProps
         <strong>{level}</strong>
         {reward && <span className="hud-bonus">Bonus</span>}
       </div>
-      <button type="button" className="hud-pill hud-icon hud-restart" onClick={onRestart} aria-label="Neu starten">
+      <button type="button" className="hud-pill hud-icon hud-restart" onClick={onRestart} aria-label="Restart">
         <RestartIcon />
       </button>
-      <div className="hud-pill hud-coins" id="hud-coins" aria-label={`${coins} Münzen`}>
+      <div className="hud-pill hud-coins" id="hud-coins" aria-label={`${coins} coins`}>
         <img src={UI_IMAGE.coin} alt="" />
         <strong>{coins}</strong>
       </div>

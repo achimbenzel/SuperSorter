@@ -20,9 +20,9 @@ export function installIosGuards(): void {
   document.addEventListener(
     'touchmove',
     (e) => {
-      // Das Spiel hat keine scrollbaren Bereiche – jede Wischbewegung wäre Bounce.
-      // Ausnahme: Eingabefelder (Debug-Panel).
-      if ((e.target as HTMLElement | null)?.closest('input, textarea')) return;
+      // Nur ausdrücklich scrollbare Bereiche (data-scroll, z. B. die Kartensammlung)
+      // und Eingabefelder (Debug-Panel) dürfen wischen – sonst wäre es Bounce.
+      if ((e.target as HTMLElement | null)?.closest('input, textarea, [data-scroll]')) return;
       e.preventDefault();
     },
     opts,

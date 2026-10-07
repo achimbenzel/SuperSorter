@@ -97,15 +97,15 @@ export function packWinCoins(config: PackLevelConfig): number {
 
 /** Einführungstexte (bis zum ersten Zug sichtbar). */
 export const PACK_TIPS: Record<number, string> = {
-  1: 'Tippe eine Kiste an: Passt die Ware ins Paket vorne auf dem Band, fliegt sie hinein.',
-  2: 'Passt sie nicht, landet sie auf dem Packtisch – und springt später von selbst ins passende Paket.',
-  3: 'Kleinerer Packtisch: Überlege, welche Kiste du zuerst aufgräbst.',
-  4: 'Der Großhändler liefert jetzt verpackt. Was steckt darunter?',
-  5: 'Ruhiger Tag – Zeit für ein paar extra Münzen.',
-  6: 'Neu: Zwei Packplätze! Waren gehen ins erste Paket, das sie braucht.',
-  7: 'Mehrere Pakete in einem Zug verschicken gibt Kombo-Münzen.',
-  8: 'Neu: Gemischte Pakete von Privatkunden – genau die abgebildeten Waren.',
-  10: 'Neu: Goldene Raritäten bringen Bonus-Münzen, sobald sie verpackt sind.',
+  1: 'Tap a crate: if the item fits the parcel on the conveyor, it flies right in.',
+  2: 'If it does not fit, it waits on the table – and jumps into a matching parcel later.',
+  3: 'Smaller table: think about which crate to dig into first.',
+  4: 'The distributor now ships wrapped items. What is underneath?',
+  5: 'Quiet day – time for some extra coins.',
+  6: 'New: two packing spots! Items go to the first parcel that needs them.',
+  7: 'Ship several parcels with one tap for combo coins.',
+  8: 'New: mixed parcels from collectors – exactly the items shown.',
+  10: 'New: golden rarities give bonus coins once they are packed.',
 };
 
-export const PACK_PEEK_TIP = 'Lupe: Tippe auf eine verpackte Ware.';
+export const PACK_PEEK_TIP = 'Peek: tap a wrapped item.';

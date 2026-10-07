@@ -1,13 +1,22 @@
 # Super Sorter
 
-Spielbarer Prototyp eines Mobile-Puzzle-Games im Supermarkt mit zwei Modi:
+Spielbarer Prototyp eines Mobile-Puzzle-Games in einem **Card Shop** (Sammelkarten-Laden). Das Spiel ist komplett auf **Englisch**. Zwei Puzzle-Modi plus Booster-Packs zum Sammeln:
 
-- **Packband – Waren verkaufen** (Standard): Kundenpakete laufen auf einem Band vorbei und verlangen konkrete Waren. Ein Tap auf eine Lagerkiste nimmt die oberste Ware: Passt sie, fliegt sie ins Paket, sonst auf den Packtisch. Volle Pakete werden verschickt, und Waren vom Packtisch springen automatisch ins nächste Paket – Kettenreaktionen geben Kombo-Münzen. → [docs/PACK_MODE.md](docs/PACK_MODE.md)
-- **Regal – Waren in den Bestand aufnehmen:** Du räumst die Lieferung sortenrein ins Supermarktregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
+- **Shipping („Packband“) – Waren verkaufen** (Standard): Kundenpakete laufen auf einem Band vorbei und verlangen konkrete Waren. Ein Tap auf eine Lagerkiste nimmt die oberste Ware: Passt sie, fliegt sie ins Paket, sonst auf den Packtisch. Volle Pakete werden verschickt, und Waren vom Packtisch springen automatisch ins nächste Paket – Kettenreaktionen geben Kombo-Münzen. → [docs/PACK_MODE.md](docs/PACK_MODE.md)
+- **Restock („Regal“) – Waren in den Bestand aufnehmen:** Du räumst die Lieferung sortenrein ins Ladenregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 
-Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (5 Reiter, „Play“ im mittleren). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+- **Packs & Collection:** Booster-Packs öffnen (5 Karten, je eine Rare oder **Holo Rare**) und das 32-Karten-Set „Base Set“ sammeln. Zum Testen sind Packs kostenlos, später kosten sie Münzen.
 
-![Packband-Modus: Band mit allen wartenden Paketen, Kettenreaktion mit Kombo, Tag 20 mit zwei Packplätzen, altes Modus-Menü](docs/screenshots/pack.webp)
+Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen, W20 und Sammelfigur. Beide Puzzle-Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Power-ups und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (Shop, Ranking, Home mit „Play“, Packs, Collection). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+
+![Card Shop: Hauptmenü, Booster-Pack, Holo Rare aufgedeckt, Übersicht, Sammlung](docs/screenshots/cardshop.webp)
+
+<details>
+<summary>Packband-Modus (noch mit Supermarkt-Waren)</summary>
+
+![Packband-Modus: Band mit allen wartenden Paketen, Kettenreaktion mit Kombo, Tag 20 mit zwei Packplätzen](docs/screenshots/pack.webp)
+
+</details>
 
 <details>
 <summary>Regal-Modus</summary>
@@ -18,15 +27,18 @@ Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und te
 
 ## Features
 
-- **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Rangliste, Start, Events, Einstellungen als Lucide-Test-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Start“ sitzt der Play-Knopf. Die übrigen Reiter sind Platzhalter.
+- **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Ranking, Home, Packs, Collection als Lucide-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Home“ sitzt der Play-Knopf. Shop und Ranking sind Platzhalter. Oben links Sound an/aus.
+- **Booster-Packs:** Pack schwebt, reißt beim Antippen auf, Karten werden einzeln umgedreht; die Rare kommt zuletzt und glüht vorher (Holo in Regenbogenfarben), beim Aufdecken Strahlen, Banner und Konfetti. Danach Übersicht mit „NEW“-Markierungen.
+- **Collection:** Album mit allen 32 Karten (fehlende als nummerierte Lücke), Filter nach Element, Fortschrittsbalken, Anzahl doppelter Karten, Großansicht mit Kippeffekt. Neue Karten zeigt eine Zahl am Reiter.
+- **Sound:** 17 CC0-Sounds (UI SFX), Web Audio, auf iOS ab dem ersten Tap; im Lautlos-Modus des iPhones bleibt es still.
 - **Packband:** Ein Tap pro Zug, alle wartenden Pakete sichtbar, Versand-Animation (Klappen, Klebeband, Abflug), Pakete fahren vom Band heran, Kettenreaktionen werden Schritt für Schritt abgespielt („Kombo ×2!“).
 - **Regal-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
 - **Mystery-Layering:** Nur die oberste Ware je Stapel ist sichtbar. Darunter liegt Packpapier, das beim Freilegen mit Papierfetzen aufreißt. **Gold-Pakete** bringen Bonus-Münzen.
 - **Gelöste Fächer** (Regal) leuchten, sprühen Sterne, zeigen ein Schloss und öffnen das nächste geschlossene Fach.
 - **Je 20 handkonfigurierte Level/Tage + Endlosmodus**, seed-basiert generiert und per **Solver garantiert lösbar**. Die Schwierigkeitskurve wird über simulierte Spieler gesteuert. Alle 4 Level ein Belohnungslevel.
-- **Booster:** Undo (mehrstufig), Extra-Platz, Lupe, Mischen (bleibt garantiert lösbar), jeweils mit Kontingent pro Level. Ist es aufgebraucht, kann man den Booster für Münzen nachkaufen.
+- **Power-ups:** Undo (mehrstufig), Extra slot, Peek, Shuffle (bleibt garantiert lösbar), jeweils mit Kontingent pro Level. Ist es aufgebraucht, kann man das Power-up für Münzen nachkaufen.
 - **Win-/Lose-Screens** mit Sternen, Münzen, Konfetti; Lose-Screen mit Extra-Platz, Rückgängig, Nochmal.
-- **Fortschritt** (Level je Modus, gemeinsame Münzen) in `localStorage`.
+- **Fortschritt** (Level je Modus, gemeinsame Münzen, Kartensammlung, Sound an/aus) in `localStorage`.
 - **PWA:** Homescreen-Icon, randloses Vollbild (Inhalt bis unter Statusleiste und Home-Indikator), Safe Areas, offline spielbar, kein Zoom, kein Scroll-Bounce, keine Textmarkierung.
 - **Debug-Modus** `?debug=1`: Level-Sprung, Live-Lösbarkeit, Solver-Hinweis, Auto-Lösen, Röntgenblick.
 
@@ -49,6 +61,7 @@ Weitere Scripts:
 | `npm run levels:report` | Regal-Modus: Tabelle aller Level (Lösbarkeit, simulierte Gewinnquote, Generierungszeit) |
 | `npm run pack:report` | Packband-Modus: dasselbe für alle Versand-Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
+| `node scripts/cardshop-art.mjs` | Card-Shop-Waren (SVG im Code) neu nach `public/assets/items/` rendern |
 | `npm run phone` | Production-Build bauen und im Netz bereitstellen (Port 4173) – zum Testen auf dem Handy |
 | `npm run typecheck` | nur TypeScript prüfen |
 | `npm run test:watch` | Tests im Watch-Modus |
@@ -135,6 +148,7 @@ SuperSorter/
 │  ├─ items/  mystery/  board/  ui/  icons/
 ├─ scripts/
 │  ├─ asset-map.mjs               Zuordnung Original → Ziel
+│  ├─ cardshop-art.mjs            Card-Shop-Waren als SVG → WebP
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
 │  ├─ level-report.ts             npm run levels:report
@@ -142,15 +156,17 @@ SuperSorter/
 ├─ src/
 │  ├─ game/                       reine Spiellogik + Tests, Regal-Modus (types, rules, reducer, solver, generator, levels)
 │  │  ├─ sources.ts               gemeinsame Karton-Regeln beider Modi
-│  │  └─ pack/                    Packband-Modus (types, rules, reducer, solver, generator, levels, customers + Tests)
+│  │  ├─ pack/                    Packband-Modus (types, rules, reducer, solver, generator, levels, customers + Tests)
+│  │  └─ cards/                   Kartenset (32 Karten), Booster-Packs, Sammlung + Tests
 │  ├─ modes/                      PackGame, ShelfGame (je ein kompletter Spielbildschirm)
 │  ├─ components/                 Board, Shelf, ShelfSlot, DeliveryBox, Stack, Item, Cart,
 │  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, DebugPanel, …
-│  │  ├─ home/                    HomeScreen (Hauptmenü, Moduswahl, Play), TabBar (untere Menüleiste)
+│  │  ├─ home/                    HomeScreen, TabBar, PacksPage (Pack öffnen), CollectionPage (Album)
+│  │  ├─ cards/                   TcgCard (Sammelkarte in CSS), BoosterPack
 │  │  └─ pack/                    PackBoard, PackBox, plan (Animationsplan), timeline (Zeitplan der Kette)
 │  ├─ hooks/                      useGame, usePackGame, progress, usePersistedState, useFlip, useFxAnimations, …
-│  ├─ audio/sfx.ts                Sound-Schnittstelle (Platzhalter)
-│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css, home.css
+│  ├─ audio/                      sfx.ts (Sound-Schnittstelle), player.ts (Web Audio, an/aus)
+│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css, home.css, cards.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
 │  ├─ imageLoader.ts              Bilder vorladen/dekodieren/festhalten, Ladefehler wiederholen
 │  ├─ levelStore.ts, levelWorker.ts  Level-Cache beider Modi, Vorberechnung im Web Worker
@@ -180,4 +196,4 @@ SuperSorter/
 - [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md): Regal-Modus – Regeln, Booster, Level-Tabelle, **getroffene Annahmen**
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): Code-Aufbau, Solver, Generator, Animationen, Kochrezepte zum Erweitern
 - [docs/ASSETS.md](docs/ASSETS.md): welches Bild wofür, fehlende Assets
-- [docs/ROADMAP.md](docs/ROADMAP.md): nächste Schritte (Modi abwechseln, Audio, Meta-Ebene, Spezialfächer)
+- [docs/ROADMAP.md](docs/ROADMAP.md): nächste Schritte (Modi abwechseln, Packs mit Münzen, Kartenkunst, Meta-Ebene)

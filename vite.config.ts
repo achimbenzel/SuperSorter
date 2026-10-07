@@ -77,8 +77,8 @@ export default defineConfig(({ command, isPreview }) => {
           id: base,
           name: 'Super Sorter',
           short_name: 'Super Sorter',
-          description: 'Sortier-Puzzle im Supermarkt: Räume die Lieferung ins Regal!',
-          lang: 'de',
+          description: 'Card shop sorting puzzle: stock the shelves, ship orders and open booster packs!',
+          lang: 'en',
           start_url: base,
           scope: base,
           display: 'standalone',
@@ -93,7 +93,7 @@ export default defineConfig(({ command, isPreview }) => {
         },
         workbox: {
           // Alles vorab cachen: Das Spiel funktioniert danach komplett offline.
-          globPatterns: ['**/*.{js,css,html,webp,png,svg,webmanifest}'],
+          globPatterns: ['**/*.{js,css,html,webp,png,svg,webmanifest,mp3}'],
           cleanupOutdatedCaches: true,
           navigateFallback: `${base}index.html`,
         },

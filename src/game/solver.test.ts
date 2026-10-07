@@ -35,8 +35,8 @@ describe('Solver', () => {
   it('löst ein einfaches Board und die Lösung gewinnt mit den echten Regeln', () => {
     const b = board({
       stacks: [
-        ['milk', 'bread', 'milk'],
-        ['bread', 'milk', 'bread'],
+        ['sleeves', 'deck-box', 'sleeves'],
+        ['deck-box', 'sleeves', 'deck-box'],
       ],
       cart: [null],
       slots: [[], []],
@@ -49,13 +49,13 @@ describe('Solver', () => {
   it('erkennt ein unlösbares Board (zu wenig Platz)', () => {
     // Nur ein offenes Fach, kein Wagen: Apfel liegt auf Milch, beide Typen brauchen ein Fach.
     const b = board({
-      stacks: [['milk', 'milk', 'milk', 'apple', 'apple', 'apple'].map((t, i) => (i < 5 ? `?${t}` : t))],
+      stacks: [['sleeves', 'sleeves', 'sleeves', 'dice', 'dice', 'dice'].map((t, i) => (i < 5 ? `?${t}` : t))],
       slots: [[], 'closed'],
     });
     // Apfel oben -> Apfel-Fach -> öffnet zweites Fach -> Milch passt. Also lösbar:
     expect(solve(b).solvable).toBe(true);
     // Ohne zweites Fach geht es nicht:
-    const tight = board({ stacks: [['milk', 'apple', 'milk', 'apple']], capacity: 2, slots: [[]] });
+    const tight = board({ stacks: [['sleeves', 'dice', 'sleeves', 'dice']], capacity: 2, slots: [[]] });
     expect(solve(tight).solvable).toBe(false);
   });
 
@@ -65,10 +65,10 @@ describe('Solver', () => {
     // Apfel vergraben, während der Wagen nur einen Platz hat.
     const b = board({
       stacks: [
-        ['chips', 'chips'],
-        ['apple', 'milk', 'chips'],
-        ['milk', 'apple', 'chips'],
-        ['chips', 'milk', 'apple', 'chips'],
+        ['pack-water', 'pack-water'],
+        ['dice', 'sleeves', 'pack-water'],
+        ['sleeves', 'dice', 'pack-water'],
+        ['pack-water', 'sleeves', 'dice', 'pack-water'],
       ],
       cart: [null],
       slots: [[], 'closed', 'closed', 'closed'],
@@ -79,14 +79,14 @@ describe('Solver', () => {
   });
 
   it('erkennt Deadlock durch vollen Wagen', () => {
-    const b = board({ stacks: [['apple', 'bread', 'cheese']], cart: [], slots: [['milk', 'milk']] });
+    const b = board({ stacks: [['dice', 'deck-box', 'figure']], cart: [], slots: [['sleeves', 'sleeves']] });
     expect(solve(b).solvable).toBe(false);
   });
 
   it('beachtet, dass verdeckte Items beim Multi-Move nicht mitwandern', () => {
     // Offen gleich: Multi-Move füllt das Fach auf einmal. Verdeckt: drei Einzelzüge – beides lösbar,
     // aber die Lösung muss jeweils zu den echten Regeln passen.
-    for (const spec of [['milk', 'milk', 'milk'], ['?milk', '?milk', 'milk']]) {
+    for (const spec of [['sleeves', 'sleeves', 'sleeves'], ['?sleeves', '?sleeves', 'sleeves']]) {
       const b = board({ stacks: [spec], slots: [[]] });
       const res = solve(b);
       expect(res.solvable).toBe(true);
@@ -103,7 +103,7 @@ describe('Solver', () => {
   });
 
   it('nextHint liefert einen gültigen ersten Zug', () => {
-    const b = board({ stacks: [['milk', 'bread']], cart: [null], slots: [[], []] });
+    const b = board({ stacks: [['sleeves', 'deck-box']], cart: [null], slots: [[], []] });
     const hint = nextHint(b);
     expect(hint).not.toBeNull();
     expect(listMoves(b)).toContainEqual(hint);

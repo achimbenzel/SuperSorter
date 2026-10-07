@@ -28,7 +28,7 @@ const BOOSTER_ACTION: Record<BoosterId, GameAction> = {
 };
 
 const fmtMove = (m: Move) =>
-  `${m.from.kind === 'stack' ? 'Stapel' : 'Wagen'} ${m.from.index + 1} → ${m.to.kind === 'slot' ? 'Fach' : 'Wagen'} ${m.to.index + 1}`;
+  `${m.from.kind === 'stack' ? 'Crate' : 'Cart'} ${m.from.index + 1} → ${m.to.kind === 'slot' ? 'Shelf' : 'Cart'} ${m.to.index + 1}`;
 
 /** Klassischer Modus: Lieferung sortenrein ins Regal räumen. */
 export function ShelfGame({ onMenu }: { onMenu: () => void }) {
@@ -74,11 +74,11 @@ export function ShelfGame({ onMenu }: { onMenu: () => void }) {
           }}
           meta={
             <>
-              Seed {game.generated.seed} · Versuche {game.generated.attempts} · Gewinnquote {Math.round(game.generated.winRate * 100)}% (Ziel{' '}
+              Seed {game.generated.seed} · Attempts {game.generated.attempts} · Win rate {Math.round(game.generated.winRate * 100)}% (target{' '}
               {Math.round(state.config.targetWinRate[0] * 100)}–{Math.round(state.config.targetWinRate[1] * 100)}%)
               <br />
-              {state.config.types} Typen · Kap. {state.config.capacity} · {state.board.slots.length} Fächer ({state.config.openSlots} offen) ·
-              Wagen {state.config.cart} · Level {state.config.level}/{LEVEL_COUNT}+ · Züge {state.moves}
+              {state.config.types} types · cap. {state.config.capacity} · {state.board.slots.length} shelves ({state.config.openSlots} open) ·
+              Cart {state.config.cart} · Level {state.config.level}/{LEVEL_COUNT}+ · Moves {state.moves}
             </>
           }
         />
@@ -104,7 +104,7 @@ export function ShelfGame({ onMenu }: { onMenu: () => void }) {
           total={winCoins(state.config) + state.levelCoins}
           detail={
             <>
-              Level {state.config.level} · {state.moves} Züge
+              Level {state.config.level} · {state.moves} moves
               {state.levelCoins > 0 && <> · Gold +{state.levelCoins}</>}
               {state.config.reward && <> · Bonus +{REWARD_LEVEL_BONUS}</>}
             </>
@@ -114,14 +114,14 @@ export function ShelfGame({ onMenu }: { onMenu: () => void }) {
       )}
       {showLose && state.status === 'lost' && (
         <LoseScreen
-          title={hopeless ? 'Sackgasse!' : 'Keine Züge mehr!'}
+          title={hopeless ? 'Dead end!' : 'No moves left!'}
           text={
             hopeless
-              ? `${ITEM_LABEL[hopeless]} liegt in zu vielen Fächern – so wird keins davon voll.`
-              : 'Der Wagen ist voll und keine Ware passt mehr ins Regal.'
+              ? `${ITEM_LABEL[hopeless]} is spread over too many shelves – none of them can be completed.`
+              : 'The cart is full and no item fits on the shelves anymore.'
           }
           canExtra={state.loseReason === 'deadlock' && (state.boosters.extra > 0 || progress.coins >= BOOSTER_PRICES.extra)}
-          extraLabel={state.boosters.extra > 0 ? 'Extra-Platz (Booster)' : `Extra-Platz (${BOOSTER_PRICES.extra} Münzen)`}
+          extraLabel={state.boosters.extra > 0 ? 'Extra slot (power-up)' : `Extra slot (${BOOSTER_PRICES.extra} coins)`}
           canUndo={state.history.length > 0 && state.boosters.undo > 0}
           undoCount={state.boosters.undo}
           onExtra={() => rescue('extra')}

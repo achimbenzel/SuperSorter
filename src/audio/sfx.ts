@@ -1,12 +1,8 @@
-// Sound-Schnittstelle (Platzhalter).
+// Sound-Schnittstelle.
 //
-// Audio ist bewusst noch nicht Teil des Prototyps. Die UI ruft trotzdem an allen
-// relevanten Stellen diese Funktionen auf, damit Sound später ohne Änderungen an
-// den Komponenten eingehängt werden kann: einfach `setSfxHandler` mit einer
-// Implementierung (z. B. Web Audio API oder Howler.js) aufrufen.
-//
-// iOS-Hinweis für später: Safari erlaubt Audio erst nach einer Nutzerinteraktion.
-// Den AudioContext daher beim ersten Tap entsperren (`resume()`).
+// Die UI ruft an allen relevanten Stellen diese Funktionen auf; die eigentliche
+// Wiedergabe steckt in `player.ts` (Web Audio API) und wird in main.tsx per
+// `setSfxHandler` eingehängt. Sounds: public/assets/sfx/ (CC0, siehe docs/ASSETS.md).
 
 export type SfxName =
   | 'tap'
@@ -19,34 +15,37 @@ export type SfxName =
   | 'gold'
   | 'win'
   | 'lose'
-  | 'booster';
+  | 'booster'
+  // Menü
+  | 'tab'
+  | 'button'
+  // Booster-Packs
+  | 'pack-tear'
+  | 'card-flip'
+  | 'card-rare'
+  | 'card-holo';
 
 export type SfxHandler = (name: SfxName) => void;
 
 let handler: SfxHandler | null = null;
-let enabled = true;
 
-/** Registriert die echte Audio-Implementierung. `null` schaltet zurück auf stumm. */
+/** Registriert die Audio-Implementierung. `null` schaltet stumm. */
 export function setSfxHandler(next: SfxHandler | null): void {
   handler = next;
 }
 
-export function setSfxEnabled(value: boolean): void {
-  enabled = value;
+export function playSfx(name: SfxName): void {
+  handler?.(name);
 }
 
-function play(name: SfxName): void {
-  if (enabled && handler) handler(name);
-}
-
-export const playTap = () => play('tap');
-export const playSelect = () => play('select');
-export const playPlace = () => play('place');
-export const playInvalid = () => play('invalid');
-export const playReveal = () => play('reveal');
-export const playSolved = () => play('solved');
-export const playShip = () => play('ship');
-export const playGold = () => play('gold');
-export const playWin = () => play('win');
-export const playLose = () => play('lose');
-export const playBooster = () => play('booster');
+export const playTap = () => playSfx('tap');
+export const playSelect = () => playSfx('select');
+export const playPlace = () => playSfx('place');
+export const playInvalid = () => playSfx('invalid');
+export const playReveal = () => playSfx('reveal');
+export const playSolved = () => playSfx('solved');
+export const playShip = () => playSfx('ship');
+export const playGold = () => playSfx('gold');
+export const playWin = () => playSfx('win');
+export const playLose = () => playSfx('lose');
+export const playBooster = () => playSfx('booster');

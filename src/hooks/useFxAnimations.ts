@@ -53,7 +53,7 @@ export function useFxAnimations(rootRef: RefObject<HTMLElement | null>, fx: AnyF
           break;
         case 'combo':
           // Packband: ab dem zweiten Paket im selben Zug "Kombo ×n" beim Zuklappen.
-          for (let n = 2; n <= ev.count; n++) floatText(root, `spot-${ev.spot}`, `Kombo ×${n}!`, closeAt(n - 1) + 200);
+          for (let n = 2; n <= ev.count; n++) floatText(root, `spot-${ev.spot}`, `Combo ×${n}!`, closeAt(n - 1) + 200);
           break;
         default:
           break;

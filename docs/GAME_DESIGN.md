@@ -2,7 +2,7 @@
 
 > Es gibt zwei Spielprinzipien. Dieses Dokument beschreibt den **Regal-Modus** („Wareneingang“, das ursprüngliche Konzept). Der **Packband-Modus** („Versand“: Kundenpakete packen und verschicken) steht in [PACK_MODE.md](PACK_MODE.md). Booster, Mystery, Gold und Münzen funktionieren in beiden gleich. Später sollen sich die Modi abwechseln.
 
-Sortier-Puzzle im Supermarkt nach dem Prinzip *Water Sort / Magic Sort*: Eine Lieferung kommt im Karton an und muss sortenrein ins Regal geräumt werden. Ein Level dauert 30–60 Sekunden.
+Sortier-Puzzle im Card Shop (früher Supermarkt) nach dem Prinzip *Water Sort / Magic Sort*: Eine Lieferung (Booster-Packs, Deckboxen, Würfel, Figuren …) kommt im Karton an und muss sortenrein ins Regal geräumt werden. Im Spiel heißt der Modus „Restock“. Ein Level dauert 30–60 Sekunden.
 
 ## Bildschirmaufbau (Hochformat, Daumenbedienung)
 

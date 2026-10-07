@@ -1,0 +1,994 @@
+/*
+ * Sammelkarten, Booster-Pack, Pack öffnen und Sammlung.
+ * Karten sind komplett CSS; alle Maße in cqw (Prozent der Kartenbreite).
+ * Animiert werden nur transform und opacity.
+ */
+
+/* ------------------------------------------------------------------ Karte */
+
+.tcg {
+  --el-a: #ffd27a;
+  --el-b: #e08a1e;
+  --art-a: #fff6dc;
+  --art-b: #ffc56b;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  container-type: inline-size;
+  font-family: var(--font);
+  text-align: left;
+}
+
+.el-fire {
+  --el-a: #ff9a6b;
+  --el-b: #d02a1e;
+  --art-a: #fff1c9;
+  --art-b: #ff9a4d;
+}
+
+.el-water {
+  --el-a: #84cfff;
+  --el-b: #1f5fcf;
+  --art-a: #e6f7ff;
+  --art-b: #6cbcff;
+}
+
+.el-leaf {
+  --el-a: #a8e88a;
+  --el-b: #2c8a3b;
+  --art-a: #f2ffe6;
+  --art-b: #8fd86c;
+}
+
+.el-bolt {
+  --el-a: #ffe98a;
+  --el-b: #e09a00;
+  --art-a: #fffbe3;
+  --art-b: #ffd84a;
+}
+
+.tcg-inner {
+  position: absolute;
+  inset: 0;
+}
+
+.tcg-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 4.5cqw;
+  box-shadow: 0 1.6cqw 4cqw rgba(30, 15, 5, 0.35);
+}
+
+/* Umdrehbare Karte (nur beim Pack öffnen): 3D mit Rückseite */
+.tcg.is-flip {
+  perspective: 900px;
+}
+
+.tcg.is-flip .tcg-inner {
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.3, 1.25, 0.5, 1);
+}
+
+.tcg.is-flip .tcg-face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.tcg.is-flip .tcg-back {
+  transform: rotateY(180deg);
+}
+
+.tcg.is-down .tcg-inner {
+  transform: rotateY(180deg);
+}
+
+/* Vorderseite */
+.tcg-front {
+  display: flex;
+  flex-direction: column;
+  gap: 1.8cqw;
+  padding: 3cqw 3.6cqw 2.6cqw;
+  border: 3cqw solid #f4cf3d;
+  background: linear-gradient(165deg, var(--el-a) 0%, var(--el-b) 100%);
+  color: #2a1a0e;
+}
+
+.tcg-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2cqw;
+  min-width: 0;
+}
+
+.tcg-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 7cqw;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.tcg-hp {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6cqw;
+  font-size: 6.8cqw;
+  font-weight: 900;
+  color: #b3121f;
+}
+
+.tcg-hp small {
+  font-size: 4.2cqw;
+  font-weight: 900;
+}
+
+.tcg-art {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1.6cqw solid #e6c058;
+  border-radius: 2cqw;
+  background: radial-gradient(circle at 50% 42%, var(--art-a) 0%, var(--art-b) 100%);
+  box-shadow: inset 0 0 0 0.6cqw rgba(0, 0, 0, 0.12);
+}
+
+.tcg-emoji {
+  position: relative;
+  z-index: 1;
+  font-size: 36cqw;
+  line-height: 1;
+  filter: drop-shadow(0 1.6cqw 1.2cqw rgba(0, 0, 0, 0.3));
+}
+
+.tcg-type {
+  align-self: center;
+  padding: 0.6cqw 3cqw;
+  border-radius: 999px;
+  background: rgba(255, 252, 240, 0.78);
+  font-size: 4.2cqw;
+  font-weight: 800;
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.tcg-attack {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  padding: 1.6cqw 3cqw;
+  border-radius: 2.4cqw;
+  background: rgba(255, 250, 236, 0.9);
+}
+
+.tcg-cost {
+  display: grid;
+  place-items: center;
+  width: 7cqw;
+  height: 7cqw;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0.5cqw rgba(0, 0, 0, 0.25);
+  font-size: 4.4cqw;
+}
+
+.tcg-attack-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 6cqw;
+  font-weight: 900;
+}
+
+.tcg-attack strong {
+  font-size: 8.4cqw;
+  font-weight: 900;
+}
+
+.tcg-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 4.4cqw;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0.4cqw 0 rgba(0, 0, 0, 0.35);
+}
+
+.tcg-rarity {
+  font-size: 6cqw;
+}
+
+/* Rare: goldener Bildrahmen und Stern */
+.r-rare .tcg-art,
+.r-holo .tcg-art {
+  border-color: #ffd700;
+}
+
+.r-rare .tcg-rarity,
+.r-holo .tcg-rarity {
+  color: #ffe14d;
+}
+
+.r-holo .tcg-front {
+  border-color: #fde68a;
+}
+
+/* Holo: Regenbogen-Schimmer über dem Bild + wandernder Glanz über der Karte */
+.tcg-holo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+  mix-blend-mode: color-dodge;
+  opacity: 0.8;
+}
+
+.tcg-holo::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -130%;
+  width: 400%;
+  background: repeating-linear-gradient(
+    115deg,
+    rgba(255, 60, 170, 0.55) 0 5%,
+    rgba(255, 214, 0, 0.55) 5% 10%,
+    rgba(40, 230, 150, 0.55) 10% 15%,
+    rgba(40, 180, 255, 0.55) 15% 20%,
+    rgba(160, 90, 255, 0.55) 20% 25%
+  );
+  animation: holo-sweep 5s linear infinite;
+}
+
+.tcg-holo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 0.6cqw, transparent 0.9cqw),
+    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 0.4cqw, transparent 0.7cqw);
+  background-size:
+    13cqw 11cqw,
+    9cqw 15cqw;
+  background-position:
+    0 0,
+    4cqw 6cqw;
+  animation: holo-twinkle 1.6s ease-in-out infinite alternate;
+}
+
+.tcg-foil {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  width: 200%;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+  mix-blend-mode: soft-light;
+  animation: foil-glare 3.4s ease-in-out infinite;
+}
+
+/* Rückseite */
+.tcg-back {
+  display: grid;
+  place-items: center;
+  border: 3cqw solid #1d3f9a;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.07) 0 12deg, transparent 12deg 24deg),
+    radial-gradient(circle at 50% 50%, #3b78ea 0%, #1b45ac 55%, #0c2466 100%);
+}
+
+.tcg-back-emblem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 78cqw;
+  aspect-ratio: 1.3;
+  border-radius: 50%;
+  border: 2.4cqw solid #fff;
+  background: radial-gradient(ellipse at 50% 35%, #ffe680 0%, #ffb21a 60%, #f07c00 100%);
+  box-shadow: 0 1.2cqw 0 rgba(0, 0, 0, 0.25);
+  text-align: center;
+  color: #d0102b;
+}
+
+.tcg-back-emblem span {
+  font-size: 11cqw;
+  font-weight: 900;
+  line-height: 0.95;
+  -webkit-text-stroke: 1.2cqw #fff;
+  paint-order: stroke fill;
+}
+
+.tcg-back-emblem small {
+  margin-top: 1.4cqw;
+  font-size: 3.8cqw;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #6a1b00;
+}
+
+/* Plaketten auf Karten */
+.card-badge {
+  position: absolute;
+  z-index: 5;
+  padding: 1.2cqw 3.6cqw;
+  border-radius: 999px;
+  font-size: max(9px, 7.5cqw);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  box-shadow: 0 0.8cqw 0 rgba(0, 0, 0, 0.25);
+}
+
+.card-badge--new {
+  top: -3cqw;
+  right: -3cqw;
+  background: #ff3d6e;
+  animation: badge-pop 420ms cubic-bezier(0.3, 1.8, 0.5, 1) both;
+}
+
+.card-badge--count {
+  bottom: 3cqw;
+  right: 3cqw;
+  background: #1b45ac;
+}
+
+/* ------------------------------------------------------------------ Booster-Pack */
+
+.bpack {
+  --pw: min(54vw, 210px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--pw);
+  /* explizit statt aspect-ratio: das ignorieren manche Browser auf <button> */
+  height: calc(var(--pw) * 1.6);
+  padding: 0;
+  filter: drop-shadow(0 14px 14px rgba(40, 20, 5, 0.35));
+}
+
+.bpack.is-idle {
+  animation: pack-float 2.8s ease-in-out infinite;
+}
+
+.bpack-crimp {
+  flex: 0 0 8%;
+  background: repeating-linear-gradient(90deg, #e3e6ee 0 3px, #b8bfcd 3px 6px);
+}
+
+.bpack-body {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12% 6% 9%;
+  background:
+    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.35) 0, transparent 45%),
+    linear-gradient(160deg, #7b3cf0 0%, #2c7bff 48%, #ff4f9a 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.bpack-shine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  width: 200%;
+  background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
+  animation: foil-glare 3s ease-in-out infinite;
+}
+
+.bpack-logo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(var(--pw) * 0.12);
+  font-weight: 900;
+  line-height: 0.95;
+  -webkit-text-stroke: calc(var(--pw) * 0.012) #2a1050;
+  paint-order: stroke fill;
+  text-shadow: 0 calc(var(--pw) * 0.012) 0 rgba(0, 0, 0, 0.35);
+}
+
+.bpack-logo small {
+  margin-top: 4px;
+  font-size: calc(var(--pw) * 0.052);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 0;
+}
+
+.bpack-art {
+  position: relative;
+  font-size: calc(var(--pw) * 0.42);
+  line-height: 1;
+  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.35));
+}
+
+.bpack-info {
+  position: relative;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(20, 0, 60, 0.35);
+  font-size: calc(var(--pw) * 0.058);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Aufreißen: wackeln, Naht fliegt weg, Pack fällt nach unten weg */
+.bpack.is-tearing {
+  animation: pack-shake 160ms ease-in-out 2;
+}
+
+.bpack.is-tearing .bpack-crimp--top {
+  transform-origin: 85% 100%;
+  animation: crimp-off 520ms cubic-bezier(0.4, 0, 0.6, 1) 320ms forwards;
+}
+
+.bpack.is-tearing .bpack-body,
+.bpack.is-tearing .bpack-crimp--bottom {
+  animation: pack-drop 420ms ease-in 640ms forwards;
+}
+
+/* ------------------------------------------------------------------ Packs-Seite */
+
+.home-page--packs {
+  gap: 0;
+}
+
+.packs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.packs-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--c-text);
+}
+
+.packs-pack {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 10px 0;
+}
+
+.packs-rise {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(44vw, 170px);
+  z-index: -1;
+  animation: cards-rise 620ms cubic-bezier(0.3, 1.2, 0.5, 1) 420ms both;
+}
+
+.packs-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.packs-price {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #ffd400;
+  color: #5a3a00;
+  font-style: normal;
+  font-size: 13px;
+  text-shadow: none;
+}
+
+.packs-note {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--c-text-soft);
+}
+
+.packs-link {
+  padding: 6px 12px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0063b8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Aufdecken: Stapel in der Mitte, oberste Karte antippen */
+.reveal-stage {
+  position: relative;
+  width: min(60vw, 250px);
+  aspect-ratio: 63 / 88;
+  margin-top: 18px;
+  cursor: pointer;
+}
+
+.reveal-card {
+  position: absolute;
+  inset: 0;
+  z-index: calc(10 - var(--depth));
+  transform: translateY(calc(var(--depth) * -7px)) scale(calc(1 - var(--depth) * 0.035));
+  transition: transform 320ms cubic-bezier(0.3, 1.4, 0.5, 1);
+  /* übernimmt nahtlos die Karte, die eben aus dem Pack gestiegen ist */
+  animation: stack-in 360ms ease-out both;
+}
+
+.reveal-card.is-leaving {
+  z-index: 20;
+  animation: card-leave 420ms cubic-bezier(0.5, 0, 0.75, 0.4) forwards;
+}
+
+/* Vorahnung: Die Rare-Karte glüht schon verdeckt (Holo in Regenbogenfarben). */
+.reveal-card.is-hint-rare::before,
+.reveal-card.is-hint-holo::before {
+  content: '';
+  position: absolute;
+  inset: -5%;
+  z-index: -1;
+  border-radius: 9%;
+  background: radial-gradient(closest-side, rgba(255, 210, 60, 0.95), rgba(255, 170, 0, 0));
+  animation: hint-pulse 900ms ease-in-out infinite alternate;
+}
+
+.reveal-card.is-hint-holo::before {
+  inset: -9%;
+  background: conic-gradient(#ff4fa3, #ffd400, #3ee0d2, #2c7bff, #b45cff, #ff4fa3);
+  filter: blur(14px);
+  animation:
+    hint-spin 2.2s linear infinite,
+    hint-pulse 900ms ease-in-out infinite alternate;
+}
+
+.reveal-rays {
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgba(255, 220, 90, 0.75) 0 10deg, transparent 10deg 24deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 35%, transparent 100%);
+  animation:
+    rays-in 500ms ease-out both,
+    hint-spin 9s linear infinite;
+}
+
+.reveal-rays--holo {
+  background: repeating-conic-gradient(
+    rgba(255, 80, 170, 0.7) 0 8deg,
+    transparent 8deg 15deg,
+    rgba(60, 220, 255, 0.7) 15deg 23deg,
+    transparent 23deg 30deg,
+    rgba(255, 220, 0, 0.7) 30deg 38deg,
+    transparent 38deg 45deg
+  );
+}
+
+.reveal-banner {
+  position: absolute;
+  left: 50%;
+  top: -12%;
+  z-index: 30;
+  white-space: nowrap;
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+  -webkit-text-stroke: 5px #b8860b;
+  paint-order: stroke fill;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  animation: banner-pop 620ms cubic-bezier(0.3, 1.7, 0.45, 1) both;
+}
+
+.reveal-banner--holo {
+  -webkit-text-stroke-color: #7c2cd6;
+}
+
+.reveal-hint {
+  margin: 4px 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--c-text);
+}
+
+.reveal-hint span {
+  font-size: 13px;
+  color: var(--c-text-soft);
+}
+
+/* Übersicht nach dem Öffnen */
+.pulls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: min(100%, 380px);
+}
+
+.pull {
+  width: calc((100% - 20px) / 3);
+  animation: card-deal 460ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+/* ------------------------------------------------------------------ Sammlung */
+
+.home-page--collection {
+  justify-content: flex-start;
+  align-items: stretch;
+  gap: 0;
+  padding: 0 12px;
+}
+
+.collection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.collection-head {
+  flex: none;
+  padding: 2px 2px 10px;
+}
+
+.collection-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.collection-title h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--c-text);
+}
+
+.collection-title span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text-soft);
+}
+
+.collection-title strong {
+  color: #0063b8;
+  font-size: 18px;
+}
+
+.collection-bar {
+  height: 8px;
+  margin: 6px 0 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(120, 72, 30, 0.14);
+}
+
+.collection-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #008cff, #44c7ff);
+  transition: width 400ms ease-out;
+}
+
+.collection-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  flex: 1 1 auto;
+  padding: 6px 4px;
+  border-radius: 999px;
+  border: 2px solid #ead7b8;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: var(--c-text-soft);
+  transition: transform 160ms;
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip.is-active {
+  border-color: #008cff;
+  background: #008cff;
+  color: #fff;
+}
+
+.collection-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
+  gap: 12px 10px;
+  padding: 8px 4px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.collection-cell {
+  position: relative;
+  padding: 0;
+  transition: transform 140ms;
+}
+
+.collection-cell:active {
+  transform: scale(0.96);
+}
+
+.collection-cell.is-missing {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 63 / 88;
+  border: 2px dashed rgba(120, 72, 30, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  font-size: 15px;
+  font-weight: 900;
+  color: rgba(120, 72, 30, 0.5);
+}
+
+.collection-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0;
+  font-weight: 800;
+  color: var(--c-text-soft);
+}
+
+.collection-empty p {
+  margin: 0;
+}
+
+/* Detailansicht */
+.card-detail {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: calc(env(safe-area-inset-top) + 20px) 16px calc(env(safe-area-inset-bottom) + 20px);
+  background: rgba(14, 10, 32, 0.78);
+  animation: fade-in 200ms ease-out both;
+}
+
+.card-detail-tilt {
+  width: min(74vw, 330px);
+  perspective: 1000px;
+  animation: detail-pop 420ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+
+.card-detail-tilt .tcg {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 140ms ease-out;
+}
+
+.card-detail-info {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.card-detail-info strong {
+  font-size: 24px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.card-detail-close {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+.card-detail-close svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ------------------------------------------------------------------ Keyframes */
+
+@keyframes holo-sweep {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* genau eine Musterperiode (25 % von 400 %) -> nahtlos */
+    transform: translateX(25%);
+  }
+}
+
+@keyframes holo-twinkle {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes foil-glare {
+  0%,
+  20% {
+    transform: translateX(-30%);
+  }
+  80%,
+  100% {
+    transform: translateX(50%);
+  }
+}
+
+@keyframes pack-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes pack-shake {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-4deg) scale(1.03);
+  }
+  75% {
+    transform: rotate(4deg) scale(1.03);
+  }
+}
+
+@keyframes crimp-off {
+  to {
+    transform: translate(35%, -170%) rotate(30deg);
+    opacity: 0;
+  }
+}
+
+@keyframes pack-drop {
+  to {
+    transform: translateY(45%) scale(0.92);
+    opacity: 0;
+  }
+}
+
+@keyframes cards-rise {
+  from {
+    transform: translate(-50%, -25%) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, -62%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes card-deal {
+  from {
+    transform: translateY(40%) scale(0.85);
+    opacity: 0;
+  }
+}
+
+@keyframes stack-in {
+  from {
+    transform: translateY(-4%) scale(0.94);
+    opacity: 0.5;
+  }
+}
+
+@keyframes card-leave {
+  to {
+    transform: translate(-135%, -10%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes hint-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hint-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rays-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@keyframes banner-pop {
+  from {
+    transform: translateX(-50%) scale(0.3) rotate(-8deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) rotate(-4deg);
+    opacity: 1;
+  }
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes detail-pop {
+  from {
+    transform: scale(0.6) translateY(20%);
+    opacity: 0;
+  }
+}

@@ -15,7 +15,7 @@ interface WinScreenProps {
   onNext: () => void;
 }
 
-export function WinScreen({ title = 'Geschafft!', stars, total, detail, nextLabel = 'Weiter', onNext }: WinScreenProps) {
+export function WinScreen({ title = 'Well done!', stars, total, detail, nextLabel = 'Next', onNext }: WinScreenProps) {
   useEffect(() => {
     confetti({
       particleCount: 140,
@@ -39,7 +39,7 @@ export function WinScreen({ title = 'Geschafft!', stars, total, detail, nextLabe
       backdrop={<img className="end-confetti" src={UI_IMAGE.confetti} alt="" />}
       footer={<p className="end-detail">{detail}</p>}
     >
-      <div className="end-stars" aria-label={`${stars} von 3 Sternen`}>
+      <div className="end-stars" aria-label={`${stars} of 3 stars`}>
         {[1, 2, 3].map((n) => (
           <img key={n} src={UI_IMAGE.star} alt="" className={n <= stars ? 'is-on' : 'is-off'} style={{ animationDelay: `${n * 140}ms` }} />
         ))}

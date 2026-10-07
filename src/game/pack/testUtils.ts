@@ -7,7 +7,7 @@ import type { PackBoard, PackBox } from './types';
 
 let nextBoxId = 900;
 
-/** Paket in Kurzschreibweise: "cola-can*3" (Sammelpaket) oder "bread,cheese,milk" (gemischt). */
+/** Paket in Kurzschreibweise: "pack-fire*3" (Sammelpaket) oder "deck-box,figure,sleeves" (gemischt). */
 export function box(spec: string): PackBox {
   const needs = spec.includes('*')
     ? Array<ItemType>(Number(spec.split('*')[1])).fill(spec.split('*')[0] as ItemType)

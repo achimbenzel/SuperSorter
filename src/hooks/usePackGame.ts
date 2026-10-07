@@ -21,7 +21,6 @@ export function usePackGame() {
   const winHandledFor = useRef<number | null>(null);
 
   const dispatch = useCallback((action: PackAction) => {
-    if (action.type === 'TAP_STACK') sfx.playTap();
     if (BOOSTER_ACTIONS.has(action.type)) sfx.playBooster();
     rawDispatch(action);
   }, []);
@@ -70,8 +69,11 @@ export function usePackGame() {
     }
   }, [state.fx]);
   useEffect(() => () => sfxTimers.current.forEach((t) => window.clearTimeout(t)), []);
+  // Ware landet erst nach dem Flug -> Sound passend dazu.
   useEffect(() => {
-    if (state.moves > 0) sfx.playPlace();
+    if (state.moves === 0) return;
+    const t = window.setTimeout(sfx.playPlace, TIMING.hop * 0.8);
+    return () => window.clearTimeout(t);
   }, [state.moves]);
 
   useEffect(() => {

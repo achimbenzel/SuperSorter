@@ -78,10 +78,10 @@ export function DebugPanel<M>({
   const go = (n: number) => loadLevel(Math.max(1, Math.min(999, n)));
   const solvableText =
     analysis.solvable === true
-      ? `✅ ja – noch ${analysis.moves.length} Züge`
+      ? `✅ yes – ${analysis.moves.length} moves left`
       : analysis.solvable === false
-        ? '❌ nein'
-        : '❓ unbekannt (Budget)';
+        ? '❌ no'
+        : '❓ unknown (budget)';
 
   if (!open) {
     return (
@@ -106,37 +106,37 @@ export function DebugPanel<M>({
           aria-label="Level"
         />
         <button type="button" onClick={() => go(Number(target))}>
-          Los
+          Go
         </button>
         <button type="button" onClick={() => go(level + 1)}>
           ▶
         </button>
-        <button type="button" className="debug-close" onClick={() => setOpen(false)} aria-label="Debug schließen">
+        <button type="button" className="debug-close" onClick={() => setOpen(false)} aria-label="Close debug">
           ✕
         </button>
       </div>
       <div className="debug-row">
-        Lösbar: {solvableText} <small>({analysis.nodes} Knoten, {analysis.ms.toFixed(0)} ms)</small>
+        Solvable: {solvableText} <small>({analysis.nodes} nodes, {analysis.ms.toFixed(0)} ms)</small>
       </div>
       <div className="debug-row">
         <button type="button" onClick={() => setHint(analysis.solvable ? (analysis.moves[0] ?? null) : null)}>
-          💡 Hinweis
+          💡 Hint
         </button>
         <button type="button" disabled={!hint} onClick={() => hint && applyMove(hint)}>
-          ▶ Zug
+          ▶ Move
         </button>
         <button type="button" onClick={() => setAutoPlay((v) => !v)}>
-          {autoPlay ? '⏸ Stopp' : '⏩ Auto-Lösen'}
+          {autoPlay ? '⏸ Stop' : '⏩ Auto-solve'}
         </button>
         <button type="button" className={xray ? 'is-on' : ''} onClick={() => setXray(!xray)}>
-          🔍 Röntgen
+          🔍 X-ray
         </button>
       </div>
-      {hint && <div className="debug-row">Hinweis: {formatMove(hint)}</div>}
+      {hint && <div className="debug-row">Hint: {formatMove(hint)}</div>}
       <div className="debug-row debug-meta">{meta}</div>
       <div className="debug-row">
         <button type="button" onClick={onResetProgress}>
-          Fortschritt löschen
+          Reset progress
         </button>
       </div>
     </div>

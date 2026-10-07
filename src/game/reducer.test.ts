@@ -11,7 +11,7 @@ const start = (b: Board): GameState => createGameState(cfg, b);
 const run = (s: GameState, ...actions: GameAction[]) => actions.reduce(gameReducer, s);
 
 describe('Tap-Steuerung', () => {
-  const b = board({ stacks: [['?apple', 'milk'], ['bread']], cart: [null, null], slots: [[], []] });
+  const b = board({ stacks: [['?dice', 'sleeves'], ['deck-box']], cart: [null, null], slots: [[], []] });
 
   it('Tap 1 wählt den Stapel aus, erneuter Tap hebt die Auswahl auf', () => {
     let s = run(start(b), { type: 'TAP_STACK', index: 0 });
@@ -27,8 +27,8 @@ describe('Tap-Steuerung', () => {
 
   it('Tap 2 auf Fach legt das Item hinein und deckt das nächste auf', () => {
     const s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 0 });
-    expect(s.board.slots[0].items.map((i) => i.type)).toEqual(['milk']);
-    expect(s.board.stacks[0][0]).toMatchObject({ type: 'apple', hidden: false });
+    expect(s.board.slots[0].items.map((i) => i.type)).toEqual(['sleeves']);
+    expect(s.board.stacks[0][0]).toMatchObject({ type: 'dice', hidden: false });
     expect(s.fx).toContainEqual(expect.objectContaining({ kind: 'revealed', itemId: s.board.stacks[0][0].id }));
     expect(s.selection).toBeNull();
     expect(s.moves).toBe(1);
@@ -46,11 +46,11 @@ describe('Tap-Steuerung', () => {
 
   it('Tap auf freien Wagenplatz parkt das Item, Tap auf Wagen-Item wählt es aus', () => {
     let s = run(start(b), { type: 'TAP_STACK', index: 1 }, { type: 'TAP_CART', index: 1 });
-    expect(s.board.cart[1]?.type).toBe('bread');
+    expect(s.board.cart[1]?.type).toBe('deck-box');
     s = run(s, { type: 'TAP_CART', index: 1 });
     expect(s.selection).toEqual({ kind: 'cart', index: 1 });
     s = run(s, { type: 'TAP_SLOT', index: 1 });
-    expect(s.board.slots[1].items.map((i) => i.type)).toEqual(['bread']);
+    expect(s.board.slots[1].items.map((i) => i.type)).toEqual(['deck-box']);
     expect(s.board.cart[1]).toBeNull();
   });
 
@@ -61,7 +61,7 @@ describe('Tap-Steuerung', () => {
 
   it('Multi-Move über Taps', () => {
     const s = run(
-      start(board({ stacks: [['bread', 'milk', 'milk']], slots: [[], []] })),
+      start(board({ stacks: [['deck-box', 'sleeves', 'sleeves']], slots: [[], []] })),
       { type: 'TAP_STACK', index: 0 },
       { type: 'TAP_SLOT', index: 0 },
     );
@@ -72,7 +72,7 @@ describe('Tap-Steuerung', () => {
 describe('Sieg und Niederlage', () => {
   it('Sieg, wenn das letzte Fach gelöst wird', () => {
     const s = run(
-      start(board({ stacks: [['milk', 'milk', 'milk']], slots: [[]] })),
+      start(board({ stacks: [['sleeves', 'sleeves', 'sleeves']], slots: [[]] })),
       { type: 'TAP_STACK', index: 0 },
       { type: 'TAP_SLOT', index: 0 },
     );
@@ -81,7 +81,7 @@ describe('Sieg und Niederlage', () => {
   });
 
   it('Deadlock -> verloren; Extra-Platz rettet', () => {
-    const b = board({ stacks: [['apple', 'bread'], ['cheese']], cart: [null], slots: [['milk'], 'closed'] });
+    const b = board({ stacks: [['dice', 'deck-box'], ['figure']], cart: [null], slots: [['sleeves'], 'closed'] });
     let s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_CART', index: 0 });
     expect(s.status).toBe('lost');
     expect(s.loseReason).toBe('deadlock');
@@ -93,7 +93,7 @@ describe('Sieg und Niederlage', () => {
   });
 
   it('Typ auf zwei Fächer verteilt -> verloren (hoffnungslos), Undo rettet', () => {
-    const b = board({ stacks: [['milk', 'milk'], ['apple']], slots: [['milk'], [], []] });
+    const b = board({ stacks: [['sleeves', 'sleeves'], ['dice']], slots: [['sleeves'], [], []] });
     let s = run(start(b), { type: 'TAP_STACK', index: 1 }, { type: 'TAP_SLOT', index: 1 });
     expect(s.status).toBe('playing');
     // Zweite Milch absichtlich in ein neues Fach statt zur ersten Milch.
@@ -106,7 +106,7 @@ describe('Sieg und Niederlage', () => {
 
   it('nach Sieg werden Taps ignoriert', () => {
     const won = run(
-      start(board({ stacks: [['milk', 'milk', 'milk']], slots: [[]] })),
+      start(board({ stacks: [['sleeves', 'sleeves', 'sleeves']], slots: [[]] })),
       { type: 'TAP_STACK', index: 0 },
       { type: 'TAP_SLOT', index: 0 },
     );
@@ -116,7 +116,7 @@ describe('Sieg und Niederlage', () => {
 
 describe('Booster', () => {
   it('Undo über mehrere Schritte stellt Board und Gold-Münzen wieder her', () => {
-    const b = board({ stacks: [['milk', '$apple', 'bread']], cart: [null], slots: [[], [], []] });
+    const b = board({ stacks: [['sleeves', '$dice', 'deck-box']], cart: [null], slots: [[], [], []] });
     const s0 = start(b);
     const s1 = run(s0, { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 0 }); // Brot
     const s2 = run(s1, { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 1 }); // Gold-Apfel
@@ -134,13 +134,13 @@ describe('Booster', () => {
   });
 
   it('Undo behält einen per Booster hinzugefügten Wagenplatz', () => {
-    const b = board({ stacks: [['milk', 'bread']], cart: [null], slots: [[], []] });
+    const b = board({ stacks: [['sleeves', 'deck-box']], cart: [null], slots: [[], []] });
     const s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 0 }, { type: 'USE_EXTRA' }, { type: 'UNDO' });
     expect(s.board.cart).toHaveLength(2);
   });
 
   it('Lupe: zeigt ein verpacktes Item und verbraucht eine Ladung', () => {
-    const b = board({ stacks: [['?apple', 'milk']], slots: [[]] });
+    const b = board({ stacks: [['?dice', 'sleeves']], slots: [[]] });
     let s = run(start(b), { type: 'TOGGLE_PEEK' });
     expect(s.peekArmed).toBe(true);
     const hiddenId = s.board.stacks[0][0].id;
@@ -154,7 +154,7 @@ describe('Booster', () => {
   });
 
   it('Lupe ist ohne verpackte Items nicht aktivierbar', () => {
-    const s0 = start(board({ stacks: [['milk']], slots: [[]] }));
+    const s0 = start(board({ stacks: [['sleeves']], slots: [[]] }));
     expect(run(s0, { type: 'TOGGLE_PEEK' })).toBe(s0);
   });
 
@@ -174,7 +174,7 @@ describe('Booster', () => {
   });
 
   it('Neustart setzt Board und Booster zurück', () => {
-    const b = board({ stacks: [['milk', 'bread']], cart: [null], slots: [[], []] });
+    const b = board({ stacks: [['sleeves', 'deck-box']], cart: [null], slots: [[], []] });
     const s = run(start(b), { type: 'TAP_STACK', index: 0 }, { type: 'TAP_SLOT', index: 0 }, { type: 'USE_EXTRA' }, { type: 'RESTART' });
     expect(s.board).toBe(b);
     expect(s.boosters).toEqual(cfg.boosters);

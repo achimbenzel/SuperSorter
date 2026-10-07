@@ -25,7 +25,7 @@ interface DeliveryBoxProps {
 export function DeliveryBox({ board, selection, decorate, peekArmed, peekItemId, xray, hintSource, onTapStack, onPeekItem }: DeliveryBoxProps) {
   const selectedRun = selection?.kind === 'stack' ? pickableItems(board, selection).length : 0;
   return (
-    <section className={`box${peekArmed ? ' is-peek-mode' : ''}`} aria-label="Lieferkarton">
+    <section className={`box${peekArmed ? ' is-peek-mode' : ''}`} aria-label="Delivery box">
       <img className="box-shadow" src={BOARD_IMAGE.boxShadow} alt="" />
       <img className="box-back" src={BOARD_IMAGE.box} alt="" />
       <div className="box-stacks" style={{ '--stacks': board.stacks.length } as CSSProperties}>

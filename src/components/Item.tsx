@@ -85,7 +85,7 @@ export const Item = memo(function Item({ item, selected, hintIcon, badge, peeked
       <div className="flip">
         <div
           className={classes}
-          aria-label={item.hidden ? 'verpackte Ware' : `${ITEM_LABEL[item.type]}${badge ? ` (${badge.label})` : ''}`}
+          aria-label={item.hidden ? 'wrapped item' : `${ITEM_LABEL[item.type]}${badge ? ` (${badge.label})` : ''}`}
         >
           <span className="item-glow" />
           {item.hidden ? (

@@ -5,6 +5,8 @@ export interface TabDef {
   id: string;
   label: string;
   icon: LucideIcon;
+  /** Zähler-Plakette (z. B. neue Karten); 0/undefined = keine. */
+  badge?: number;
 }
 
 // Geometrie aus der Vektor-Vorlage (1.svg–5.svg im main-Branch): 1170 × 265 px,
@@ -31,7 +33,7 @@ interface TabBarProps {
  */
 export function TabBar({ tabs, active, onSelect }: TabBarProps) {
   return (
-    <nav className="tabbar" aria-label="Hauptmenü">
+    <nav className="tabbar" aria-label="Main menu">
       <div className="tabbar-inner" role="tablist">
         <div className="tabbar-bg" />
         <div className="tabbar-active" style={{ '--x': cqw(SLOT_LEFT[active]) } as CSSProperties}>
@@ -53,6 +55,7 @@ export function TabBar({ tabs, active, onSelect }: TabBarProps) {
             >
               <span className="tabbar-icon">
                 <Icon strokeWidth={2.3} aria-hidden="true" />
+                {!!tab.badge && <span className="tabbar-badge">{tab.badge > 9 ? '9+' : tab.badge}</span>}
               </span>
             </button>
           );

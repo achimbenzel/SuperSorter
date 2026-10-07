@@ -16,10 +16,10 @@ interface BoosterBarProps {
 }
 
 const LABELS: Record<BoosterId, string> = {
-  undo: 'Rückgängig',
-  extra: 'Extra-Platz',
-  peek: 'Lupe',
-  shuffle: 'Mischen',
+  undo: 'Undo',
+  extra: 'Extra slot',
+  peek: 'Peek',
+  shuffle: 'Shuffle',
 };
 const ORDER: BoosterId[] = ['undo', 'extra', 'peek', 'shuffle'];
 
@@ -30,7 +30,7 @@ const ORDER: BoosterId[] = ['undo', 'extra', 'peek', 'shuffle'];
  */
 export function BoosterBar({ boosters, usable, playing, peekArmed, coins, extraLabel, onUse, onBuy }: BoosterBarProps) {
   return (
-    <nav className="boosters" aria-label="Booster">
+    <nav className="boosters" aria-label="Power-ups">
       {ORDER.map((id) => {
         const count = boosters[id];
         const active = id === 'peek' && peekArmed;
@@ -46,7 +46,7 @@ export function BoosterBar({ boosters, usable, playing, peekArmed, coins, extraL
             data-booster={id}
             disabled={!enabled}
             onClick={() => (count > 0 || active ? onUse(id) : onBuy(id))}
-            aria-label={count > 0 ? `${label} (${count} übrig)` : `${label} für ${price} Münzen kaufen`}
+            aria-label={count > 0 ? `${label} (${count} left)` : `Buy ${label} for ${price} coins`}
             aria-pressed={id === 'peek' ? active : undefined}
           >
             <img src={BOOSTER_IMAGE[id]} alt="" />

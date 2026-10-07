@@ -37,7 +37,7 @@ src/
 │  ├─ useFxAnimations.ts    Shake, Münzflug (Web Animations API)
 │  └─ useDelayedFlag.ts     End-Screens erst nach den Animationen zeigen
 ├─ components/      ← "dumme" Darstellung, bekommen state + dispatch
-├─ audio/sfx.ts     ← Sound-Schnittstelle (Platzhalter)
+├─ audio/           ← sfx.ts (Sound-Schnittstelle), player.ts (Web Audio, an/aus)
 ├─ styles/          ← tokens.css (Farben/Maße), global.css (iOS), game.css, screens.css
 ├─ assets.ts        ← einzige Stelle mit Bildpfaden
 ├─ imageLoader.ts   ← Bilder vorladen, dekodieren, festhalten; Ladefehler wiederholen
@@ -170,6 +170,21 @@ Regel: nur `transform` und `opacity` animieren (GPU, 60 fps).
 
 Alle Zeiten stehen in `src/config.ts` (`TIMING`) und werden als CSS-Variablen `--t-*` gespiegelt.
 
+## Sammelkarten und Booster-Packs (`src/game/cards/`)
+
+| Datei | Inhalt |
+|---|---|
+| `cards.ts` | „Base Set“: 32 Karten, 4 Elemente (Fire, Water, Leaf, Bolt) × (4 Common, 2 Uncommon, 1 Rare, 1 Holo Rare). Illustration vorerst Emoji |
+| `packs.ts` | `openCardPack(rng)`: 3 verschiedene Commons, 1 Uncommon, Rare-Platz (25 % Holo Rare) zuletzt. `PACK_PRICE` (0 = zum Testen kostenlos). `addPack`: Sammlung zählen, neue Karten erkennen |
+
+Die Sammlung liegt unter `super-sorter/collection/v1` (`hooks/useCollection.ts`): Anzahl je Karte, geöffnete Packs, noch ungesehene neue Karten (Zahl am Collection-Reiter). Ein Pack wird schon beim Aufreißen gespeichert – wer mitten im Aufdecken wechselt, verliert nichts.
+
+UI: `components/cards/TcgCard.tsx` zeichnet die Karte komplett in CSS, alle Maße in `cqw` (Prozent der Kartenbreite) – dieselbe Komponente ist Mini-Vorschau im Album und Großansicht. Nur umdrehbare Karten (Pack öffnen) werden in 3D mit Rückseite aufgebaut; im Album gibt es nur die Vorderseite, damit 32 Karten nicht 32 Grafikebenen kosten. Holo: Regenbogenstreifen (`mix-blend-mode: color-dodge`) und Funkeln über dem Bild, wandernder Glanz über der Karte. `PacksPage` steuert den Ablauf idle → tearing → reveal → summary.
+
+## Sound (`src/audio/`)
+
+`sfx.ts` ist die Schnittstelle (`playSfx(name)` und Kurzformen), `player.ts` die Wiedergabe per Web Audio: Dateien werden beim Start geladen, beim ersten Tap dekodiert (iOS erlaubt Audio erst nach einer Geste), jeder Tap weckt den AudioContext wieder auf. Lautstärke je Sound, gleicher Sound höchstens alle 45 ms. An/Aus unter `super-sorter/sound/v1` (Schalter oben links im Hauptmenü). iOS: Web Audio folgt dem Lautlos-Schalter.
+
 ## Hauptmenü und Menüleiste
 
 `components/home/TabBar.tsx` setzt die Vektor-Vorlage (1.svg–5.svg im `main`-Branch, 1170 × 265 px = 390 pt bei 3x) maßstabsgetreu um: Alle Maße sind Anteile der Breite (Container-Query-Einheit `cqw`), die Leiste skaliert also mit dem Gerät. Die Icon-Mitten (129/351/585/819/1041 px) und die Reiter-Positionen (0/222/456/690/912 px) stehen als Konstanten in der Datei.
@@ -199,7 +214,7 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 **Homescreen-App randlos:** Die Statusleiste ist `black-translucent` (transparent, weiße Schrift), die App reicht bis an die Oberkante. Zwei Details dazu:
 
-- *Höhe:* iOS meldet in diesem Modus als Viewport-Höhe den Bildschirm minus Statusleiste, zeichnet aber ab der Oberkante – unten blieb ein Streifen frei. `src/viewport.ts` setzt deshalb im iOS-Standalone-Modus `--app-h` auf die echte Bildschirmhöhe (nur wenn die Lücke etwa Statusleisten-Höhe hat); `html`, `body`, `#root` und `--usable-h` nutzen sie. Im Browser und auf Android bleibt alles bei `100%`/`100dvh`.
+- *Höhe:* iOS meldet in diesem Modus als Viewport-Höhe den Bildschirm minus Statusleiste, zeichnet aber ab der Oberkante – unten blieb ein Streifen frei. `src/viewport.ts` setzt `--app-h` (genutzt von `html`, `body`, `#root`, `--usable-h`): immer die größere von `innerHeight`/`clientHeight`; fehlt dann bis zur Bildschirmhöhe noch etwa die Statusleisten-Höhe und läuft die App als Homescreen-App (`navigator.standalone`, `display-mode`) **oder** entspricht die Lücke genau der oberen Safe Area, die volle Bildschirmhöhe. Die erste Version prüfte nur `navigator.standalone` – das setzte iOS auf dem Testgerät offenbar nicht. Diagnose: auf „Home“ fünfmal auf den Titel tippen.
 - *Lesbarkeit oben:* Statt eines abgetrennten Bandes läuft der Hintergrund hinter der Statusleiste in einem weichen Verlauf ins Blaue (`.app::before`, hinter dem Inhalt, ohne Kante/Schatten). Die Menüleiste unten reicht bis unter den Home-Indikator.
 
 ## PWA und Deployment
@@ -232,6 +247,6 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 **Neuer Booster:** Zähler in `BoosterCounts` (`types.ts`) und `DEFAULT_BOOSTERS` (`levels.ts`), Aktion im `gameReducer`, Eintrag in `BOOSTERS` (`components/BoosterBar.tsx`) und Bild in `BOOSTER_IMAGE` (`assets.ts`), Test in `reducer.test.ts`.
 
-**Sound einhängen:** In `main.tsx` `setSfxHandler((name) => …)` aufrufen (z. B. Web Audio API). Alle Aufrufstellen existieren bereits (`useGame.ts`, `usePackGame.ts`). iOS: AudioContext beim ersten Tap mit `resume()` entsperren.
+**Neuer Sound:** Namen in `SfxName` (`audio/sfx.ts`) ergänzen, Datei nach `public/assets/sfx/`, Pfad in `SFX_FILE` (`assets.ts`), abspielen mit `playSfx('name')`. Lizenz in docs/ASSETS.md eintragen.
 
 **Neue Regel:** zuerst in `rules.ts` (+ Test), dann die kompakte Spiegelung in `solver.ts → apply/candidateMoves` nachziehen. Der Brute-Force-Abgleich in `solver.test.ts` deckt Abweichungen zwischen beiden auf.

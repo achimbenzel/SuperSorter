@@ -14,16 +14,16 @@ const tap = (index: number): PackAction => ({ type: 'TAP_STACK', index });
 
 describe('Packband-Reducer: Tap', () => {
   it('ein Tap ist ein kompletter Zug', () => {
-    const b = packBoard({ stacks: [['?milk', 'cola-can']], table: [null], spots: ['cola-can*2'], queue: ['milk*1'] });
+    const b = packBoard({ stacks: [['?sleeves', 'pack-fire']], table: [null], spots: ['pack-fire*2'], queue: ['sleeves*1'] });
     const s = run(start(b), tap(0));
     expect(s.moves).toBe(1);
     expect(s.history).toHaveLength(1);
-    expect(s.board.spots[0]!.filled[0]?.type).toBe('cola-can');
+    expect(s.board.spots[0]!.filled[0]?.type).toBe('pack-fire');
     expect(s.fx).toContainEqual(expect.objectContaining({ kind: 'revealed', itemId: s.board.stacks[0][0].id }));
   });
 
   it('ungültiger Tap: Shake-Event auf die Kiste, kein Zug', () => {
-    const b = packBoard({ stacks: [['milk'], ['cola-can']], table: ['bread'], spots: ['cola-can*2'], queue: ['milk*1', 'bread*1'] });
+    const b = packBoard({ stacks: [['sleeves'], ['pack-fire']], table: ['deck-box'], spots: ['pack-fire*2'], queue: ['sleeves*1', 'deck-box*1'] });
     const s = run(start(b), tap(0));
     expect(s.board).toBe(b);
     expect(s.moves).toBe(0);
@@ -32,10 +32,10 @@ describe('Packband-Reducer: Tap', () => {
 
   it('Versand, Kettenreaktion, Kombo und Münzen', () => {
     const b = packBoard({
-      stacks: [['cola-can'], ['apple']],
-      table: ['milk', 'milk', 'bread'],
-      spots: ['cola-can*1'],
-      queue: ['milk*2', 'bread*1', 'apple*1'],
+      stacks: [['pack-fire'], ['dice']],
+      table: ['sleeves', 'sleeves', 'deck-box'],
+      spots: ['pack-fire*1'],
+      queue: ['sleeves*2', 'deck-box*1', 'dice*1'],
     });
     const s = run(start(b), tap(0));
     const shipped = s.fx.filter((e) => e.kind === 'shipped');
@@ -50,12 +50,12 @@ describe('Packband-Reducer: Tap', () => {
   });
 
   it('Gold im Paket bringt Bonus-Münzen', () => {
-    const b = packBoard({ stacks: [['cola-can']], table: ['$milk'], spots: ['cola-can*1'], queue: ['milk*1'] });
+    const b = packBoard({ stacks: [['pack-fire']], table: ['$sleeves'], spots: ['pack-fire*1'], queue: ['sleeves*1'] });
     expect(run(start(b), tap(0)).levelCoins).toBe(2 * COINS_PER_BOX + COMBO_BONUS + PACK_GOLD_BONUS);
   });
 
   it('kein Tap mehr möglich: verloren', () => {
-    const b = packBoard({ stacks: [['milk'], ['bread', 'cola-can']], table: [null], spots: ['cola-can*2'], queue: ['milk*1', 'bread*1'] });
+    const b = packBoard({ stacks: [['sleeves'], ['deck-box', 'pack-fire']], table: [null], spots: ['pack-fire*2'], queue: ['sleeves*1', 'deck-box*1'] });
     // Cola ins Paket, Brot auf den Packtisch -> Milch passt nirgends, Packtisch voll.
     const s = run(start(b), tap(1), tap(1));
     expect(s.status).toBe('lost');
@@ -65,12 +65,12 @@ describe('Packband-Reducer: Tap', () => {
 
 describe('Packband-Reducer: Booster', () => {
   const deadlock = () => {
-    const b = packBoard({ stacks: [['milk'], ['bread', 'cola-can']], table: [null], spots: ['cola-can*2'], queue: ['milk*1', 'bread*1'] });
+    const b = packBoard({ stacks: [['sleeves'], ['deck-box', 'pack-fire']], table: [null], spots: ['pack-fire*2'], queue: ['sleeves*1', 'deck-box*1'] });
     return run(start(b), tap(1), tap(1));
   };
 
   it('Rückgängig stellt Board und Münzen wieder her', () => {
-    const b = packBoard({ stacks: [['milk'], ['cola-can']], table: [null], spots: ['cola-can*1'], queue: ['milk*1'] });
+    const b = packBoard({ stacks: [['sleeves'], ['pack-fire']], table: [null], spots: ['pack-fire*1'], queue: ['sleeves*1'] });
     const s = run(start(b), tap(1));
     expect(s.levelCoins).toBe(COINS_PER_BOX);
     const u = run(s, { type: 'UNDO' });
@@ -95,7 +95,7 @@ describe('Packband-Reducer: Booster', () => {
   });
 
   it('Lupe: scharf schalten, verpackte Ware ansehen, verbraucht einen', () => {
-    const b = packBoard({ stacks: [['?milk', 'cola-can']], table: [null], spots: ['cola-can*1'], queue: ['milk*1'] });
+    const b = packBoard({ stacks: [['?sleeves', 'pack-fire']], table: [null], spots: ['pack-fire*1'], queue: ['sleeves*1'] });
     const hiddenId = b.stacks[0][0].id;
     let s = run(start(b), { type: 'TOGGLE_PEEK' });
     expect(s.peekArmed).toBe(true);
@@ -108,7 +108,7 @@ describe('Packband-Reducer: Booster', () => {
   });
 
   it('Lupe ohne verpackte Waren bleibt aus', () => {
-    const b = packBoard({ stacks: [['cola-can']], table: [null], spots: ['cola-can*1'] });
+    const b = packBoard({ stacks: [['pack-fire']], table: [null], spots: ['pack-fire*1'] });
     expect(run(start(b), { type: 'TOGGLE_PEEK' }).peekArmed).toBe(false);
   });
 
@@ -125,7 +125,7 @@ describe('Packband-Reducer: Booster', () => {
   });
 
   it('gekaufter Booster wird gutgeschrieben', () => {
-    const s = run(start(packBoard({ stacks: [['cola-can']], table: [null], spots: ['cola-can*1'] })), {
+    const s = run(start(packBoard({ stacks: [['pack-fire']], table: [null], spots: ['pack-fire*1'] })), {
       type: 'GRANT_BOOSTER',
       booster: 'extra',
     });

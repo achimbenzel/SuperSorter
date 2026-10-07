@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import App from './App';
+import { installAudio } from './audio/player';
 import { PRELOAD_IMAGES } from './assets';
 import { applyTimingCssVars } from './config';
 import { installImageRetry, preloadImages } from './imageLoader';
@@ -14,6 +15,7 @@ applyTimingCssVars();
 installStandaloneViewportFix();
 installIosGuards();
 installImageRetry();
+installAudio();
 // Alle Spielbilder vorladen, dekodieren und festhalten (kein Nachladen mitten im Spiel).
 preloadImages(PRELOAD_IMAGES);
 

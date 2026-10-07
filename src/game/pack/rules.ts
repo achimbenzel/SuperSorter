@@ -86,7 +86,7 @@ export interface TapResult {
 export function applyTap(board: PackBoard, stack: number): TapResult {
   const item = topItem(board, stack);
   const route = item ? routeOf(board, item.type) : null;
-  if (!item || !route) throw new Error(`Ungültiger Tap auf Kiste ${stack}`);
+  if (!item || !route) throw new Error(`Invalid tap on crate ${stack}`);
 
   const taken = takeFromSource(board, { kind: 'stack', index: stack }, 1);
   const cart = taken.cart.slice();

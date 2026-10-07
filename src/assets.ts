@@ -1,21 +1,23 @@
 // Zentrales Asset-Mapping: Spiel-IDs -> Bildpfade.
 // Komponenten importieren Pfade ausschließlich von hier. Neue Assets siehe docs/ASSETS.md.
 
+import type { SfxName } from './audio/sfx';
 import type { Category, ItemType } from './game/items';
 
 /** Vite setzt BASE_URL auf den konfigurierten Basis-Pfad (z. B. "/SuperSorter/"). */
 const BASE = import.meta.env.BASE_URL;
 const asset = (path: string) => `${BASE}assets/${path}`;
 
+/** Card-Shop-Waren: Vektorgrafiken aus scripts/cardshop-art.mjs. */
 export const ITEM_IMAGE: Record<ItemType, string> = {
-  'cola-can': asset('items/cola-can.webp'),
-  'green-can': asset('items/green-can.webp'),
-  'orange-juice': asset('items/orange-juice.webp'),
-  chips: asset('items/chips.webp'),
-  apple: asset('items/apple.webp'),
-  bread: asset('items/bread.webp'),
-  cheese: asset('items/cheese.webp'),
-  milk: asset('items/milk.webp'),
+  'pack-fire': asset('items/pack-fire.webp'),
+  'pack-leaf': asset('items/pack-leaf.webp'),
+  'pack-bolt': asset('items/pack-bolt.webp'),
+  'pack-water': asset('items/pack-water.webp'),
+  dice: asset('items/dice.webp'),
+  'deck-box': asset('items/deck-box.webp'),
+  figure: asset('items/figure.webp'),
+  sleeves: asset('items/sleeves.webp'),
 };
 
 export const MYSTERY_IMAGE = {
@@ -57,15 +59,35 @@ export const BOOSTER_IMAGE: Record<BoosterId, string> = {
 
 /** Platzhalter (kein Asset vorhanden): Kategorie-Hinweis auf verpackten Items. */
 export const CATEGORY_ICON: Record<Category, string> = {
-  drinks: '🥤',
-  snacks: '🍿',
-  fruit: '🍎',
-  bakery: '🥖',
-  dairy: '🧀',
+  boosters: '🎴',
+  games: '🎲',
+  accessories: '🛡️',
+  collectibles: '⭐',
 };
 
 /** Platzhalter (kein Asset vorhanden): Einkaufswagen-Symbol. */
 export const CART_ICON = '🛒';
+
+/** Sounds (CC0, aus "UI SFX" von uisfx.com – Zuordnung siehe docs/ASSETS.md). */
+export const SFX_FILE: Record<SfxName, string> = {
+  tap: asset('sfx/tap.mp3'),
+  select: asset('sfx/select.mp3'),
+  place: asset('sfx/place.mp3'),
+  invalid: asset('sfx/invalid.mp3'),
+  reveal: asset('sfx/reveal.mp3'),
+  solved: asset('sfx/solved.mp3'),
+  ship: asset('sfx/ship.mp3'),
+  gold: asset('sfx/gold.mp3'),
+  win: asset('sfx/win.mp3'),
+  lose: asset('sfx/lose.mp3'),
+  booster: asset('sfx/booster.mp3'),
+  tab: asset('sfx/tab.mp3'),
+  button: asset('sfx/button.mp3'),
+  'pack-tear': asset('sfx/pack-tear.mp3'),
+  'card-flip': asset('sfx/card-flip.mp3'),
+  'card-rare': asset('sfx/card-rare.mp3'),
+  'card-holo': asset('sfx/card-holo.mp3'),
+};
 
 /** Alle Bilder, die vor dem ersten Level vorgeladen werden (verhindert Flackern beim Reveal). */
 export const PRELOAD_IMAGES: string[] = [

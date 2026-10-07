@@ -30,18 +30,55 @@ Nur nach Änderungen an `assets-src/` oder an `scripts/asset-map.mjs` muss das S
 
 **Darstellungsgröße:** Waren werden im Spiel mit 44–72 CSS-px gezeigt (abhängig vom Gerät). 216 px reicht für 3x-Retina (72 × 3).
 
+## Card-Shop-Waren (Vektorgrafik im Code)
+
+Seit dem Card-Shop-Thema verkauft der Laden Sammelkarten-Produkte. Die acht Waren sind als SVG in `scripts/cardshop-art.mjs` gezeichnet (Sticker-Stil wie die Original-Assets: dunkle Kontur, weißer Rand, Glanz) und werden mit `node scripts/cardshop-art.mjs` gerendert: SVG-Quellen nach `assets-src/cardshop/`, Bilder nach `public/assets/items/<id>.webp` (216 × 216).
+
+| Ware (`ItemType`) | Bild | Kategorie (Hinweis-Symbol) |
+|---|---|---|
+| `pack-fire` | rotes Booster-Pack „FIRE“, Flamme | Booster 🎴 |
+| `pack-leaf` | grünes Booster-Pack „LEAF“, Blatt | Booster 🎴 |
+| `pack-bolt` | gelbes Booster-Pack „BOLT“, Blitz | Booster 🎴 |
+| `pack-water` | blaues Booster-Pack „WATER“, Tropfen | Booster 🎴 |
+| `dice` | pinker W20 | Spiele 🎲 |
+| `deck-box` | lila Deckbox mit Stern | Zubehör 🛡️ |
+| `figure` | Sammelfigur (Feuerfuchs auf Sockel) | Sammlerstücke ⭐ |
+| `sleeves` | Kartenhüllen, „SLEEVES“ | Zubehör 🛡️ |
+
+Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`, werden aber nicht mehr ausgeliefert.
+
+**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter) sind komplett in CSS gezeichnet (`components/cards/`, `styles/cards.css`); die Kartenillustrationen sind vorerst Emojis (Platzhalter für echte Kartenkunst).
+
+## Sounds
+
+Alle Sounds stammen aus **UI SFX** von Romain Simon (https://uisfx.com, npm-Paket `uisfx` 0.4.0) und sind laut dessen `LICENSE-AUDIO` unter **CC0 1.0** gemeinfrei: frei nutzbar, auch kommerziell, ohne Namensnennung (wird trotzdem gern gesehen). MP3, mono, 64 kbit/s, zusammen ca. 136 KB, liegen in `public/assets/sfx/`.
+
+| Datei | Quelle (Pack/Cue) | Einsatz |
+|---|---|---|
+| `tap.mp3` | rubber/press | Taps |
+| `select.mp3` | rubber/select | Ware auswählen (Regal), Modus wählen |
+| `place.mp3` | rubber/drop | Ware landet |
+| `invalid.mp3` | rubber/invalid-drop | ungültiger Zug |
+| `reveal.mp3` | organic/open | Packpapier reißt auf |
+| `solved.mp3` | glass/success | Regalfach fertig |
+| `ship.mp3` | soft/send | Paket verschickt (im Takt der Kettenreaktion) |
+| `gold.mp3` | glass/coupon | Münzen |
+| `win.mp3` | glass/achievement | Level/Tag geschafft |
+| `lose.mp3` | soft/warning | Verloren |
+| `booster.mp3` | rubber/unlock | Power-up benutzt |
+| `tab.mp3` | rubber/snap | Reiter der Menüleiste, Filter |
+| `button.mp3` | rubber/start | Play, Übersicht |
+| `pack-tear.mp3` | organic/swipe | Booster-Pack aufreißen |
+| `card-flip.mp3` | soft/swipe | Karte umdrehen |
+| `card-rare.mp3` | glass/reward | Rare aufgedeckt |
+| `card-holo.mp3` | dreamy/achievement | Holo Rare aufgedeckt |
+
+Austauschen: Datei gleichen Namens ersetzen (oder Pfad in `SFX_FILE`, `src/assets.ts`). Lautstärken je Sound in `src/audio/player.ts`.
+
 ## Zuordnungstabelle
 
 | Alter Dateiname | Neuer Dateiname | Inhalt | Verwendung | Original px | Ziel px |
 |---|---|---|---|---|---|
-| `Item_01_Cola_Red.png` | `assets/items/cola-can.webp` | Rote Cola-Dose „COLA“ | Ware `cola` | 512×512 | 216×216 |
-| `Item_02_Energy_Green.png` | `assets/items/green-can.webp` | Grüne Energy-Drink-Dose „ENERGY“ | Ware `green-can` | 512×512 | 216×216 |
-| `Item_03_Orange_Juice.png` | `assets/items/orange-juice.webp` | Orangensaft-Tetrapak mit Strohhalm | Ware `orange-juice` | 512×512 | 216×216 |
-| `Item_04_Chips_Blue.png` | `assets/items/chips.webp` | Blaue Chipstüte „CRISPS“ | Ware `chips` | 512×512 | 216×216 |
-| `Item_05_Apple.png` | `assets/items/apple.webp` | Roter Apfel mit Blatt | Ware `apple` | 512×512 | 216×216 |
-| `Item_06_Bread.png` | `assets/items/bread.webp` | Baguette/Brotlaib | Ware `bread` | 512×512 | 216×216 |
-| `Item_07_Cheese.png` | `assets/items/cheese.webp` | Käsestück mit Löchern | Ware `cheese` | 512×512 | 216×216 |
-| `Item_08_Milk.png` | `assets/items/milk.webp` | Milchflasche „MILK“ | Ware `milk` | 512×512 | 216×216 |
 | `Mystery_01_Paperbag.png` | `assets/mystery/paper-wrap.webp` | Packpapier-Paket mit grauem Fragezeichen | Verdecktes Item im Karton | 512×512 | 216×216 |
 | `Mystery_01_Paperbag_Gold.png` | `assets/mystery/paper-gold.webp` | Goldenes Paket mit Fragezeichen, Glitzer | Verdecktes Gold-Item (Bonus-Münzen) | 512×512 | 216×216 |
 | `Mystery_01_Paperbag_Ripped.png` | `assets/mystery/paper-shreds.webp` | Zerrissenes Packpapier, Fetzen | Reveal-Animation (Papierfetzen) | 512×512 | 216×216 |

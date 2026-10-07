@@ -16,7 +16,7 @@ interface LoseScreenProps {
 }
 
 /** Niederlage mit Rettungsoptionen (Extra-Platz, Rückgängig) und Neustart. */
-export function LoseScreen({ title, text, canExtra, extraLabel = 'Extra-Platz (Booster)', canUndo, undoCount, onExtra, onUndo, onRetry }: LoseScreenProps) {
+export function LoseScreen({ title, text, canExtra, extraLabel = 'Extra slot (power-up)', canUndo, undoCount, onExtra, onUndo, onRetry }: LoseScreenProps) {
   return (
     <EndPanel
       tone="lose"
@@ -30,11 +30,11 @@ export function LoseScreen({ title, text, canExtra, extraLabel = 'Extra-Platz (B
           )}
           {canUndo && (
             <GameButton variant="green" onClick={onUndo}>
-              Rückgängig ({undoCount})
+              Undo ({undoCount})
             </GameButton>
           )}
           <GameButton variant="red" icon={UI_IMAGE.cross} onClick={onRetry}>
-            Nochmal
+            Try again
           </GameButton>
         </>
       }
