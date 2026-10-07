@@ -2,7 +2,7 @@
 
 Zweites Spielprinzip neben dem Regal-Modus ([GAME_DESIGN.md](GAME_DESIGN.md)). Im Regal nimmst du **Waren in den Bestand auf**, am Packband **verkaufst** du sie: Kundenpakete laufen auf einem Band an deinen Packplätzen vorbei, du füllst sie aus den Lagerkisten und verschickst sie.
 
-Status: **Prototyp**. Beide Modi sind zum Testen getrennt über das Menü (☰ oben links) wählbar; neue Spieler starten am Packband. Später sollen sich die Modi abwechseln (Wareneingang → Versand → Wareneingang …), siehe [ROADMAP.md](ROADMAP.md).
+Status: **Prototyp**. Beide Modi sind zum Testen getrennt im Hauptmenü (Reiter „Start“) wählbar; neue Spieler starten am Packband. Später sollen sich die Modi abwechseln (Wareneingang → Versand → Wareneingang …), siehe [ROADMAP.md](ROADMAP.md).
 
 ## Bildschirm
 

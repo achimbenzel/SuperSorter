@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ModeMenu } from './components/ModeMenu';
+import { HomeScreen } from './components/home/HomeScreen';
 import { DEFAULT_MODE, MODE_KEY, normalizeMode } from './hooks/progress';
 import { usePersistedState } from './hooks/usePersistedState';
 import { PackGame } from './modes/PackGame';
@@ -7,31 +7,23 @@ import { ShelfGame } from './modes/ShelfGame';
 import './styles/game.css';
 import './styles/screens.css';
 import './styles/pack.css';
+import './styles/home.css';
 
 /**
- * Wählt den Spielmodus. Beide Modi teilen Assets, Animationen, Booster und Münzen,
- * haben aber eigene Regeln (src/game/ bzw. src/game/pack/). Zum Testen sind sie
- * getrennt wählbar; später sollen sie sich abwechseln (Wareneingang / Versand).
+ * Start im Hauptmenü (untere Menüleiste, "Play" im mittleren Reiter). Dort wird
+ * auch der Spielmodus gewählt: Beide Modi teilen Assets, Animationen, Booster und
+ * Münzen, haben aber eigene Regeln (src/game/ bzw. src/game/pack/). Zum Testen sind
+ * sie getrennt wählbar; später sollen sie sich abwechseln (Wareneingang / Versand).
+ * Das Menü-Symbol im Spiel führt zurück ins Hauptmenü.
  */
 export default function App() {
   const [modeState, setModeState] = usePersistedState(MODE_KEY, DEFAULT_MODE);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const openMenu = () => setMenuOpen(true);
+  const [screen, setScreen] = useState<'home' | 'game'>('home');
   const mode = normalizeMode(modeState.mode);
-  return (
-    <>
-      {mode === 'pack' ? <PackGame key="pack" onMenu={openMenu} /> : <ShelfGame key="shelf" onMenu={openMenu} />}
-      {menuOpen && (
-        <ModeMenu
-          mode={mode}
-          onSelect={(mode) => {
-            setModeState({ mode });
-            setMenuOpen(false);
-          }}
-          onClose={() => setMenuOpen(false)}
-        />
-      )}
-    </>
-  );
+
+  if (screen === 'home') {
+    return <HomeScreen mode={mode} onModeChange={(m) => setModeState({ mode: m })} onPlay={() => setScreen('game')} />;
+  }
+  const toHome = () => setScreen('home');
+  return mode === 'pack' ? <PackGame key="pack" onMenu={toHome} /> : <ShelfGame key="shelf" onMenu={toHome} />;
 }

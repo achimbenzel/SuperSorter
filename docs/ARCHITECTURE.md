@@ -14,7 +14,7 @@ Es gibt **zwei Spielmodi** mit eigener Logik, die sich Assets, Komponenten, Anim
 | Spielfeld | `components/Board.tsx` (+ Shelf, ShelfSlot, Cart) | `components/pack/PackBoard.tsx` (+ PackBox, plan, timeline) |
 | Design | [GAME_DESIGN.md](GAME_DESIGN.md) | [PACK_MODE.md](PACK_MODE.md) |
 
-Gemeinsam: Karton-Regeln (`src/game/sources.ts`: Multi-Move, Mystery-Reveal, Lupe), `random.ts`, `items.ts`, Komponenten `DeliveryBox`, `Stack`, `Item`, `HUD`, `BoosterBar`, `WinScreen`, `LoseScreen`, `DebugPanel`, Hooks `useFlip`, `useFxAnimations`. `App.tsx` wählt nur den Modus (gespeichert unter `super-sorter/mode/v1`, Werte `pack` | `shelf`; Unbekanntes wie das alte `shop` wird zu `pack`) und zeigt das Modus-Menü.
+Gemeinsam: Karton-Regeln (`src/game/sources.ts`: Multi-Move, Mystery-Reveal, Lupe), `random.ts`, `items.ts`, Komponenten `DeliveryBox`, `Stack`, `Item`, `HUD`, `BoosterBar`, `WinScreen`, `LoseScreen`, `DebugPanel`, Hooks `useFlip`, `useFxAnimations`. `App.tsx` zeigt zuerst das Hauptmenü (`components/home/HomeScreen.tsx`) und nach „Play“ den gewählten Modus; das Menü-Symbol im Spiel führt zurück. Der Modus ist unter `super-sorter/mode/v1` gespeichert (Werte `pack` | `shelf`; Unbekanntes wie das alte `shop` wird zu `pack`).
 
 **Spielstand** (`hooks/progress.ts`, Schlüssel `super-sorter/progress/v1`): `level`/`highest` (Regal), `packDay`/`packHighest` (Packband), `coins` (gemeinsame Geldbörse). Es ist immer nur ein Modus gemountet, der den Stand schreibt.
 
@@ -169,6 +169,17 @@ Regel: nur `transform` und `opacity` animieren (GPU, 60 fps).
 | Konfetti | `canvas-confetti` (respektiert `prefers-reduced-motion`) |
 
 Alle Zeiten stehen in `src/config.ts` (`TIMING`) und werden als CSS-Variablen `--t-*` gespiegelt.
+
+## Hauptmenü und Menüleiste
+
+`components/home/TabBar.tsx` setzt die Vektor-Vorlage (1.svg–5.svg im `main`-Branch, 1170 × 265 px = 390 pt bei 3x) maßstabsgetreu um: Alle Maße sind Anteile der Breite (Container-Query-Einheit `cqw`), die Leiste skaliert also mit dem Gerät. Die Icon-Mitten (129/351/585/819/1041 px) und die Reiter-Positionen (0/222/456/690/912 px) stehen als Konstanten in der Datei.
+
+- Alle fünf Icons stehen immer an ihrem Platz (gelber Punkt der Vorlage); inaktiv `scale(0.62)`, aktiv `scale(1)` mit Überschwing-Kurve.
+- Der aktive Reiter ist ein einzelnes Element, das per `transform: translateX` mit Überschwingen gleitet. Ein innerer Teil wird pro Wechsel neu gemountet (`key`) und spielt eine Stauch-und-Streck-Animation („aufploppen“).
+- Leiste und Reiter laufen unter dem Home-Indikator weiter (`env(safe-area-inset-bottom)`).
+- Der Play-Knopf ist immer gerendert und wird nur ein-/ausgeblendet (Platz bleibt, nichts springt).
+
+Neuen Reiter mit Inhalt füllen: Eintrag in `TABS` (`HomeScreen.tsx`) behalten, statt des Platzhalters eine eigene Seite rendern. Echte Icons: Lucide-Icon in `TABS` austauschen.
 
 ## Performance und Bilder (Handy)
 

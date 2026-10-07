@@ -5,9 +5,9 @@ Spielbarer Prototyp eines Mobile-Puzzle-Games im Supermarkt mit zwei Modi:
 - **Packband – Waren verkaufen** (Standard): Kundenpakete laufen auf einem Band vorbei und verlangen konkrete Waren. Ein Tap auf eine Lagerkiste nimmt die oberste Ware: Passt sie, fliegt sie ins Paket, sonst auf den Packtisch. Volle Pakete werden verschickt, und Waren vom Packtisch springen automatisch ins nächste Paket – Kettenreaktionen geben Kombo-Münzen. → [docs/PACK_MODE.md](docs/PACK_MODE.md)
 - **Regal – Waren in den Bestand aufnehmen:** Du räumst die Lieferung sortenrein ins Supermarktregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 
-Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und teilen sich die Münzen. Zum Testen sind sie getrennt über das Menü (☰ oben links) wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
+Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (5 Reiter, „Play“ im mittleren). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
 
-![Packband-Modus: Band mit allen wartenden Paketen, Kettenreaktion mit Kombo, Tag 20 mit zwei Packplätzen, Modus-Menü](docs/screenshots/pack.webp)
+![Packband-Modus: Band mit allen wartenden Paketen, Kettenreaktion mit Kombo, Tag 20 mit zwei Packplätzen, altes Modus-Menü](docs/screenshots/pack.webp)
 
 <details>
 <summary>Regal-Modus</summary>
@@ -18,6 +18,7 @@ Beide Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Booster und te
 
 ## Features
 
+- **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Rangliste, Start, Events, Einstellungen als Lucide-Test-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Start“ sitzt der Play-Knopf. Die übrigen Reiter sind Platzhalter.
 - **Packband:** Ein Tap pro Zug, alle wartenden Pakete sichtbar, Versand-Animation (Klappen, Klebeband, Abflug), Pakete fahren vom Band heran, Kettenreaktionen werden Schritt für Schritt abgespielt („Kombo ×2!“).
 - **Regal-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
 - **Mystery-Layering:** Nur die oberste Ware je Stapel ist sichtbar. Darunter liegt Packpapier, das beim Freilegen mit Papierfetzen aufreißt. **Gold-Pakete** bringen Bonus-Münzen.
@@ -144,11 +145,12 @@ SuperSorter/
 │  │  └─ pack/                    Packband-Modus (types, rules, reducer, solver, generator, levels, customers + Tests)
 │  ├─ modes/                      PackGame, ShelfGame (je ein kompletter Spielbildschirm)
 │  ├─ components/                 Board, Shelf, ShelfSlot, DeliveryBox, Stack, Item, Cart,
-│  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, ModeMenu, DebugPanel, …
+│  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, DebugPanel, …
+│  │  ├─ home/                    HomeScreen (Hauptmenü, Moduswahl, Play), TabBar (untere Menüleiste)
 │  │  └─ pack/                    PackBoard, PackBox, plan (Animationsplan), timeline (Zeitplan der Kette)
 │  ├─ hooks/                      useGame, usePackGame, progress, usePersistedState, useFlip, useFxAnimations, …
 │  ├─ audio/sfx.ts                Sound-Schnittstelle (Platzhalter)
-│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css
+│  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css, home.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
 │  ├─ imageLoader.ts              Bilder vorladen/dekodieren/festhalten, Ladefehler wiederholen
 │  ├─ levelStore.ts, levelWorker.ts  Level-Cache beider Modi, Vorberechnung im Web Worker

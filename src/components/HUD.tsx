@@ -15,7 +15,7 @@ interface HUDProps {
 export function HUD({ label, level, reward, coins, onRestart, onMenu }: HUDProps) {
   return (
     <header className="hud">
-      <button type="button" className="hud-pill hud-icon" onClick={onMenu} aria-label="Menü / Spielmodus">
+      <button type="button" className="hud-pill hud-icon" onClick={onMenu} aria-label="Hauptmenü">
         <MenuIcon />
       </button>
       <div className="hud-pill hud-level">
