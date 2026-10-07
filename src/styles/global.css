@@ -22,7 +22,8 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  background: var(--c-bg-wall-bottom);
+  /* --page-bg: Farbe des untersten Elements (src/viewport.ts, setBottomColor) */
+  background: var(--page-bg, var(--c-bg-wall-bottom));
   color: var(--c-text);
   font-family: var(--font);
   -webkit-text-size-adjust: 100%;

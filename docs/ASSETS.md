@@ -47,33 +47,34 @@ Seit dem Card-Shop-Thema verkauft der Laden Sammelkarten-Produkte. Die acht Ware
 
 Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`, werden aber nicht mehr ausgeliefert.
 
-**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter) sind komplett in CSS gezeichnet (`components/cards/`, `styles/cards.css`); die Kartenillustrationen sind vorerst Emojis (Platzhalter für echte Kartenkunst).
+**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter) haben keine Bilddateien: In 3D zeichnet `src/three/textures.ts` Kartenvorder- und -rückseite, Packfolie und Naht per Canvas 2D als Texturen; ohne WebGL zeichnet CSS dasselbe Design (`components/cards/`, `styles/cards.css`). Die Kartenillustrationen sind vorerst Emojis (Platzhalter für echte Kartenkunst).
 
 ## Sounds
 
-Alle Sounds stammen aus **UI SFX** von Romain Simon (https://uisfx.com, npm-Paket `uisfx` 0.4.0) und sind laut dessen `LICENSE-AUDIO` unter **CC0 1.0** gemeinfrei: frei nutzbar, auch kommerziell, ohne Namensnennung (wird trotzdem gern gesehen). MP3, mono, 64 kbit/s, zusammen ca. 136 KB, liegen in `public/assets/sfx/`.
+Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synth.py`, numpy/scipy, MP3 über ffmpeg/libmp3lame). Sie enthalten kein fremdes Audiomaterial und sind damit frei nutzbar, auch kommerziell. Stil: angelehnt an Sammelkarten-Spiele (Pokémon TCG Pocket, Hearthstone, Yu-Gi-Oh!) – gefiltertes Rauschen als „Foley“ für Karten und Folie, Glocken und Glitzer für Rares, Marimba statt Piepser für Bedienelemente. Die ersten Sounds (UI SFX, CC0) klangen nach Spielautomat und wurden ersetzt. 22 Dateien, zusammen ca. 265 KB, in `public/assets/sfx/`.
 
-| Datei | Quelle (Pack/Cue) | Einsatz |
+| Datei | Klang | Einsatz |
 |---|---|---|
-| `tap.mp3` | rubber/press | Taps |
-| `select.mp3` | rubber/select | Ware auswählen (Regal), Modus wählen |
-| `place.mp3` | rubber/drop | Ware landet |
-| `invalid.mp3` | rubber/invalid-drop | ungültiger Zug |
-| `reveal.mp3` | organic/open | Packpapier reißt auf |
-| `solved.mp3` | glass/success | Regalfach fertig |
-| `ship.mp3` | soft/send | Paket verschickt (im Takt der Kettenreaktion) |
-| `gold.mp3` | glass/coupon | Münzen |
-| `win.mp3` | glass/achievement | Level/Tag geschafft |
-| `lose.mp3` | soft/warning | Verloren |
-| `booster.mp3` | rubber/unlock | Power-up benutzt |
-| `tab.mp3` | rubber/snap | Reiter der Menüleiste, Filter |
-| `button.mp3` | rubber/start | Play, Übersicht |
-| `pack-tear.mp3` | organic/swipe | Booster-Pack aufreißen |
-| `card-flip.mp3` | soft/swipe | Karte umdrehen |
-| `card-rare.mp3` | glass/reward | Rare aufgedeckt |
-| `card-holo.mp3` | dreamy/achievement | Holo Rare aufgedeckt |
+| `tap.mp3`, `tap-2.mp3` | weiches Holz-„Tock“ (zwei Varianten) | Taps |
+| `select.mp3` | Marimba-Ton | Ware auswählen (Regal), Modus wählen |
+| `place.mp3`, `place-2.mp3` | Pappe-„Plopp“ | Ware landet |
+| `invalid.mp3` | gedämpftes „Bonk-bonk“ abwärts | ungültiger Zug |
+| `reveal.mp3` | Papier reißt | Packpapier reißt auf |
+| `solved.mp3` | Marimba-Zweiklang + Glocke | Regalfach fertig |
+| `ship.mp3` | Klebeband „Zzzip“ + Wusch | Paket verschickt (im Takt der Kettenreaktion) |
+| `gold.mp3` | Münzen-Klingeln | Münzen |
+| `win.mp3` | Fanfare: Marimba-Arpeggio, Glocken-Akkord, Glitzer | Level/Tag geschafft |
+| `lose.mp3` | absteigende weiche Töne | Verloren |
+| `booster.mp3` | magisches Aufrauschen + „Ding“ | Power-up benutzt |
+| `tab.mp3` | kurzer Holz-Klick | Reiter der Menüleiste, Filter |
+| `button.mp3` | zwei Marimba-Töne aufwärts | Play, Übersicht, nächstes Pack |
+| `pack-tear.mp3` | Folie knistert und reißt, Glitzer, dumpfer Plopp | Booster-Pack aufreißen |
+| `card-flip.mp3`, `card-flip-2.mp3` | Luft-„Fwip“ + leises Klacken | Karte umdrehen |
+| `card-slide.mp3` | Karte gleitet weg | Karte wegwischen |
+| `card-rare.mp3` | helles Glocken-Arpeggio mit Glitzer | Rare aufgedeckt |
+| `card-holo.mp3` | Aufrauschen, Glitzer-Arpeggio, schimmernder Akkord | Holo Rare aufgedeckt |
 
-Austauschen: Datei gleichen Namens ersetzen (oder Pfad in `SFX_FILE`, `src/assets.ts`). Lautstärken je Sound in `src/audio/player.ts`.
+Ändern: Klang in `scripts/sfx/synth.py` anpassen und `python3 scripts/sfx/synth.py [name …]` ausführen (braucht numpy, scipy, ffmpeg). Oder eine Datei gleichen Namens ersetzen bzw. den Pfad in `SFX_FILE` (`src/assets.ts`) ändern; mehrere Pfade = Varianten, die zufällig abwechseln. Lautstärken je Sound in `src/audio/player.ts`.
 
 ## Zuordnungstabelle
 
@@ -136,7 +137,7 @@ Austauschen: Datei gleichen Namens ersetzen (oder Pfad in `SFX_FILE`, `src/asset
 | Statusleisten-Hintergrund (iOS) | CSS-Band in Theme-Farbe | `.app::before` in `src/styles/game.css` |
 | Booster-Zähler-Badge | CSS | `src/components/BoosterBar.tsx`, `src/styles/screens.css` |
 | Hinweistexte, Debug-Panel | HTML/CSS | `src/styles/screens.css` |
-| Sound-Effekte | leere Funktionen (Schnittstelle) | `src/audio/sfx.ts` |
+| Sound-Effekte | per Klangsynthese erzeugt (eigene Arbeit) | `scripts/sfx/synth.py` → `public/assets/sfx/` |
 | iOS-Splash-Screens | keine (iOS zeigt kurz die Hintergrundfarbe) | – |
 
 ### Derzeit ungenutzte Assets (Reserve)

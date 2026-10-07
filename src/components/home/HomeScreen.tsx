@@ -184,10 +184,17 @@ function ModeCard({ icon, title, subtitle, progress, active, onSelect }: ModeCar
 function Diagnostics() {
   const v = viewportInfo();
   const css = getComputedStyle(document.documentElement).getPropertyValue('--app-h') || '–';
+  const root = document.getElementById('root')?.getBoundingClientRect().height;
   return (
     <pre className="home-diag">
       {v
-        ? `inner ${v.innerHeight} · client ${v.clientHeight} · screen ${v.screenHeight}\nsafeTop ${v.safeTop} · standalone ${v.standalone}\napp-h ${css} · root ${document.getElementById('root')?.getBoundingClientRect().height}`
+        ? [
+            `build ${__BUILD_ID__} · ${v.displayMode} · standalone ${v.standalone} · dpr ${v.dpr}`,
+            `screen ${v.screenHeight} · inner ${v.innerHeight} · client ${v.clientHeight} · visual ${v.visualHeight}`,
+            `vh ${v.vh} · lvh ${v.lvh} · svh ${v.svh} · dvh ${v.dvh}`,
+            `safe top ${v.safeTop} · bottom ${v.safeBottom}`,
+            `app-h ${css} · root ${root}`,
+          ].join('\n')
         : 'no data'}
     </pre>
   );

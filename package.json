@@ -22,6 +22,7 @@
     "@types/node": "^26.6.4",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^6.1.1",
     "sharp": "^0.35.5",
     "tsx": "^4.23.15",
@@ -34,7 +35,8 @@
     "canvas-confetti": "^1.9.4",
     "lucide-react": "^1.52.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "three": "^0.186.1"
   },
   "description": "Super Sorter – Sortier-Puzzle im Supermarkt (React + Vite PWA, Prototyp)",
   "engines": {

@@ -14,20 +14,22 @@ export const SOUND_KEY = 'super-sorter/sound/v1';
 
 /** Lautstärke je Sound (0–1), damit häufige Klicks leiser sind als Belohnungen. */
 const VOLUME: Partial<Record<SfxName, number>> = {
-  tap: 0.45,
-  select: 0.5,
-  place: 0.55,
-  tab: 0.45,
-  'card-flip': 0.7,
+  tap: 0.5,
+  select: 0.55,
+  place: 0.6,
+  tab: 0.4,
+  'card-flip': 0.85,
+  'card-slide': 0.55,
   reveal: 0.6,
+  invalid: 0.7,
 };
 /** Denselben Sound nicht öfter als alle x ms (Ketten, schnelle Taps). */
 const MIN_GAP_MS = 45;
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
-const raw = new Map<SfxName, Promise<ArrayBuffer | null>>();
-const buffers = new Map<SfxName, AudioBuffer>();
+const raw = new Map<string, Promise<ArrayBuffer | null>>();
+const buffers = new Map<string, AudioBuffer>();
 const lastPlayed = new Map<SfxName, number>();
 let enabled = readEnabled();
 
@@ -54,9 +56,9 @@ export function setSoundEnabled(value: boolean): void {
 }
 
 function prefetch() {
-  for (const [name, url] of Object.entries(SFX_FILE) as [SfxName, string][]) {
+  for (const url of Object.values(SFX_FILE).flat()) {
     raw.set(
-      name,
+      url,
       fetch(url)
         .then((r) => (r.ok ? r.arrayBuffer() : null))
         .catch(() => null),
@@ -65,12 +67,12 @@ function prefetch() {
 }
 
 function decodeAll(context: AudioContext) {
-  for (const [name, data] of raw) {
+  for (const [url, data] of raw) {
     data.then(async (buf) => {
-      if (!buf || buffers.has(name)) return;
+      if (!buf || buffers.has(url)) return;
       try {
         // slice: decodeAudioData übernimmt den Puffer (detached), Original behalten.
-        buffers.set(name, await context.decodeAudioData(buf.slice(0)));
+        buffers.set(url, await context.decodeAudioData(buf.slice(0)));
       } catch {
         /* defekte Datei: Sound fehlt einfach */
       }
@@ -93,8 +95,9 @@ function unlock() {
 
 function play(name: SfxName) {
   if (!enabled || !ctx || !master || ctx.state !== 'running') return;
-  const buffer = buffers.get(name);
-  if (!buffer) return;
+  const variants = SFX_FILE[name].map((url) => buffers.get(url)).filter((b): b is AudioBuffer => !!b);
+  if (variants.length === 0) return;
+  const buffer = variants[Math.floor(Math.random() * variants.length)];
   const now = performance.now();
   if (now - (lastPlayed.get(name) ?? -Infinity) < MIN_GAP_MS) return;
   lastPlayed.set(name, now);

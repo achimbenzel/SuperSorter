@@ -68,25 +68,29 @@ export const CATEGORY_ICON: Record<Category, string> = {
 /** Platzhalter (kein Asset vorhanden): Einkaufswagen-Symbol. */
 export const CART_ICON = '🛒';
 
-/** Sounds (CC0, aus "UI SFX" von uisfx.com – Zuordnung siehe docs/ASSETS.md). */
-export const SFX_FILE: Record<SfxName, string> = {
-  tap: asset('sfx/tap.mp3'),
-  select: asset('sfx/select.mp3'),
-  place: asset('sfx/place.mp3'),
-  invalid: asset('sfx/invalid.mp3'),
-  reveal: asset('sfx/reveal.mp3'),
-  solved: asset('sfx/solved.mp3'),
-  ship: asset('sfx/ship.mp3'),
-  gold: asset('sfx/gold.mp3'),
-  win: asset('sfx/win.mp3'),
-  lose: asset('sfx/lose.mp3'),
-  booster: asset('sfx/booster.mp3'),
-  tab: asset('sfx/tab.mp3'),
-  button: asset('sfx/button.mp3'),
-  'pack-tear': asset('sfx/pack-tear.mp3'),
-  'card-flip': asset('sfx/card-flip.mp3'),
-  'card-rare': asset('sfx/card-rare.mp3'),
-  'card-holo': asset('sfx/card-holo.mp3'),
+/**
+ * Sounds (eigenes Sound-Design aus scripts/sfx/synth.py). Mehrere Dateien = Varianten,
+ * der Player wählt zufällig (häufige Sounds klingen so nicht mechanisch).
+ */
+export const SFX_FILE: Record<SfxName, string[]> = {
+  tap: [asset('sfx/tap.mp3'), asset('sfx/tap-2.mp3')],
+  select: [asset('sfx/select.mp3')],
+  place: [asset('sfx/place.mp3'), asset('sfx/place-2.mp3')],
+  invalid: [asset('sfx/invalid.mp3')],
+  reveal: [asset('sfx/reveal.mp3')],
+  solved: [asset('sfx/solved.mp3')],
+  ship: [asset('sfx/ship.mp3')],
+  gold: [asset('sfx/gold.mp3')],
+  win: [asset('sfx/win.mp3')],
+  lose: [asset('sfx/lose.mp3')],
+  booster: [asset('sfx/booster.mp3')],
+  tab: [asset('sfx/tab.mp3')],
+  button: [asset('sfx/button.mp3')],
+  'pack-tear': [asset('sfx/pack-tear.mp3')],
+  'card-flip': [asset('sfx/card-flip.mp3'), asset('sfx/card-flip-2.mp3')],
+  'card-slide': [asset('sfx/card-slide.mp3')],
+  'card-rare': [asset('sfx/card-rare.mp3')],
+  'card-holo': [asset('sfx/card-holo.mp3')],
 };
 
 /** Alle Bilder, die vor dem ersten Level vorgeladen werden (verhindert Flackern beim Reveal). */

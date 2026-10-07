@@ -9,7 +9,7 @@ Spielbarer Prototyp eines Mobile-Puzzle-Games in einem **Card Shop** (Sammelkart
 
 Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen, W20 und Sammelfigur. Beide Puzzle-Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Power-ups und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (Shop, Ranking, Home mit „Play“, Packs, Collection). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
 
-![Card Shop: Hauptmenü, Booster-Pack, Holo Rare aufgedeckt, Übersicht, Sammlung](docs/screenshots/cardshop.webp)
+![Card Shop: Hauptmenü, 3D-Booster-Pack mit Wisch-Hinweis, aufgedeckte Karte gekippt, Übersicht, Holo Rare in der 3D-Großansicht](docs/screenshots/cardshop.webp)
 
 <details>
 <summary>Packband-Modus (noch mit Supermarkt-Waren)</summary>
@@ -28,9 +28,9 @@ Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen,
 ## Features
 
 - **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Ranking, Home, Packs, Collection als Lucide-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Home“ sitzt der Play-Knopf. Shop und Ranking sind Platzhalter. Oben links Sound an/aus.
-- **Booster-Packs:** Pack schwebt, reißt beim Antippen auf, Karten werden einzeln umgedreht; die Rare kommt zuletzt und glüht vorher (Holo in Regenbogenfarben), beim Aufdecken Strahlen, Banner und Konfetti. Danach Übersicht mit „NEW“-Markierungen.
-- **Collection:** Album mit allen 32 Karten (fehlende als nummerierte Lücke), Filter nach Element, Fortschrittsbalken, Anzahl doppelter Karten, Großansicht mit Kippeffekt. Neue Karten zeigt eine Zahl am Reiter.
-- **Sound:** 17 CC0-Sounds (UI SFX), Web Audio, auf iOS ab dem ersten Tap; im Lautlos-Modus des iPhones bleibt es still.
+- **Booster-Packs in 3D (three.js):** Das Pack schwebt und lässt sich kippen; zum Öffnen über die obere Naht wischen. Die Karten steigen verdeckt heraus, jede wird per Tipp umgedreht, lässt sich mit dem Finger kippen (Glanz und Holo-Folie wandern mit) und wird weggewischt. Die Rare kommt zuletzt und glüht vorher (Holo in Regenbogenfarben), beim Aufdecken Strahlen, Banner und Konfetti. Danach Übersicht mit „NEW“-Markierungen. Ohne WebGL gibt es eine CSS-Variante.
+- **Collection:** Album mit allen 32 Karten (fehlende als nummerierte Lücke), Filter nach Element, Fortschrittsbalken, Anzahl doppelter Karten, Großansicht in 3D: Karte frei drehen und kippen. Neue Karten zeigt eine Zahl am Reiter.
+- **Sound:** eigene, per Klangsynthese erzeugte Sounds im Stil von Sammelkarten-Spielen (Karten-„Fwip“, Folie reißt, Glitzer-Glocken für Rares), Web Audio, auf iOS ab dem ersten Tap; im Lautlos-Modus des iPhones bleibt es still.
 - **Packband:** Ein Tap pro Zug, alle wartenden Pakete sichtbar, Versand-Animation (Klappen, Klebeband, Abflug), Pakete fahren vom Band heran, Kettenreaktionen werden Schritt für Schritt abgespielt („Kombo ×2!“).
 - **Regal-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
 - **Mystery-Layering:** Nur die oberste Ware je Stapel ist sichtbar. Darunter liegt Packpapier, das beim Freilegen mit Papierfetzen aufreißt. **Gold-Pakete** bringen Bonus-Münzen.
@@ -62,6 +62,7 @@ Weitere Scripts:
 | `npm run pack:report` | Packband-Modus: dasselbe für alle Versand-Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
 | `node scripts/cardshop-art.mjs` | Card-Shop-Waren (SVG im Code) neu nach `public/assets/items/` rendern |
+| `python3 scripts/sfx/synth.py` | alle Sounds neu erzeugen (Klangsynthese → `public/assets/sfx/*.mp3`; braucht numpy, scipy, ffmpeg) |
 | `npm run phone` | Production-Build bauen und im Netz bereitstellen (Port 4173) – zum Testen auf dem Handy |
 | `npm run typecheck` | nur TypeScript prüfen |
 | `npm run test:watch` | Tests im Watch-Modus |
@@ -152,7 +153,8 @@ SuperSorter/
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
 │  ├─ level-report.ts             npm run levels:report
-│  └─ pack-report.ts              npm run pack:report
+│  ├─ pack-report.ts              npm run pack:report
+│  └─ sfx/synth.py                Sound-Design als Code (alle Sounds)
 ├─ src/
 │  ├─ game/                       reine Spiellogik + Tests, Regal-Modus (types, rules, reducer, solver, generator, levels)
 │  │  ├─ sources.ts               gemeinsame Karton-Regeln beider Modi
@@ -162,9 +164,11 @@ SuperSorter/
 │  ├─ components/                 Board, Shelf, ShelfSlot, DeliveryBox, Stack, Item, Cart,
 │  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, DebugPanel, …
 │  │  ├─ home/                    HomeScreen, TabBar, PacksPage (Pack öffnen), CollectionPage (Album)
+│  │  ├─ three/                   Packs3D, CardViewer3D (React-Seite der 3D-Ansichten)
 │  │  ├─ cards/                   TcgCard (Sammelkarte in CSS), BoosterPack
 │  │  └─ pack/                    PackBoard, PackBox, plan (Animationsplan), timeline (Zeitplan der Kette)
 │  ├─ hooks/                      useGame, usePackGame, progress, usePersistedState, useFlip, useFxAnimations, …
+│  ├─ three/                      3D mit three.js: PackOpening, CardViewer, Holo-Shader, Karten-/Pack-Modelle
 │  ├─ audio/                      sfx.ts (Sound-Schnittstelle), player.ts (Web Audio, an/aus)
 │  ├─ styles/                     tokens.css (Design-Tokens), global.css, game.css, screens.css, pack.css, home.css, cards.css
 │  ├─ assets.ts                   zentrales Asset-Mapping (einzige Stelle mit Bildpfaden)
@@ -172,6 +176,7 @@ SuperSorter/
 │  ├─ levelStore.ts, levelWorker.ts  Level-Cache beider Modi, Vorberechnung im Web Worker
 │  ├─ config.ts                   UI-Zeiten, Storage-Key, Debug-Flag
 │  ├─ iosGuards.ts                Schutz vor Zoom/Bounce/Long-Press
+│  ├─ viewport.ts                 Höhe der Homescreen-App (--app-h), Seitenfarbe unten, Diagnose
 │  ├─ App.tsx, main.tsx
 ├─ index.html                     iOS-Meta-Tags, Apple-Touch-Icon
 ├─ vite.config.ts                 Basis-Pfad, PWA/Manifest/Service Worker

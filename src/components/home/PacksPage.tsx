@@ -1,29 +1,37 @@
-import confetti from 'canvas-confetti';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { playSfx } from '../../audio/sfx';
 import { RARITY_LABEL, type CardDef } from '../../game/cards/cards';
-import { openCardPack, PACK_PRICE } from '../../game/cards/packs';
-import { createRng, hashSeed } from '../../game/random';
+import { webglSupported } from '../../three/support';
 import { BoosterPack } from '../cards/BoosterPack';
-import { GameButton } from '../GameButton';
 import { CardBack, TcgCard } from '../cards/TcgCard';
+import { celebrate, drawPack, OpenButton, PacksNote, PullsSummary, type PacksPageProps } from './packsShared';
+
+// three.js wird erst geladen, wenn die Packs-Seite das erste Mal aufgeht.
+const Packs3D = lazy(() => import('../three/Packs3D'));
 
 type Phase = 'idle' | 'tearing' | 'reveal' | 'summary';
-
-interface PacksPageProps {
-  packsOpened: number;
-  /** Speichert das Pack in der Sammlung; liefert die neuen Karten-IDs. */
-  onOpened: (cards: CardDef[]) => string[];
-  onViewCollection: () => void;
-}
 
 const TEAR_MS = 950;
 
 /**
- * Booster-Packs öffnen: Pack antippen -> reißt auf -> Karten einzeln umdrehen
- * (die Rare kommt zuletzt) -> Übersicht. Packs sind zum Testen kostenlos.
+ * Booster-Packs öffnen. Mit WebGL in 3D (three.js, components/three/Packs3D.tsx),
+ * sonst die CSS-Variante darunter. Packs sind zum Testen kostenlos.
  */
-export function PacksPage({ packsOpened, onOpened, onViewCollection }: PacksPageProps) {
+export function PacksPage(props: PacksPageProps) {
+  const [use3d, setUse3d] = useState(webglSupported);
+  if (!use3d) return <PacksPageCss {...props} />;
+  return (
+    <Suspense fallback={<div className="packs" aria-busy="true" />}>
+      <Packs3D {...props} onWebglError={() => setUse3d(false)} />
+    </Suspense>
+  );
+}
+
+/**
+ * CSS-Variante: Pack antippen -> reißt auf -> Karten einzeln umdrehen
+ * (die Rare kommt zuletzt) -> Übersicht.
+ */
+function PacksPageCss({ packsOpened, onOpened, onViewCollection }: PacksPageProps) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [cards, setCards] = useState<CardDef[]>([]);
   const [newIds, setNewIds] = useState<string[]>([]);
@@ -35,7 +43,7 @@ export function PacksPage({ packsOpened, onOpened, onViewCollection }: PacksPage
 
   const open = () => {
     if (phase === 'tearing') return;
-    const pack = openCardPack(createRng(hashSeed(Date.now() % 2147483647, packsOpened)));
+    const pack = drawPack(packsOpened);
     // Sofort speichern: Wer mitten im Aufdecken die Seite wechselt, behält die Karten.
     setNewIds(onOpened(pack));
     setCards(pack);
@@ -53,10 +61,10 @@ export function PacksPage({ packsOpened, onOpened, onViewCollection }: PacksPage
       setFlipped(true);
       if (current.rarity === 'holo') {
         playSfx('card-holo');
-        celebrate(stageRef.current, true);
+        celebrate(stageRef.current?.getBoundingClientRect(), true);
       } else if (current.rarity === 'rare') {
         playSfx('card-rare');
-        celebrate(stageRef.current, false);
+        celebrate(stageRef.current?.getBoundingClientRect(), false);
       } else playSfx('card-flip');
       return;
     }
@@ -76,24 +84,7 @@ export function PacksPage({ packsOpened, onOpened, onViewCollection }: PacksPage
   };
 
   if (phase === 'summary') {
-    return (
-      <div className="packs packs--summary">
-        <h2 className="packs-title">Your pulls</h2>
-        <div className="pulls">
-          {cards.map((card, i) => (
-            <div className="pull" key={i} style={{ '--i': i } as CSSProperties}>
-              <TcgCard card={card}>{newIds.includes(card.id) && <span className="card-badge card-badge--new">NEW</span>}</TcgCard>
-            </div>
-          ))}
-        </div>
-        <div className="packs-actions">
-          <OpenButton onClick={open} again />
-          <button type="button" className="packs-link" onClick={onViewCollection}>
-            View collection
-          </button>
-        </div>
-      </div>
-    );
+    return <PullsSummary cards={cards} newIds={newIds} onOpenAnother={open} onViewCollection={onViewCollection} />;
   }
 
   if (phase === 'reveal' && current) {
@@ -147,38 +138,8 @@ export function PacksPage({ packsOpened, onOpened, onViewCollection }: PacksPage
       </div>
       <div className="packs-actions">
         <OpenButton onClick={open} />
-        <p className="packs-note">
-          {packsOpened} opened · 1 rare or holo rare in every pack
-          <br />
-          Packs are free while we test – later they will cost coins.
-        </p>
+        <PacksNote packsOpened={packsOpened} />
       </div>
     </div>
   );
-}
-
-function OpenButton({ onClick, again = false }: { onClick: () => void; again?: boolean }) {
-  return (
-    <GameButton variant="green" onClick={onClick}>
-      {again ? 'Open another' : 'Open pack'}
-      <em className="packs-price">{PACK_PRICE === 0 ? 'FREE' : `${PACK_PRICE} coins`}</em>
-    </GameButton>
-  );
-}
-
-/** Rare: goldener Funkenregen, Holo Rare: Regenbogen-Konfetti aus der Karte. */
-function celebrate(stage: HTMLElement | null, holo: boolean) {
-  const rect = stage?.getBoundingClientRect();
-  if (!rect) return;
-  const origin = { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height * 0.45) / window.innerHeight };
-  confetti({
-    particleCount: holo ? 120 : 50,
-    spread: holo ? 100 : 70,
-    startVelocity: holo ? 38 : 28,
-    scalar: holo ? 1 : 0.8,
-    origin,
-    zIndex: 150,
-    colors: holo ? ['#ff4fa3', '#ffd400', '#3ee0d2', '#7c5cff', '#4cc44c', '#ffffff'] : ['#ffd23f', '#ffb000', '#fff3b0'],
-    disableForReducedMotion: true,
-  });
 }

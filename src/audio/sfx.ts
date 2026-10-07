@@ -2,7 +2,8 @@
 //
 // Die UI ruft an allen relevanten Stellen diese Funktionen auf; die eigentliche
 // Wiedergabe steckt in `player.ts` (Web Audio API) und wird in main.tsx per
-// `setSfxHandler` eingehängt. Sounds: public/assets/sfx/ (CC0, siehe docs/ASSETS.md).
+// `setSfxHandler` eingehängt. Sounds: public/assets/sfx/, erzeugt von
+// scripts/sfx/synth.py (eigenes Sound-Design, siehe docs/ASSETS.md).
 
 export type SfxName =
   | 'tap'
@@ -22,6 +23,7 @@ export type SfxName =
   // Booster-Packs
   | 'pack-tear'
   | 'card-flip'
+  | 'card-slide'
   | 'card-rare'
   | 'card-holo';
 

@@ -179,11 +179,26 @@ Alle Zeiten stehen in `src/config.ts` (`TIMING`) und werden als CSS-Variablen `-
 
 Die Sammlung liegt unter `super-sorter/collection/v1` (`hooks/useCollection.ts`): Anzahl je Karte, geöffnete Packs, noch ungesehene neue Karten (Zahl am Collection-Reiter). Ein Pack wird schon beim Aufreißen gespeichert – wer mitten im Aufdecken wechselt, verliert nichts.
 
-UI: `components/cards/TcgCard.tsx` zeichnet die Karte komplett in CSS, alle Maße in `cqw` (Prozent der Kartenbreite) – dieselbe Komponente ist Mini-Vorschau im Album und Großansicht. Nur umdrehbare Karten (Pack öffnen) werden in 3D mit Rückseite aufgebaut; im Album gibt es nur die Vorderseite, damit 32 Karten nicht 32 Grafikebenen kosten. Holo: Regenbogenstreifen (`mix-blend-mode: color-dodge`) und Funkeln über dem Bild, wandernder Glanz über der Karte. `PacksPage` steuert den Ablauf idle → tearing → reveal → summary.
+UI: `components/cards/TcgCard.tsx` zeichnet die Karte komplett in CSS, alle Maße in `cqw` (Prozent der Kartenbreite) – dieselbe Komponente ist Mini-Vorschau im Album, in der Übersicht nach dem Öffnen und Fallback ohne WebGL. Holo in CSS: Regenbogenstreifen (`mix-blend-mode: color-dodge`) und Funkeln über dem Bild, wandernder Glanz über der Karte.
+
+### Packs und Großansicht in 3D (`src/three/`, three.js)
+
+Pack öffnen und die Großansicht einer Karte laufen mit **three.js** (wie in Pokémon TCG Pocket). three.js wird erst nachgeladen, wenn die Packs-Seite oder die Sammlung aufgeht (`React.lazy`, eigener Chunk ~150 kB gzip; der Service Worker cacht ihn). Ohne WebGL (`three/support.ts`, prüft ohne three.js zu laden) oder wenn der Renderer nicht startet, zeigen `PacksPage` bzw. `CollectionPage` die CSS-Variante.
+
+| Datei | Inhalt |
+|---|---|
+| `stage.ts` | Basis: Renderer (Pixeldichte ≤ 2), Kamera, Umgebungslicht (`RoomEnvironment`), Render-Schleife (pausiert bei verdeckter Seite / `setPaused`), Tween-Engine an einer eigenen Spielzeit (Ruckler werden gekappt statt übersprungen; in der Entwicklung `window.__ss3dTimeScale` = Zeitlupe), `project()` Welt → Pixel |
+| `textures.ts` | Canvas-2D-Zeichnungen: Kartenvorder-/-rückseite (gleiches Design wie die CSS-Karte), Packfolie, Zick-Zack-Naht, Glühen |
+| `holoMaterial.ts` | Shader der Kartenflächen: Glanzstreifen (Rare in Gold), bei Holo Regenbogenfolie (Farbe hängt von Position **und** Kippwinkel ab, Overlay-Mischung → Motiv bleibt erkennbar) und Glitzerpunkte; im Bildfenster stark, sonst schwach |
+| `meshes.ts` | Karte = Vorder- und Rückseite als eigene Flächen + Kante (keine `backface-visibility`-Tricks → keine durchscheinende Rückseite wie in CSS auf iOS). `setOnTop`: oberste Karte ohne Tiefentest zeichnen, damit sie beim Kippen nicht in den Stapel schneidet. Pack = gewölbte Folie (`MeshPhysicalMaterial` mit Iridescence) + Nähte |
+| `PackOpening.ts` | Ablauf und Gesten: Pack schwebt (ziehen = kippen) → über die obere Naht wischen (oder „Open pack“) → Naht fliegt weg, Karten steigen verdeckt heraus, Pack fällt → Stapel → Karte antippen = umdrehen, ziehen = kippen, antippen/wischen = nächste. Die Rare liegt zuletzt und glüht vorher. Kamera so, dass Pack/Karte zwischen die React-Overlays passt (`PACK_PAD`, `CARDS_PAD`). Meldet alles über Events (`requestCards`, `onHint`, `onTearLine`, `onCardShown`, …) |
+| `CardViewer.ts` | Großansicht: frei drehen und kippen, mit Schwung loslassen → rastet auf Vorder- oder Rückseite ein; antippen = Drehung, daneben tippen = schließen |
+
+React-Seite: `components/three/Packs3D.tsx` (Wisch-Hinweis an der Naht, Zähler, Banner, „NEW“, Strahlen hinter der durchsichtigen Zeichenfläche, Konfetti, Übersicht) und `CardViewer3D.tsx` (Portal über allem). Ein Pack wird beim Aufreißen gezogen und gespeichert (`requestCards`). Gemeinsame Teile beider Varianten in `components/home/packsShared.tsx`.
 
 ## Sound (`src/audio/`)
 
-`sfx.ts` ist die Schnittstelle (`playSfx(name)` und Kurzformen), `player.ts` die Wiedergabe per Web Audio: Dateien werden beim Start geladen, beim ersten Tap dekodiert (iOS erlaubt Audio erst nach einer Geste), jeder Tap weckt den AudioContext wieder auf. Lautstärke je Sound, gleicher Sound höchstens alle 45 ms. An/Aus unter `super-sorter/sound/v1` (Schalter oben links im Hauptmenü). iOS: Web Audio folgt dem Lautlos-Schalter.
+`sfx.ts` ist die Schnittstelle (`playSfx(name)` und Kurzformen), `player.ts` die Wiedergabe per Web Audio: Dateien werden beim Start geladen, beim ersten Tap dekodiert (iOS erlaubt Audio erst nach einer Geste), jeder Tap weckt den AudioContext wieder auf. Lautstärke je Sound, gleicher Sound höchstens alle 45 ms; hat ein Sound mehrere Dateien (`SFX_FILE`), wird zufällig variiert. Die Sounds selbst erzeugt `scripts/sfx/synth.py` (siehe docs/ASSETS.md). An/Aus unter `super-sorter/sound/v1` (Schalter oben links im Hauptmenü). iOS: Web Audio folgt dem Lautlos-Schalter.
 
 ## Hauptmenü und Menüleiste
 
@@ -214,7 +229,7 @@ Getestet (per Playwright, mit simulierten Safe Areas): iPhone SE (375×667), iPh
 
 **Homescreen-App randlos:** Die Statusleiste ist `black-translucent` (transparent, weiße Schrift), die App reicht bis an die Oberkante. Zwei Details dazu:
 
-- *Höhe:* iOS meldet in diesem Modus als Viewport-Höhe den Bildschirm minus Statusleiste, zeichnet aber ab der Oberkante – unten blieb ein Streifen frei. `src/viewport.ts` setzt `--app-h` (genutzt von `html`, `body`, `#root`, `--usable-h`): immer die größere von `innerHeight`/`clientHeight`; fehlt dann bis zur Bildschirmhöhe noch etwa die Statusleisten-Höhe und läuft die App als Homescreen-App (`navigator.standalone`, `display-mode`) **oder** entspricht die Lücke genau der oberen Safe Area, die volle Bildschirmhöhe. Die erste Version prüfte nur `navigator.standalone` – das setzte iOS auf dem Testgerät offenbar nicht. Diagnose: auf „Home“ fünfmal auf den Titel tippen.
+- *Höhe:* iOS meldet in diesem Modus als Viewport-Höhe den Bildschirm minus Statusleiste, zeichnet aber ab der Oberkante – unten blieb ein Streifen frei. `src/viewport.ts` setzt `--app-h` (genutzt von `html`, `body`, `#root`, `--usable-h`): immer die größere von `innerHeight`/`clientHeight`; fehlt dann bis zur Bildschirmhöhe noch etwa die Statusleisten-Höhe und läuft die App als Homescreen-App (`navigator.standalone`, `display-mode`) **oder** entspricht die Lücke genau der oberen Safe Area, die volle Bildschirmhöhe. Die erste Version prüfte nur `navigator.standalone` – das setzte iOS auf dem Testgerät offenbar nicht. Als Homescreen-App zählt zusätzlich `100lvh` als Kandidat. Bleibt der Streifen trotzdem, ist er vermutlich gar nicht Teil der Web-Ansicht (iOS macht sie selbst kürzer und füllt den Rest mit der Seitenfarbe): Deshalb setzt `setBottomColor()` die Seitenfarbe (`--page-bg` auf `html`/`body`) auf die Farbe des untersten Elements – im Menü das Blau der Menüleiste, im Spiel der Boden. Diagnose: auf „Home“ fünfmal auf den Titel tippen (Build-Zeit, display-mode, alle gemeldeten Höhen inkl. vh/lvh/svh/dvh, Safe Areas).
 - *Lesbarkeit oben:* Statt eines abgetrennten Bandes läuft der Hintergrund hinter der Statusleiste in einem weichen Verlauf ins Blaue (`.app::before`, hinter dem Inhalt, ohne Kante/Schatten). Die Menüleiste unten reicht bis unter den Home-Indikator.
 
 ## PWA und Deployment

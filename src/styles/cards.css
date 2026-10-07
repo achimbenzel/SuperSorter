@@ -67,7 +67,22 @@
 
 .tcg.is-flip .tcg-inner {
   transform-style: preserve-3d;
-  transition: transform 560ms cubic-bezier(0.3, 1.25, 0.5, 1);
+  /* symmetrische Kurve: Bei der Hälfte der Zeit steht die Karte genau seitlich */
+  transition: transform 560ms cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+
+/* iOS-Safari ignoriert backface-visibility für Kinder mit eigener Grafikebene
+   (Schatten-Filter, Blend-Modus, Animation) – Emoji und Holo der Vorderseite
+   schienen durch die Rückseite. Deshalb wird die abgewandte Seite zusätzlich genau
+   zur Hälfte der Drehung (280 ms) unsichtbar geschaltet. */
+.tcg.is-flip .tcg-front,
+.tcg.is-flip .tcg-back {
+  transition: visibility 0s linear 280ms;
+}
+
+.tcg.is-flip.is-down .tcg-front,
+.tcg.is-flip:not(.is-down) .tcg-back {
+  visibility: hidden;
 }
 
 .tcg.is-flip .tcg-face {
@@ -454,6 +469,7 @@
 
 .home-page--packs {
   gap: 0;
+  padding: 0;
 }
 
 .packs {
@@ -464,6 +480,7 @@
   gap: 14px;
   width: 100%;
   height: 100%;
+  padding: 0 16px;
 }
 
 .packs-title {
@@ -846,6 +863,187 @@
   height: 22px;
 }
 
+
+/* ------------------------------------------------------------------ Packs in 3D */
+
+/* Die Zeichenfläche füllt die ganze Seite; Hinweise und Knöpfe liegen darüber. */
+.packs3d {
+  position: relative;
+  flex: 1 1 auto;
+  align-self: stretch;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.packs3d-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* Angehaltene Zeichenfläche zeigt sonst ihr letztes Bild hinter der Übersicht */
+.packs3d.is-summary .packs3d-stage {
+  visibility: hidden;
+}
+
+.packs3d-title {
+  position: absolute;
+  top: 6px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+.packs3d-foot {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.packs3d-foot > * {
+  pointer-events: auto;
+}
+
+.packs3d-foot .reveal-hint {
+  pointer-events: none;
+  text-align: center;
+}
+
+.packs3d-count {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(27, 69, 172, 0.12);
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--c-text);
+  pointer-events: none;
+}
+
+.packs3d-rays {
+  position: absolute;
+  pointer-events: none;
+}
+
+.packs3d .reveal-banner {
+  pointer-events: none;
+}
+
+.packs3d-new {
+  position: absolute;
+  z-index: 5;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #ff3d6e;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  animation: badge-pop 420ms cubic-bezier(0.3, 1.8, 0.5, 1) both;
+}
+
+.packs3d-summary {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.packs3d-summary .packs {
+  min-height: 100%;
+  height: auto;
+  padding-top: 12px;
+  padding-bottom: 16px;
+}
+
+/* Wisch-Hinweis über der oberen Naht des Packs */
+.swipe-hint {
+  position: absolute;
+  height: 0;
+  pointer-events: none;
+  animation: fade-in 400ms ease-out 700ms both;
+}
+
+.swipe-hint-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: -2px;
+  border-top: 4px dashed rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 1px 2px rgba(40, 20, 90, 0.7));
+}
+
+.swipe-hint-label {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(20, 12, 50, 0.72);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.swipe-hint-finger {
+  position: absolute;
+  left: 0;
+  top: -6px;
+  width: 38px;
+  height: 38px;
+  color: #fff;
+  filter: drop-shadow(0 2px 3px rgba(20, 10, 60, 0.6));
+  animation: swipe-finger 1.8s cubic-bezier(0.5, 0, 0.3, 1) 1s infinite;
+}
+
+.swipe-hint-finger svg {
+  width: 100%;
+  height: 100%;
+  fill: rgba(255, 255, 255, 0.35);
+}
+
+/* 3D-Kartenansicht: Zeichenfläche über den ganzen Bildschirm (Karte darf frei drehen) */
+.card-detail--3d {
+  justify-content: flex-end;
+}
+
+.card3d-host {
+  position: absolute;
+  inset: 0;
+}
+
+.card-detail--3d .card-detail-close {
+  z-index: 2;
+}
+
+.card3d-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+  animation: fade-in 300ms ease-out 250ms both;
+}
+
+.card3d-hint {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.55);
+}
+
 /* ------------------------------------------------------------------ Keyframes */
 
 @keyframes holo-sweep {
@@ -989,6 +1187,24 @@
 @keyframes detail-pop {
   from {
     transform: scale(0.6) translateY(20%);
+    opacity: 0;
+  }
+}
+
+@keyframes swipe-finger {
+  0% {
+    transform: translateX(-10px) rotate(-12deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateX(calc(var(--w, 200px) - 26px)) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(var(--w, 200px) - 26px)) rotate(8deg);
     opacity: 0;
   }
 }

@@ -65,6 +65,8 @@ export default defineConfig(({ command, isPreview }) => {
   const base = resolveBase(command === 'build' || isPreview === true);
   return {
     base,
+    // Build-Kennung für die Diagnose im Hauptmenü (zeigt, ob die Homescreen-App aktuell ist)
+    define: { __BUILD_ID__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ')) },
     plugins: [
       react(),
       devAssetCache(),
@@ -101,7 +103,9 @@ export default defineConfig(({ command, isPreview }) => {
       }),
     ],
     // Gebündeltes JS/CSS getrennt von public/assets/ ablegen (übersichtlicheres dist/).
-    build: { assetsDir: 'static' },
+    // three.js (~600 kB, gzip ~150 kB) liegt in einem eigenen Chunk, der erst für die
+    // 3D-Packs bzw. die 3D-Kartenansicht geladen wird -> Warnschwelle darüber.
+    build: { assetsDir: 'static', chunkSizeWarningLimit: 700 },
     // host: true -> auch über LAN-/Tailscale-IP erreichbar.
     // allowedHosts: Vite blockt unbekannte Hostnamen (Schutz vor DNS-Rebinding).
     // ".ts.net" erlaubt Tailscale-MagicDNS-Namen, z. B. für `tailscale serve` (HTTPS aufs iPhone).

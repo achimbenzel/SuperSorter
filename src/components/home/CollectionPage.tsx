@@ -1,11 +1,16 @@
 import { X } from 'lucide-react';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type PointerEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { playSfx } from '../../audio/sfx';
 import { CARD_SET, ELEMENT_LABEL, RARITY_LABEL, SET_NAME, SET_SIZE, type CardDef, type CardElement } from '../../game/cards/cards';
 import { ownedCount, type Collection } from '../../game/cards/packs';
+import { webglSupported } from '../../three/support';
 import { ELEMENT_ICON, TcgCard } from '../cards/TcgCard';
 import { GameButton } from '../GameButton';
+
+// 3D-Ansicht (three.js) wird nachgeladen; ohne WebGL bleibt die CSS-Ansicht.
+const loadViewer = () => import('../three/CardViewer3D');
+const CardViewer3D = lazy(loadViewer);
 
 type Filter = 'all' | CardElement;
 const FILTERS: Filter[] = ['all', 'fire', 'water', 'leaf', 'bolt'];
@@ -23,6 +28,11 @@ export function CollectionPage({ collection, onSeen, onOpenPacks }: CollectionPa
   const [detail, setDetail] = useState<CardDef | null>(null);
   // "NEW"-Markierungen dieses Besuchs festhalten, beim Verlassen als gesehen speichern.
   const [unseen] = useState(() => new Set(collection.unseen));
+  const [use3d, setUse3d] = useState(webglSupported);
+  // Schon vorab laden, damit die erste Karte ohne Wartezeit aufgeht.
+  useEffect(() => {
+    if (use3d) void loadViewer();
+  }, [use3d]);
   const onSeenRef = useRef(onSeen);
   onSeenRef.current = onSeen;
   useEffect(() => () => onSeenRef.current(), []);
@@ -98,12 +108,30 @@ export function CollectionPage({ collection, onSeen, onOpenPacks }: CollectionPa
         )}
       </div>
 
-      {detail && <CardDetail card={detail} count={collection.counts[detail.id] ?? 0} onClose={() => setDetail(null)} />}
+      {detail &&
+        (use3d ? (
+          <Suspense fallback={<CardDetail card={detail} count={collection.counts[detail.id] ?? 0} onClose={() => setDetail(null)} />}>
+            <CardViewer3D card={detail} onClose={() => setDetail(null)} onWebglError={() => setUse3d(false)}>
+              <CardInfo card={detail} count={collection.counts[detail.id] ?? 0} />
+            </CardViewer3D>
+          </Suspense>
+        ) : (
+          <CardDetail card={detail} count={collection.counts[detail.id] ?? 0} onClose={() => setDetail(null)} />
+        ))}
     </div>
   );
 }
 
-/** Große Ansicht einer Karte; kippt dem Finger nach (Holo-Glanz wandert mit). */
+function CardInfo({ card, count }: { card: CardDef; count: number }) {
+  return (
+    <>
+      <strong>{card.name}</strong>
+      {RARITY_LABEL[card.rarity]} · {ELEMENT_LABEL[card.element]} · owned ×{count}
+    </>
+  );
+}
+
+/** Große Ansicht einer Karte ohne WebGL; kippt dem Finger nach (Holo-Glanz wandert mit). */
 function CardDetail({ card, count, onClose }: { card: CardDef; count: number; onClose: () => void }) {
   const tiltRef = useRef<HTMLDivElement>(null);
   const tilt = (e: PointerEvent) => {
@@ -131,8 +159,7 @@ function CardDetail({ card, count, onClose }: { card: CardDef; count: number; on
         <TcgCard card={card} />
       </div>
       <p className="card-detail-info">
-        <strong>{card.name}</strong>
-        {RARITY_LABEL[card.rarity]} · {ELEMENT_LABEL[card.element]} · owned ×{count}
+        <CardInfo card={card} count={count} />
       </p>
     </div>,
     document.body,

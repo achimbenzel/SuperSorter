@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HomeScreen } from './components/home/HomeScreen';
 import { DEFAULT_MODE, MODE_KEY, normalizeMode } from './hooks/progress';
 import { usePersistedState } from './hooks/usePersistedState';
 import { PackGame } from './modes/PackGame';
 import { ShelfGame } from './modes/ShelfGame';
+import { setBottomColor } from './viewport';
 import './styles/game.css';
 import './styles/screens.css';
 import './styles/pack.css';
@@ -21,6 +22,8 @@ export default function App() {
   const [modeState, setModeState] = usePersistedState(MODE_KEY, DEFAULT_MODE);
   const [screen, setScreen] = useState<'home' | 'game'>('home');
   const mode = normalizeMode(modeState.mode);
+  // Unten liegt im Menü die blaue Menüleiste, im Spiel der Boden.
+  useEffect(() => setBottomColor(screen === 'home' ? '#008cff' : 'var(--c-bg-floor)'), [screen]);
 
   if (screen === 'home') {
     return <HomeScreen mode={mode} onModeChange={(m) => setModeState({ mode: m })} onPlay={() => setScreen('game')} />;

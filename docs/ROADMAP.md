@@ -22,7 +22,7 @@ Der Onlineshop-Prototyp wurde nach dem Playtest durch das **Packband** ersetzt (
 
 ## 1. Spielgefühl und Feedback (kurzfristig)
 
-- ~~**Audio:**~~ umgesetzt (CC0-Sounds, Web Audio, An/Aus-Schalter). Offen: Hintergrundmusik, eigene Sounds für Kombos.
+- ~~**Audio:**~~ umgesetzt (eigene synthetisierte Sounds im Sammelkarten-Stil, Web Audio, An/Aus-Schalter). Offen: Hintergrundmusik, eigene Sounds für Kombos; ggf. echte Foley-Aufnahmen (Karten, Folie).
 - **Haptik:** iOS Safari unterstützt `navigator.vibrate` nicht. Optionen prüfen (z. B. Capacitor-Wrapper bei späterer App-Store-Version).
 - **Playtesting der Kurve:** Echte Spielzeiten und Abbruchraten messen und `targetWinRate` bzw. Configs in `levels.ts` nachjustieren. Die simulierte Gewinnquote ist nur ein Proxy.
 - **Tutorial-Hand:** In Level 1 eine animierte Hand, die den ersten Zug zeigt (statt nur Text).
