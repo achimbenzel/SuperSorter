@@ -8,11 +8,11 @@ interface BoosterPackProps {
 }
 
 /** Gezackte Schweißnaht als clip-path (oben bzw. unten). */
-function crimp(top: boolean, teeth = 14): string {
+function crimp(top: boolean, teeth = 9): string {
   const pts: string[] = [];
   for (let i = 0; i <= teeth * 2; i++) {
     const x = (i / (teeth * 2)) * 100;
-    const y = i % 2 === 0 ? 0 : 28;
+    const y = i % 2 === 0 ? 0 : 14;
     pts.push(`${x.toFixed(2)}% ${top ? y : 100 - y}%`);
   }
   return top ? `polygon(${pts.join(',')}, 100% 100%, 0% 100%)` : `polygon(0% 0%, 100% 0%, ${pts.reverse().join(',')})`;

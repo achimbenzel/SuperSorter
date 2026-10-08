@@ -406,7 +406,7 @@ function seeded(seed: number) {
 }
 
 /**
- * Silberne Schweißnaht wie bei echten Packs: feine senkrechte Rillen, leicht
+ * Silberne Schweißnaht wie bei echten Packs: wenige dezente Rillen, leicht
  * zerknitterte Folie, gezackte Außenkante. Oben zusätzlich die Stanzungen:
  * Aufhängeloch (Euro-Schlitz) in der Mitte und Aufreiß-Kerben an den Seiten.
  * Transparente Stellen schneidet das Material per alphaTest aus.
@@ -420,8 +420,8 @@ export function drawCrimp(top: boolean): HTMLCanvasElement {
   const inner = H - outer; // Kante zum Pack hin
 
   // Grundfläche mit gezackter Außenkante
-  const teeth = 56;
-  const depth = 9;
+  const teeth = 20;
+  const depth = 5;
   ctx.beginPath();
   ctx.moveTo(0, inner);
   for (let i = 0; i <= teeth * 2; i++) {
@@ -442,7 +442,7 @@ export function drawCrimp(top: boolean): HTMLCanvasElement {
   ctx.save();
   ctx.clip();
   // Knitter: breite, weiche helle/dunkle Bahnen
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 12; i++) {
     const x = rnd() * W;
     const w = 20 + rnd() * 70;
     const light = rnd() > 0.5;
@@ -454,12 +454,12 @@ export function drawCrimp(top: boolean): HTMLCanvasElement {
     ctx.fillStyle = band;
     ctx.fillRect(x - w / 2, 0, w, H);
   }
-  // feine Rillen
-  for (let x = 0; x < W; x += 6) {
-    ctx.fillStyle = 'rgba(30,36,48,0.32)';
-    ctx.fillRect(x, 0, 2, H);
-    ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.fillRect(x + 2, 0, 1.5, H);
+  // dezente Rillen
+  for (let x = 20; x < W; x += 44) {
+    ctx.fillStyle = 'rgba(30,36,48,0.12)';
+    ctx.fillRect(x, 0, 3, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.16)';
+    ctx.fillRect(x + 3, 0, 3, H);
   }
   // Schatten an der Kante zum Pack
   const sg = ctx.createLinearGradient(0, inner, 0, top ? inner - 18 : inner + 18);

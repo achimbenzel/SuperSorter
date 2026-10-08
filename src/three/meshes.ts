@@ -224,7 +224,7 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
       new THREE.MeshStandardMaterial({
         map: t,
         bumpMap: t,
-        bumpScale: 1.2,
+        bumpScale: 0.4,
         envMap,
         envMapIntensity: 1.3,
         metalness: 1,
