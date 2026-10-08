@@ -432,10 +432,10 @@ export function drawCrimp(top: boolean): HTMLCanvasElement {
   ctx.lineTo(W, inner);
   ctx.closePath();
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#9aa1ad');
-  g.addColorStop(0.35, '#eef1f6');
-  g.addColorStop(0.6, '#c9ced8');
-  g.addColorStop(1, '#8d94a1');
+  g.addColorStop(0, '#7b828e');
+  g.addColorStop(0.35, '#c4c9d2');
+  g.addColorStop(0.6, '#a6acb7');
+  g.addColorStop(1, '#6f7683');
   ctx.fillStyle = g;
   ctx.fill();
 

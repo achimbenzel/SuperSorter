@@ -12,7 +12,7 @@
 import * as THREE from 'three';
 import { playSfx } from '../audio/sfx';
 import type { CardDef } from '../game/cards/cards';
-import { CARD_H, CARD_W, createCard, createPack, CRIMP_H, PACK_H, PACK_W, type CardObject, type PackObject } from './meshes';
+import { CARD_H, CARD_W, createCard, createPack, CRIMP_H, PACK_H, PACK_W, TEAR_BAND_H, type CardObject, type PackObject } from './meshes';
 import { ease, Stage } from './stage';
 import { drawGlow } from './textures';
 
@@ -48,6 +48,10 @@ interface Pointer {
   xPrev: number;
   vx: number;
   dragged: boolean;
+  /** Pack-Phase: Geste noch offen, Aufreißen oder Kippen. */
+  mode: 'undecided' | 'tear' | 'tilt';
+  /** Beginnt an der oberen Kante des Packs (dort reißt man auf). */
+  tearZone: boolean;
 }
 
 const TAP_PX = 10;
@@ -79,6 +83,19 @@ export class PackOpening extends Stage {
   private viewCards: View = { z: 5, y: 0 };
   private shown = false;
   private disposedPack = false;
+  /** Aufreißen: geglätteter Fortschritt, Ziel (vom Finger), Richtung (0 = noch nicht begonnen). */
+  private tearP = 0;
+  private tearTarget = 0;
+  private tearDir = 0;
+  /** Finger reißt gerade. */
+  private tearing = false;
+  /** Nächste Schwelle für ein Knister-Geräusch. */
+  private tearTick = 0;
+  /** Zug am Pack (0..1) – lässt es leicht zittern. */
+  private tension = 0;
+  private completing = false;
+  /** Versatz durch das Einfliegen (wird im Frame zur Schwebebewegung addiert). */
+  private drop = { y: 0, rx: 0, ry: 0, rz: 0 };
   /** Zählt bei reset()/skip() hoch: laufende Abläufe erkennen daran, dass sie veraltet sind. */
   private run = 0;
 
@@ -161,8 +178,12 @@ export class PackOpening extends Stage {
   private emitTearLine() {
     if (this.phase !== 'pack') return;
     const r = this.packRect();
-    const crimp = (CRIMP_H / PACK_H) * r.height;
-    this.ev.onTearLine({ x0: r.left, x1: r.right, y: r.top + crimp * 1.15 });
+    this.ev.onTearLine({ x0: r.left, x1: r.right, y: this.tearLineY(r) });
+  }
+
+  /** Risslinie (unterhalb der Naht) in Container-Pixeln. */
+  private tearLineY(r: { top: number; height: number }) {
+    return r.top + ((CRIMP_H + TEAR_BAND_H) / PACK_H) * r.height;
   }
 
   // ------------------------------------------------------------ Gesten
@@ -175,7 +196,12 @@ export class PackOpening extends Stage {
   private down = (e: PointerEvent) => {
     const p = this.local(e);
     const now = performance.now();
-    this.pointer = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y, t0: now, tPrev: now, xPrev: p.x, vx: 0, dragged: false };
+    let tearZone = false;
+    if (this.phase === 'pack') {
+      const r = this.packRect();
+      tearZone = p.y > r.top - 60 && p.y < this.tearLineY(r) + r.height * 0.16 && p.x > r.left - 50 && p.x < r.right + 50;
+    }
+    this.pointer = { id: e.pointerId, x0: p.x, y0: p.y, x: p.x, y: p.y, t0: now, tPrev: now, xPrev: p.x, vx: 0, dragged: false, mode: 'undecided', tearZone };
     this.canvas.setPointerCapture(e.pointerId);
   };
 
@@ -193,21 +219,33 @@ export class PackOpening extends Stage {
     const dx = p.x - ptr.x0;
     const dy = p.y - ptr.y0;
     if (this.phase === 'pack') {
-      const r = this.packRect();
-      const band = r.top + r.height * 0.34;
-      const startsHigh = ptr.y0 < band && ptr.y0 > r.top - 70;
-      if (startsHigh && Math.abs(dx) > r.width * 0.42 && Math.abs(dy) < Math.abs(dx) * 0.75) {
-        this.pointer = null;
-        this.tilt.yaw = this.tilt.pitch = 0;
-        void this.tear(Math.sign(dx) || 1);
-        return;
-      }
-      if (!ptr.dragged && Math.hypot(dx, dy) > TAP_PX) {
-        ptr.dragged = true;
+      if (ptr.mode === 'undecided' && Math.hypot(dx, dy) > TAP_PX) {
         this.ev.onHint(null);
+        if (ptr.tearZone && this.shown && !this.completing && Math.abs(dx) > Math.abs(dy) * 0.8) {
+          // An der Kante quer gewischt: aufreißen – der Riss folgt dem Finger
+          ptr.mode = 'tear';
+          if (!this.tearDir) {
+            this.tearDir = Math.sign(dx) || 1;
+            this.tearTick = 0.03;
+          }
+          this.tearing = true;
+          this.tilt.yaw = this.tilt.pitch = 0;
+        } else {
+          ptr.mode = 'tilt';
+          ptr.dragged = true;
+        }
       }
-      this.tilt.yaw = THREE.MathUtils.clamp(dx * 0.006, -0.65, 0.65);
-      this.tilt.pitch = THREE.MathUtils.clamp(dy * 0.005, -0.45, 0.45);
+      if (ptr.mode === 'tear') {
+        const r = this.packRect();
+        const u = (p.x - r.left) / r.width;
+        const along = this.tearDir > 0 ? u : 1 - u;
+        // nur vorwärts: Gerissenes bleibt gerissen
+        this.tearTarget = Math.max(this.tearTarget, THREE.MathUtils.clamp(along + 0.03, 0, 1));
+        if (this.tearTarget > 0.97) this.tearTarget = 1;
+      } else if (ptr.mode === 'tilt') {
+        this.tilt.yaw = THREE.MathUtils.clamp(dx * 0.006, -0.65, 0.65);
+        this.tilt.pitch = THREE.MathUtils.clamp(dy * 0.005, -0.45, 0.45);
+      }
     } else if (this.phase === 'reveal' && this.flipped) {
       this.tilt.yaw = THREE.MathUtils.clamp(dx * 0.0075, -0.8, 0.8);
       this.tilt.pitch = THREE.MathUtils.clamp(dy * 0.006, -0.55, 0.55);
@@ -223,7 +261,12 @@ export class PackOpening extends Stage {
     const dy = ptr.y - ptr.y0;
     const dist = Math.hypot(dx, dy);
     if (this.phase === 'pack') {
-      if (dist < TAP_PX) this.nudge();
+      if (ptr.mode === 'tear') {
+        this.tearing = false;
+        // Über die Hälfte gerissen: der Rest reißt von selbst, sonst bleibt der Riss stehen
+        if (this.tearTarget >= 0.5) this.tearTarget = 1;
+        else this.ev.onHint('swipe');
+      } else if (dist < TAP_PX) this.nudge();
       else if (ptr.dragged) this.ev.onHint('swipe');
     } else if (this.phase === 'reveal') {
       if (dist < TAP_PX) {
@@ -238,25 +281,22 @@ export class PackOpening extends Stage {
 
   private cancel = () => {
     this.pointer = null;
+    this.tearing = false;
     this.tilt.yaw = this.tilt.pitch = 0;
   };
 
   // ------------------------------------------------------------ Ablauf
 
   private async dropIn() {
-    const g = this.pack.group;
-    g.position.set(0, 2.2, 0);
-    g.rotation.set(0.4, -0.6, 0.15);
-    await this.tween(
-      750,
-      (v) => {
-        // Sofort aufgerissen (Knopf): Aufreißen übernimmt das Pack, wo es gerade ist.
-        if (this.phase !== 'pack') return;
-        g.position.y = 2.2 * (1 - v);
-        g.rotation.set(0.4 * (1 - v), -0.6 * (1 - v), 0.15 * (1 - v));
-      },
-      ease.outBack,
-    );
+    const d = this.drop;
+    const set = (v: number) => {
+      d.y = 2.2 * (1 - v);
+      d.rx = 0.4 * (1 - v);
+      d.ry = -0.6 * (1 - v);
+      d.rz = 0.15 * (1 - v);
+    };
+    set(0);
+    await this.tween(750, set, ease.outBack);
     this.emitTearLine();
   }
 
@@ -267,9 +307,20 @@ export class PackOpening extends Stage {
     this.ev.onHint('swipe');
   }
 
-  /** Aufreißen (Wischgeste oder Knopf). `dir`: Richtung, in die die Naht fliegt. */
-  async tear(dir = 1) {
-    if (this.phase !== 'pack' || !this.shown) return;
+  /** Aufreißen per Knopf: Der Riss läuft von selbst über das Pack (`dir` +1 = nach rechts). */
+  tear(dir = 1) {
+    if (this.phase !== 'pack' || !this.shown || this.completing) return;
+    if (!this.tearDir) {
+      this.tearDir = dir;
+      this.tearTick = 0.03;
+    }
+    this.ev.onHint(null);
+    const from = this.tearTarget;
+    void this.tween(700, (v) => (this.tearTarget = Math.max(this.tearTarget, from + (1 - from) * v)), ease.inOutCubic);
+  }
+
+  /** Riss ist durch: Streifen fliegt weg, Karten steigen heraus, Pack fällt. */
+  private async open(dir: number) {
     this.phase = 'opening';
     const run = this.run;
     this.ev.onHint(null);
@@ -290,15 +341,15 @@ export class PackOpening extends Stage {
       return c;
     });
 
-    // 1) obere Naht fliegt davon
+    // 1) Streifen reißt los und fliegt mit Drall in Wischrichtung davon
     const top = this.pack.top;
     const t0 = top.position.clone();
     void this.tween(
-      700,
+      850,
       (v) => {
-        top.position.set(t0.x + dir * 1.7 * v, t0.y + 0.7 * v - 0.9 * v * v, t0.z + 0.5 * v);
-        top.rotation.set(0.9 * v, 0.4 * v * dir, -dir * 1.2 * v);
-        this.pack.setTopOpacity(1 - v * v);
+        top.position.set(t0.x + dir * 1.6 * v, t0.y + 0.9 * v - 1.5 * v * v, t0.z + 0.7 * v);
+        top.rotation.set(0.7 * v, dir * 0.8 * v, -dir * 1.9 * v);
+        this.pack.setTopOpacity(1 - v * v * v);
       },
       ease.outCubic,
     );
@@ -464,9 +515,12 @@ export class PackOpening extends Stage {
   /** Nächstes Pack ("Open another"). */
   reset() {
     this.clearCards();
-    const top = this.pack.top;
-    top.position.set(0, PACK_H / 2 - CRIMP_H / 2, 0);
-    top.rotation.set(0, 0, 0);
+    this.pack.tear.reset();
+    this.tearP = this.tearTarget = 0;
+    this.tearDir = 0;
+    this.tearing = false;
+    this.completing = false;
+    this.tension = 0;
     this.pack.setTopOpacity(1);
     this.pack.setOpacity(1);
     this.pack.body.position.set(0, 0, 0);
@@ -480,6 +534,28 @@ export class PackOpening extends Stage {
 
   // ------------------------------------------------------------ Frame
 
+  /** Rissfront dem Ziel nachführen, Streifen verformen, Knistern, Zug. */
+  private updateTear(dt: number) {
+    const prev = this.tearP;
+    // dem Finger weich folgen; nach dem Loslassen mit Mindesttempo zu Ende reißen
+    const gap = this.tearTarget - this.tearP;
+    const step = Math.max(gap * Math.min(1, dt * (this.tearing ? 16 : 12)), this.tearing ? 0 : dt * 1.1);
+    this.tearP = Math.min(this.tearTarget, this.tearP + step);
+    if (this.tearTarget - this.tearP < 0.002) this.tearP = this.tearTarget;
+    this.pack.tear.update(this.tearP, this.tearDir);
+    const speed = (this.tearP - prev) / Math.max(dt, 1e-3);
+    this.tension += (Math.min(1, speed * 1.3) - this.tension) * Math.min(1, dt * 10);
+    while (this.tearP >= this.tearTick && this.tearTick < 1) {
+      playSfx('tear-tick');
+      this.tearTick += 0.07;
+    }
+    if (this.tearP >= 0.999 && !this.completing) {
+      this.completing = true;
+      this.tension = 0;
+      void this.open(this.tearDir);
+    }
+  }
+
   protected frame(dt: number) {
     const k = Math.min(1, dt * 12);
     this.tilt.curYaw += (this.tilt.yaw - this.tilt.curYaw) * k;
@@ -488,9 +564,15 @@ export class PackOpening extends Stage {
 
     if (this.phase === 'pack') {
       const g = this.pack.group;
-      g.rotation.y = this.tilt.curYaw + Math.sin(t * 0.8) * 0.12;
-      g.rotation.x = this.tilt.curPitch + Math.sin(t * 0.6 + 1) * 0.05;
-      g.position.y = Math.sin(t * 1.4) * 0.04;
+      if (this.tearDir) this.updateTear(dt);
+      // Beim Aufreißen hält man das Pack ruhig; unter Zug zittert es leicht
+      const calm = this.tearDir ? 0.25 : 1;
+      const d = this.drop;
+      g.rotation.y = d.ry + this.tilt.curYaw + Math.sin(t * 0.8) * 0.12 * calm;
+      g.rotation.x = d.rx + this.tilt.curPitch + Math.sin(t * 0.6 + 1) * 0.05 * calm;
+      g.rotation.z = d.rz + Math.sin(t * 61) * 0.007 * this.tension;
+      g.position.x = this.tearDir * 0.018 * this.tension;
+      g.position.y = d.y + Math.sin(t * 1.4) * 0.04 * calm;
     }
 
     const top = this.cards[this.index];

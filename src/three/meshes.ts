@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import type { CardDef } from '../game/cards/cards';
 import { createHoloMaterial } from './holoMaterial';
 import { PACK_TEXTURE } from '../assets';
+import { createTearRig, type TearRig } from './packTear';
 import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront, isArtLoaded, loadArt } from './textures';
 
 export const CARD_W = 1;
@@ -140,31 +141,40 @@ export const PACK_W = 1.18;
 export const CRIMP_H = 0.16;
 const BODY_H = PACK_W / PACK_ART_ASPECT;
 export const PACK_H = BODY_H + 2 * CRIMP_H;
+/** Der Abreißstreifen reicht so weit unter die obere Naht (Risslinie). */
+export const TEAR_BAND_H = 0.075;
+const BULGE = 0.09;
 
 /**
  * "Kissen": gefüllte Folie, in der Mitte nach vorn gewölbt, an den Nähten flach –
- * dort mit feinen Knitterfalten, in denen sich das Licht fängt.
+ * dort mit feinen Knitterfalten, in denen sich das Licht fängt. (x, y) in
+ * Pack-Koordinaten, außerhalb der Folie 0.
  */
-function pillowGeometry(w: number, h: number, bulge: number) {
-  const geo = new THREE.PlaneGeometry(w, h, 48, 72);
+function pillowZ(px: number, py: number) {
+  const x = px / (PACK_W / 2);
+  const y = py / (BODY_H / 2);
+  if (Math.abs(y) >= 1 || Math.abs(x) >= 1) return 0;
+  let z = BULGE * Math.pow(1 - x * x, 0.55) * Math.pow(1 - y * y, 0.55);
+  const seam = Math.max(0, (Math.abs(y) - 0.8) / 0.2);
+  z += 0.008 * seam * Math.sin(x * 23 + Math.sign(y) * 1.7) * (1 - 0.6 * x * x);
+  return z;
+}
+
+function pillowGeometry() {
+  const geo = new THREE.PlaneGeometry(PACK_W, BODY_H, 48, 72);
   const pos = geo.attributes.position;
-  for (let i = 0; i < pos.count; i++) {
-    const x = pos.getX(i) / (w / 2);
-    const y = pos.getY(i) / (h / 2);
-    let z = bulge * Math.pow(Math.max(0, 1 - x * x), 0.55) * Math.pow(Math.max(0, 1 - y * y), 0.55);
-    const seam = Math.max(0, (Math.abs(y) - 0.8) / 0.2);
-    z += 0.012 * seam * Math.sin(x * 23 + Math.sign(y) * 1.7) * (1 - 0.6 * x * x);
-    pos.setZ(i, z);
-  }
+  for (let i = 0; i < pos.count; i++) pos.setZ(i, pillowZ(pos.getX(i), pos.getY(i)));
   geo.computeVertexNormals();
   return geo;
 }
 
 export interface PackObject {
   group: THREE.Group;
-  /** Obere Naht, die beim Aufreißen davonfliegt. */
+  /** Abreißstreifen (obere Naht + Packkante), fliegt nach dem Aufreißen davon. */
   top: THREE.Group;
   body: THREE.Group;
+  /** Steuerung des Aufreißens (Rissfront, Aufrollen, Fasern). */
+  tear: TearRig;
   /** Erfüllt, sobald die Pack-Grafik geladen ist (oder nicht geladen werden konnte). */
   ready: Promise<void>;
   setOpacity: (v: number) => void;
@@ -183,9 +193,10 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
   const disposables: { dispose: () => void }[] = [];
   const keep = <T extends { dispose: () => void }>(x: T) => (disposables.push(x), x);
 
+  const fallbackFront = drawPackFront();
   const frontMat = keep(
     new THREE.MeshPhysicalMaterial({
-      map: keep(texture(drawPackFront(), renderer)),
+      map: keep(texture(fallbackFront, renderer)),
       envMap,
       envMapIntensity: 1,
       metalness: 0.5,
@@ -196,6 +207,7 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
       iridescenceIOR: 1.3,
       iridescenceThicknessRange: [200, 480],
       transparent: true,
+      alphaTest: 0.5,
     }),
   );
   const backMat = keep(
@@ -211,7 +223,7 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
   );
 
   const body = new THREE.Group();
-  const bodyGeo = keep(pillowGeometry(PACK_W, BODY_H, 0.09));
+  const bodyGeo = keep(pillowGeometry());
   const bodyFront = new THREE.Mesh(bodyGeo, frontMat);
   const bodyBack = new THREE.Mesh(bodyGeo, backMat);
   bodyBack.rotation.y = Math.PI;
@@ -226,9 +238,9 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
         bumpMap: t,
         bumpScale: 0.4,
         envMap,
-        envMapIntensity: 1.3,
-        metalness: 1,
-        roughness: 0.3,
+        envMapIntensity: 1,
+        metalness: 0.9,
+        roughness: 0.4,
         transparent: true,
         alphaTest: 0.5,
         side: THREE.DoubleSide,
@@ -236,15 +248,29 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
     );
   };
   const crimpGeo = keep(new THREE.PlaneGeometry(PACK_W, CRIMP_H));
-  const top = new THREE.Group();
-  top.add(new THREE.Mesh(crimpGeo, crimpMat(true)));
-  top.position.y = BODY_H / 2 + CRIMP_H / 2;
   const bottom = new THREE.Mesh(crimpGeo, crimpMat(false));
   bottom.position.y = -BODY_H / 2 - CRIMP_H / 2;
   body.add(bottom);
 
+  // Oben: Abreißstreifen (Naht + Packkante) mit gezackter Risslinie
+  const topCrimp = drawCrimp(true);
+  const tear = keep(createTearRig({ packW: PACK_W, bodyH: BODY_H, crimpH: CRIMP_H, bandH: TEAR_BAND_H, amp: 0.014, surfaceZ: pillowZ }, envMap, renderer, frontMat));
+  tear.drawStrip(fallbackFront, topCrimp);
+  tear.update(0, 1);
+  frontMat.alphaMap = tear.bodyAlpha;
+  body.add(tear.bodyRim);
+  const top = tear.strip;
+
   const group = new THREE.Group();
   group.add(body, top);
+  // Umgebung leicht gedreht: In Ruhelage spiegelt die Folie sonst genau die hellste
+  // Lampe (Naht und Oberkante wirkten weiß überstrahlt); beim Kippen wandert der Glanz.
+  group.traverse((o) => {
+    const mats = (o as THREE.Mesh).material;
+    for (const m of Array.isArray(mats) ? mats : mats ? [mats] : []) {
+      if ('envMapRotation' in m) (m as THREE.MeshStandardMaterial).envMapRotation.set(0.35, 0.55, 0);
+    }
+  });
 
   // Pack-Grafik + Materialkarte nachladen
   let disposed = false;
@@ -270,26 +296,25 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
       frontMat.metalness = 1;
       frontMat.roughness = 1;
       frontMat.needsUpdate = true;
+      // Streifen bekommt dieselbe Grafik und dasselbe Material (nahtloser Übergang)
+      tear.drawStrip(front.image as HTMLImageElement, topCrimp, maps.image as HTMLImageElement);
     })
     .catch(() => {
       /* Ersatz-Vorderseite bleibt */
     });
 
-  const topMat = (top.children[0] as THREE.Mesh).material as THREE.Material;
-  const bodyMats = [frontMat, backMat, bottom.material as THREE.Material];
+  const bodyMats = [frontMat, backMat, bottom.material as THREE.Material, tear.bodyRim.material as THREE.Material];
   return {
     group,
     top,
     body,
+    tear,
     ready,
     setOpacity: (v) => {
       for (const m of bodyMats) m.opacity = v;
       group.visible = v > 0.001;
     },
-    setTopOpacity: (v) => {
-      topMat.opacity = v;
-      top.visible = v > 0.001;
-    },
+    setTopOpacity: (v) => tear.setOpacity(v),
     dispose: () => {
       disposed = true;
       disposables.forEach((d) => d.dispose());

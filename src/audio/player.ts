@@ -22,6 +22,7 @@ const VOLUME: Partial<Record<SfxName, number>> = {
   tab: 0.4,
   'card-flip': 0.85,
   'card-slide': 0.55,
+  'tear-tick': 0.6,
   reveal: 0.6,
   invalid: 0.7,
 };

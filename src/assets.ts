@@ -97,6 +97,7 @@ export const SFX_FILE: Record<SfxName, string[]> = {
   tab: [asset('sfx/tab.mp3')],
   button: [asset('sfx/button.mp3')],
   'pack-tear': [asset('sfx/pack-tear.mp3')],
+  'tear-tick': [asset('sfx/tear-tick.mp3'), asset('sfx/tear-tick-2.mp3'), asset('sfx/tear-tick-3.mp3')],
   'card-flip': [asset('sfx/card-flip.mp3'), asset('sfx/card-flip-2.mp3')],
   'card-slide': [asset('sfx/card-slide.mp3')],
   'card-rare': [asset('sfx/card-rare.mp3')],

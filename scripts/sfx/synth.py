@@ -183,6 +183,21 @@ def pack_tear():
     return finish(reverb(x, 0.5, 0.12), 0.88)
 
 
+def tear_tick(variant=0):
+    """Kurzes Knistern, während der Finger die Folie Stück für Stück aufreißt."""
+    d = 0.11 + 0.02 * variant
+    x = np.zeros(n_of(d))
+    tpos = 0.0
+    while tpos < d - 0.012:
+        g = butter(noise(rng.uniform(0.0015, 0.005)), 'bandpass', [1800 + 300 * variant, 7500])
+        g *= np.hanning(len(g))
+        i = n_of(tpos)
+        x[i : i + len(g)] += g * rng.uniform(0.35, 1.0) * np.sin(np.pi * tpos / d) ** 0.5
+        tpos += rng.uniform(0.002, 0.007)
+    zip_ = svf(noise(d), 1500, 2600, q=2.0) * env_hann(n_of(d)) * 0.25
+    return finish(x + zip_, 0.7)
+
+
 def card_rare():
     """Rare aufgedeckt: helles Glocken-Arpeggio mit Glitzern."""
     notes = [1318.5, 1661.2, 1975.5, 2637.0]
@@ -327,6 +342,9 @@ SOUNDS = {
     'lose': lose,
     'booster': booster,
     'pack-tear': pack_tear,
+    'tear-tick': lambda: tear_tick(0),
+    'tear-tick-2': lambda: tear_tick(1),
+    'tear-tick-3': lambda: tear_tick(2),
     'card-flip': lambda: card_flip(0),
     'card-flip-2': lambda: card_flip(1),
     'card-slide': card_slide,

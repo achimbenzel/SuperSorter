@@ -22,6 +22,7 @@ export type SfxName =
   | 'button'
   // Booster-Packs
   | 'pack-tear'
+  | 'tear-tick'
   | 'card-flip'
   | 'card-slide'
   | 'card-rare'

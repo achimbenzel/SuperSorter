@@ -70,7 +70,7 @@ Wird gestreamt und nicht vom Service Worker vorab gecacht (Größe); offline gib
 
 ## Sounds
 
-Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synth.py`, numpy/scipy, MP3 über ffmpeg/libmp3lame). Sie enthalten kein fremdes Audiomaterial und sind damit frei nutzbar, auch kommerziell. Stil: angelehnt an Sammelkarten-Spiele (Pokémon TCG Pocket, Hearthstone, Yu-Gi-Oh!) – gefiltertes Rauschen als „Foley“ für Karten und Folie, Glocken und Glitzer für Rares, Marimba statt Piepser für Bedienelemente. Die ersten Sounds (UI SFX, CC0) klangen nach Spielautomat und wurden ersetzt. 22 Dateien, zusammen ca. 265 KB, in `public/assets/sfx/`.
+Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synth.py`, numpy/scipy, MP3 über ffmpeg/libmp3lame). Sie enthalten kein fremdes Audiomaterial und sind damit frei nutzbar, auch kommerziell. Stil: angelehnt an Sammelkarten-Spiele (Pokémon TCG Pocket, Hearthstone, Yu-Gi-Oh!) – gefiltertes Rauschen als „Foley“ für Karten und Folie, Glocken und Glitzer für Rares, Marimba statt Piepser für Bedienelemente. Die ersten Sounds (UI SFX, CC0) klangen nach Spielautomat und wurden ersetzt. 25 Dateien, zusammen ca. 270 KB, in `public/assets/sfx/`.
 
 | Datei | Klang | Einsatz |
 |---|---|---|
@@ -87,7 +87,8 @@ Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synt
 | `booster.mp3` | magisches Aufrauschen + „Ding“ | Power-up benutzt |
 | `tab.mp3` | kurzer Holz-Klick | Reiter der Menüleiste, Filter |
 | `button.mp3` | zwei Marimba-Töne aufwärts | Play, Übersicht, nächstes Pack |
-| `pack-tear.mp3` | Folie knistert und reißt, Glitzer, dumpfer Plopp | Booster-Pack aufreißen |
+| `pack-tear.mp3` | Folie knistert und reißt, Glitzer, dumpfer Plopp | Riss ist durch, Streifen fliegt weg |
+| `tear-tick.mp3`, `-2`, `-3` | kurzes Folien-Knistern (drei Varianten) | während der Finger das Pack Stück für Stück aufreißt |
 | `card-flip.mp3`, `card-flip-2.mp3` | Luft-„Fwip“ + leises Klacken | Karte umdrehen |
 | `card-slide.mp3` | Karte gleitet weg | Karte wegwischen |
 | `card-rare.mp3` | helles Glocken-Arpeggio mit Glitzer | Rare aufgedeckt |
