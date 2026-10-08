@@ -6,8 +6,10 @@
 //   dem Wechsel in eine andere App).
 // - Hinweis iOS: Web Audio folgt dem Stumm-Schalter – im Lautlos-Modus bleibt es still.
 // - An/Aus-Einstellung liegt in localStorage (SOUND_KEY) und gilt sofort.
+// - Hintergrundmusik: music.ts (hängt am selben AudioContext, eigener Schalter).
 
 import { SFX_FILE } from '../assets';
+import { connectMusic, duckMusic, installMusic, kickMusic } from './music';
 import { setSfxHandler, type SfxName } from './sfx';
 
 export const SOUND_KEY = 'super-sorter/sound/v1';
@@ -23,6 +25,8 @@ const VOLUME: Partial<Record<SfxName, number>> = {
   reveal: 0.6,
   invalid: 0.7,
 };
+/** Bei diesen Sounds wird die Musik kurz leiser (ms). */
+const DUCK_MS: Partial<Record<SfxName, number>> = { win: 2600, lose: 1800, 'card-holo': 2400, 'card-rare': 1600 };
 /** Denselben Sound nicht öfter als alle x ms (Ketten, schnelle Taps). */
 const MIN_GAP_MS = 45;
 
@@ -89,8 +93,10 @@ function unlock() {
     master.gain.value = 0.9;
     master.connect(ctx.destination);
     decodeAll(ctx);
+    connectMusic(ctx);
   }
   if (ctx.state !== 'running') void ctx.resume().catch(() => {});
+  kickMusic();
 }
 
 function play(name: SfxName) {
@@ -107,6 +113,8 @@ function play(name: SfxName) {
   gain.gain.value = VOLUME[name] ?? 0.8;
   src.connect(gain).connect(master);
   src.start();
+  const duck = DUCK_MS[name];
+  if (duck) duckMusic(duck);
 }
 
 export function installAudio(): void {
@@ -116,4 +124,5 @@ export function installAudio(): void {
     window.addEventListener(type, unlock, { capture: true, passive: true });
   }
   setSfxHandler(play);
+  installMusic();
 }

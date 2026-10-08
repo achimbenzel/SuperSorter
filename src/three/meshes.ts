@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import type { CardDef } from '../game/cards/cards';
 import { createHoloMaterial } from './holoMaterial';
-import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront } from './textures';
+import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront, isArtLoaded, loadArt, PACK_ART } from './textures';
 
 export const CARD_W = 1;
 export const CARD_H = 88 / 63;
@@ -63,7 +63,17 @@ export interface CardObject {
 export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardObject {
   const group = new THREE.Group();
   const faceGeo = cardFaceGeometry();
-  const frontTex = texture(drawCardFront(card), renderer);
+  const frontCanvas = drawCardFront(card);
+  const frontTex = texture(frontCanvas, renderer);
+  let disposed = false;
+  // Illustration noch nicht geladen: nachzeichnen, sobald sie da ist (meist < 100 ms).
+  if (!isArtLoaded(card.art)) {
+    void loadArt(card.art).then((img) => {
+      if (!img || disposed) return;
+      drawCardFront(card, frontCanvas);
+      frontTex.needsUpdate = true;
+    });
+  }
   const backTex = texture(drawCardBack(), renderer);
   const front = createHoloMaterial({
     map: frontTex,
@@ -109,6 +119,7 @@ export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardOb
       });
     },
     dispose: () => {
+      disposed = true;
       faceGeo.dispose();
       edgeGeo.dispose();
       frontTex.dispose();
@@ -156,7 +167,15 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
   const disposables: { dispose: () => void }[] = [];
   const keep = <T extends { dispose: () => void }>(x: T) => (disposables.push(x), x);
 
-  const frontTex = keep(texture(drawPackFront(), renderer));
+  const frontCanvas = drawPackFront();
+  const frontTex = keep(texture(frontCanvas, renderer));
+  if (!isArtLoaded(PACK_ART)) {
+    void loadArt(PACK_ART).then((img) => {
+      if (!img) return;
+      drawPackFront(frontCanvas);
+      frontTex.needsUpdate = true;
+    });
+  }
   const backTex = keep(texture(drawPackBack(), renderer));
   const foil = (map: THREE.Texture) =>
     keep(

@@ -15,9 +15,15 @@
 //
 // Manche iOS-Versionen machen die Web-Ansicht selbst um die Statusleiste kürzer;
 // den Streifen darunter füllt iOS dann mit der Hintergrundfarbe der Seite – dort
-// hilft keine CSS-Höhe. Deshalb setzt setBottomColor() die Seitenfarbe auf die
-// Farbe des untersten Elements (Menüleiste bzw. Boden), dann fällt der Streifen
-// nicht auf. Die Diagnose (Titel im Hauptmenü 5× antippen) zeigt alle Messwerte.
+// hilft keine CSS-Höhe. Deshalb setzt setPageBackground() die Seitenfarbe auf die
+// Farbe des untersten Elements (Menüleiste samt aktivem Reiter bzw. Boden), dann
+// fällt der Streifen nicht auf. Die Diagnose (Titel im Hauptmenü 5× antippen) zeigt
+// alle Messwerte.
+//
+// Befund vom iPhone (iOS 26): Die App war schon bildschirmhoch, wurde aber am
+// kleineren Viewport abgeschnitten – weil html/body `position: fixed` hatten
+// (fixierte Elemente hängen in diesem Modus am zu kleinen Viewport). Seitdem sind
+// sie nicht mehr fixiert, Overlays sind `absolute`.
 
 /** Größere Abweichungen sind keine Statusleiste (z. B. Split View auf dem iPad). */
 const MAX_STATUS_BAR_GAP = 80;
@@ -109,13 +115,28 @@ export function installStandaloneViewportFix(): void {
   // Nach dem Drehen bzw. dem ersten Zeichnen liefert iOS die endgültigen Maße teils verzögert.
   window.addEventListener('orientationchange', () => window.setTimeout(update, 250));
   window.addEventListener('load', update);
+  // html/body sind nicht fixiert: falls iOS die Seite doch verschiebt, zurück nach oben.
+  window.addEventListener('scroll', () => window.scrollY !== 0 && window.scrollTo(0, 0), { passive: true });
   window.setTimeout(update, 500);
 }
 
 /**
- * Seitenfarbe = Farbe des untersten Elements des aktuellen Bildschirms. Füllt iOS
- * unten einen Streifen außerhalb der Web-Ansicht, hat er so dieselbe Farbe.
+ * Seitenhintergrund = unterstes Element des aktuellen Bildschirms. Füllt iOS unten
+ * einen Streifen außerhalb der App, sieht er so aus wie dessen Fortsetzung:
+ * Farbe der Menüleiste bzw. des Bodens und – im Menü – der aktive Reiter als
+ * dunklere Spalte (`tab`: linker Rand und Breite in Prozent der Breite).
  */
-export function setBottomColor(color: string): void {
-  document.documentElement.style.setProperty('--page-bg', color);
+export function setPageBackground(color: string, tab?: { left: number; width: number; color: string }): void {
+  const root = document.documentElement.style;
+  root.setProperty('--page-bg', color);
+  if (!tab) {
+    root.setProperty('--page-bg-image', 'none');
+    return;
+  }
+  root.setProperty('--tab-l', `${tab.left}%`);
+  root.setProperty('--tab-r', `${tab.left + tab.width}%`);
+  root.setProperty(
+    '--page-bg-image',
+    `linear-gradient(90deg, transparent var(--tab-l), ${tab.color} var(--tab-l), ${tab.color} var(--tab-r), transparent var(--tab-r))`,
+  );
 }

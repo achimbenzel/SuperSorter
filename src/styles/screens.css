@@ -134,7 +134,8 @@
 /* ------------------------------------------------------------------ Overlays */
 
 .overlay {
-  position: fixed;
+  /* absolute statt fixed: deckt die ganze App ab, auch unterhalb des iOS-Viewports */
+  position: absolute;
   inset: 0;
   z-index: 100;
   display: grid;

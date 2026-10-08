@@ -3,12 +3,12 @@
 // nur als Bild, damit three.js es auf eine Fläche legen und mit dem Holo-Shader
 // beleuchten kann.
 
+import { cardArtRaster } from '../assets';
 import { ELEMENT_LABEL, RARITY_LABEL, RARITY_SYMBOL, SET_SIZE, type CardDef, type CardElement } from '../game/cards/cards';
 
 export const CARD_TEX_W = 640;
 export const CARD_TEX_H = 894; // 63 : 88
 const FONT = 'ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif';
-const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
 
 const ELEMENT_COLORS: Record<CardElement, { a: string; b: string; artA: string; artB: string }> = {
   fire: { a: '#ff9a6b', b: '#d02a1e', artA: '#fff1c9', artB: '#ff9a4d' },
@@ -17,7 +17,6 @@ const ELEMENT_COLORS: Record<CardElement, { a: string; b: string; artA: string; 
   bolt: { a: '#ffe98a', b: '#e09a00', artA: '#fffbe3', artB: '#ffd84a' },
 };
 
-const ELEMENT_ICON: Record<CardElement, string> = { fire: '🔥', water: '💧', leaf: '🍃', bolt: '⚡' };
 
 /** Bildbereich der Karte in UV-Koordinaten (für den Holo-Effekt): [u0, v0, u1, v1]. */
 export const ART_RECT_UV: [number, number, number, number] = [42 / CARD_TEX_W, 1 - 686 / CARD_TEX_H, 598 / CARD_TEX_W, 1 - 107 / CARD_TEX_H];
@@ -49,10 +48,75 @@ function fitText(ctx: CanvasRenderingContext2D, text: string, maxW: number, size
   }
 }
 
-export function drawCardFront(card: CardDef): HTMLCanvasElement {
+// ---------------------------------------------------------------- Illustrationen
+
+/** Zuletzt geladene Illustrationen (wenige, damit der Speicher klein bleibt). */
+const artCache = new Map<string, HTMLImageElement>();
+const ART_CACHE_SIZE = 12;
+
+/** Illustration laden (WebP, s. scripts/card-art.mjs); null bei Fehler. */
+export function loadArt(art: string): Promise<HTMLImageElement | null> {
+  const hit = artCache.get(art);
+  if (hit) return Promise.resolve(hit);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      artCache.set(art, img);
+      if (artCache.size > ART_CACHE_SIZE) artCache.delete(artCache.keys().next().value!);
+      resolve(img);
+    };
+    img.onerror = () => resolve(null);
+    img.src = cardArtRaster(art);
+  });
+}
+
+export const isArtLoaded = (art: string) => artCache.has(art);
+
+/** Illustration auf dem Booster-Pack. */
+export const PACK_ART = 'solar-dragon';
+
+/** Element-Symbol als Vektorform (Emojis lassen sich auf iOS nicht zuverlässig auf eine Canvas zeichnen). */
+function drawElementIcon(ctx: CanvasRenderingContext2D, element: CardElement, x: number, y: number, r: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(r / 20, r / 20);
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 2.6;
+  ctx.strokeStyle = '#2a1a0e';
+  const shape = (d: string, fill: string, stroke = true) => {
+    const p = new Path2D(d);
+    ctx.fillStyle = fill;
+    ctx.fill(p);
+    if (stroke) ctx.stroke(p);
+  };
+  if (element === 'fire') {
+    shape('M0,16 C-10,16 -14,6 -10,-3 C-7,-9 -2,-11 -1,-18 C5,-12 13,-5 12,4 C11,11 7,16 0,16 Z', '#ff5a1f');
+    shape('M0,13 C-5,13 -7,7 -5,2 C-3,-1 0,-3 0,-7 C4,-3 7,1 6,6 C5,10 3,13 0,13 Z', '#ffc21f', false);
+  } else if (element === 'water') {
+    shape('M0,-17 C6,-7 12,0 12,6 C12,13 7,17 0,17 C-7,17 -12,13 -12,6 C-12,0 -6,-7 0,-17 Z', '#3a9bff');
+    shape('M-5,4 C-5,0 -3,-3 -1,-5 C-2,-1 -2,3 -1,7 Z', '#d6eeff', false);
+  } else if (element === 'leaf') {
+    shape('M-14,12 C-14,-6 0,-16 16,-15 C16,2 6,14 -14,12 Z', '#4cc45a');
+    ctx.beginPath();
+    ctx.moveTo(-12, 10);
+    ctx.quadraticCurveTo(2, 0, 12, -11);
+    ctx.stroke();
+  } else {
+    shape('M3,-18 L-9,2 L-1,2 L-4,18 L9,-4 L1,-4 Z', '#ffd21f');
+  }
+  ctx.restore();
+}
+
+/**
+ * Vorderseite zeichnen (in `target`, wenn angegeben – zum Neuzeichnen, sobald die
+ * Illustration geladen ist). Ohne geladene Illustration bleibt das Bildfenster leer.
+ */
+export function drawCardFront(card: CardDef, target?: HTMLCanvasElement): HTMLCanvasElement {
   const W = CARD_TEX_W;
   const H = CARD_TEX_H;
-  const { c, ctx } = canvas(W, H);
+  const c = target ?? canvas(W, H).c;
+  const ctx = c.getContext('2d')!;
+  ctx.clearRect(0, 0, W, H);
   const col = ELEMENT_COLORS[card.element];
   const special = card.rarity === 'rare' || card.rarity === 'holo';
 
@@ -100,15 +164,11 @@ export function drawCardFront(card: CardDef): HTMLCanvasElement {
   roundRect(ctx, ax + 10, ay + 10, aw - 20, ah - 20, 8);
   ctx.fillStyle = rg;
   ctx.fill();
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.3)';
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 10;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = `250px ${EMOJI_FONT}`;
-  ctx.fillText(card.art, W / 2, ay + ah / 2 + 12);
-  ctx.restore();
+  const art = artCache.get(card.art);
+  if (art) {
+    const size = Math.min(aw, ah) - 24;
+    ctx.drawImage(art, W / 2 - size / 2, ay + (ah - size) / 2, size, size);
+  }
 
   // Typzeile
   const typeText = `Basic · ${ELEMENT_LABEL[card.element]} · ${RARITY_LABEL[card.rarity]}`;
@@ -133,8 +193,7 @@ export function drawCardFront(card: CardDef): HTMLCanvasElement {
   ctx.strokeStyle = 'rgba(0,0,0,0.25)';
   ctx.lineWidth = 3;
   ctx.stroke();
-  ctx.font = `28px ${EMOJI_FONT}`;
-  ctx.fillText(ELEMENT_ICON[card.element], 84, 783);
+  drawElementIcon(ctx, card.element, 84, 781, 17);
   ctx.fillStyle = '#2a1a0e';
   ctx.textAlign = 'left';
   fitText(ctx, card.attack.name, W - 300, 38);
@@ -232,10 +291,12 @@ export function drawCardBack(): HTMLCanvasElement {
 export const PACK_TEX_W = 600;
 export const PACK_TEX_H = 900;
 
-export function drawPackFront(): HTMLCanvasElement {
+/** Packfront; mit `target` neu zeichnen, sobald die Illustration geladen ist. */
+export function drawPackFront(target?: HTMLCanvasElement): HTMLCanvasElement {
   const W = PACK_TEX_W;
   const H = PACK_TEX_H;
-  const { c, ctx } = canvas(W, H);
+  const c = target ?? canvas(W, H).c;
+  const ctx = c.getContext('2d')!;
   const g = ctx.createLinearGradient(0, 0, W, H);
   g.addColorStop(0, '#7b3cf0');
   g.addColorStop(0.48, '#2c7bff');
@@ -274,13 +335,8 @@ export function drawPackFront(): HTMLCanvasElement {
   ctx.font = `900 30px ${FONT}`;
   ctx.fillStyle = 'rgba(255,255,255,0.92)';
   ctx.fillText('TRADING CARD GAME', W / 2, 310);
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.35)';
-  ctx.shadowBlur = 24;
-  ctx.shadowOffsetY = 14;
-  ctx.font = `250px ${EMOJI_FONT}`;
-  ctx.fillText('🐉', W / 2, 545);
-  ctx.restore();
+  const art = artCache.get(PACK_ART);
+  if (art) ctx.drawImage(art, W / 2 - 180, 360, 360, 360);
   roundRect(ctx, W / 2 - 170, 750, 340, 58, 29);
   ctx.fillStyle = 'rgba(20,0,60,0.4)';
   ctx.fill();

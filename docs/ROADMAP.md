@@ -15,14 +15,14 @@ Der Onlineshop-Prototyp wurde nach dem Playtest durch das **Packband** ersetzt (
 ## 0b. Card Shop und Sammelkarten
 
 - **Packs kosten Münzen:** `PACK_PRICE` in `src/game/cards/packs.ts` setzen, Kauf im Packs-Reiter abbuchen (gemeinsame Geldbörse in `progress.ts`).
-- **Kartenkunst:** Emojis durch Illustrationen ersetzen (`art` in `cards.ts` → Bildpfad in `assets.ts`).
+- ~~**Kartenkunst:**~~ umgesetzt: 32 eigene Vektor-Illustrationen (`scripts/card-art.mjs`). Offen: Holo-Varianten mit eigenem Hintergrund, Kartenkunst für weitere Sets.
 - **Weitere Sets / Sonderkarten:** Full Art, Secret Rare, zweites Set mit eigenem Pack-Design.
 - **Verknüpfung mit dem Puzzle:** Packs als Belohnung für Belohnungstage; im Shipping-Modus bestellen Kunden die Booster der Elemente, die man gerade sammelt.
 - **Shop & Ranking:** die beiden Platzhalter-Reiter füllen (Münzpakete, tägliche Herausforderung).
 
 ## 1. Spielgefühl und Feedback (kurzfristig)
 
-- ~~**Audio:**~~ umgesetzt (eigene synthetisierte Sounds im Sammelkarten-Stil, Web Audio, An/Aus-Schalter). Offen: Hintergrundmusik, eigene Sounds für Kombos; ggf. echte Foley-Aufnahmen (Karten, Folie).
+- ~~**Audio:**~~ umgesetzt (eigene synthetisierte Sounds im Sammelkarten-Stil, Web Audio, An/Aus-Schalter). Hintergrundmusik in Dauerschleife mit eigenem Schalter. Offen: eigene Sounds für Kombos; ggf. echte Foley-Aufnahmen (Karten, Folie).
 - **Haptik:** iOS Safari unterstützt `navigator.vibrate` nicht. Optionen prüfen (z. B. Capacitor-Wrapper bei späterer App-Store-Version).
 - **Playtesting der Kurve:** Echte Spielzeiten und Abbruchraten messen und `targetWinRate` bzw. Configs in `levels.ts` nachjustieren. Die simulierte Gewinnquote ist nur ein Proxy.
 - **Tutorial-Hand:** In Level 1 eine animierte Hand, die den ersten Zug zeigt (statt nur Text).
@@ -66,4 +66,4 @@ Jede neue Regel: zuerst `rules.ts` + Test, dann Solver-Spiegelung, dann Generato
 
 1. **Packband auf dem iPhone playtesten** und mit dem Regal vergleichen; Kurven anhand echter Spielzeiten nachjustieren (`npm run pack:report`, `npm run levels:report`, `?debug=1`).
 2. **Modi im Wechsel** als gemeinsamen Spielablauf umsetzen (siehe Abschnitt 0).
-3. **Packs mit Münzen bezahlen** (`PACK_PRICE`) und als Belohnung für Tage/Level vergeben; echte Kartenkunst statt Emojis.
+3. **Packs mit Münzen bezahlen** (`PACK_PRICE`) und als Belohnung für Tage/Level vergeben.

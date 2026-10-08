@@ -20,6 +20,14 @@ const SLOT_LEFT = [0, 222, 456, 690, 912];
 const ICON_X = [129, 351, 585, 819, 1041];
 const cqw = (px: number) => (px / VIEW_W) * 100;
 
+export const TAB_BAR_COLOR = '#008cff';
+export const TAB_ACTIVE_COLOR = '#002bff';
+
+/** Lage des aktiven Reiters in Prozent der Leistenbreite (für den Seitenhintergrund). */
+export function activeTabSlot(index: number): { left: number; width: number } {
+  return { left: cqw(SLOT_LEFT[index]), width: cqw(258) };
+}
+
 interface TabBarProps {
   tabs: TabDef[];
   active: number;

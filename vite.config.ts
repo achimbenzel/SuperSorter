@@ -74,7 +74,7 @@ export default defineConfig(({ command, isPreview }) => {
         // Neue Versionen werden im Hintergrund geladen und beim nächsten Start aktiv.
         registerType: 'autoUpdate',
         injectRegister: false, // Registrierung erfolgt in src/main.tsx (virtual:pwa-register)
-        includeAssets: ['assets/**/*'],
+        includeAssets: ['assets/**/*', '!assets/music/**'],
         manifest: {
           id: base,
           name: 'Super Sorter',
@@ -96,6 +96,9 @@ export default defineConfig(({ command, isPreview }) => {
         workbox: {
           // Alles vorab cachen: Das Spiel funktioniert danach komplett offline.
           globPatterns: ['**/*.{js,css,html,webp,png,svg,webmanifest,mp3}'],
+          // Musik (4,7 MB) nicht vorab cachen: wird gestreamt (src/audio/music.ts).
+          // Zusätzlich in includeAssets ausgenommen, sonst käme sie darüber wieder hinein.
+          globIgnores: ['**/assets/music/**'],
           cleanupOutdatedCaches: true,
           navigateFallback: `${base}index.html`,
         },

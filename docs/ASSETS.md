@@ -47,7 +47,19 @@ Seit dem Card-Shop-Thema verkauft der Laden Sammelkarten-Produkte. Die acht Ware
 
 Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`, werden aber nicht mehr ausgeliefert.
 
-**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter) haben keine Bilddateien: In 3D zeichnet `src/three/textures.ts` Kartenvorder- und -rückseite, Packfolie und Naht per Canvas 2D als Texturen; ohne WebGL zeichnet CSS dasselbe Design (`components/cards/`, `styles/cards.css`). Die Kartenillustrationen sind vorerst Emojis (Platzhalter für echte Kartenkunst).
+**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter): Rahmen, Texte, Rückseite und Packfolie haben keine Bilddateien – in 3D zeichnet sie `src/three/textures.ts` per Canvas 2D als Texturen, ohne WebGL CSS (`components/cards/`, `styles/cards.css`).
+
+**Kartenillustrationen** (32 Wesen, eigene Zeichnungen): `scripts/card-art.mjs` beschreibt jedes Wesen als Vektorgrafik (Baukasten: Augen, Flammen, Blätter, Blitze, Tropfen, schattierte Flächen) und schreibt `public/assets/cards/<name>.svg` (für die CSS-Karte, scharf in jeder Größe, ~6 KB) und `<name>.webp` (512 px, für die 3D-Textur, ~20 KB). Der Name ist der Kartenname in Kleinbuchstaben mit Bindestrichen (`art` in `cards.ts`). Die Solar-Dragon-Illustration ziert auch das Booster-Pack. Ändern: Zeichnung im Skript anpassen, `node scripts/card-art.mjs --sheet übersicht.png` (Übersichtsbild aller Karten zum Prüfen). Vorher waren es Emojis – die sahen je Gerät anders aus und erschienen auf iOS in der 3D-Textur nur als Silhouette.
+
+## Musik
+
+`public/assets/music/shop-theme.mp3`: Hintergrundmusik in Dauerschleife (4:55 min, MP3 128 kbit/s, ca. 4,7 MB), vom Projektinhaber bereitgestellt. Quelle: `assets-src/music/shop_theme.ogg` (Ogg Vorbis, spielt nicht auf allen iPhones); umgewandelt und leicht leiser gemacht (Original übersteuert) mit:
+
+```
+ffmpeg -i assets-src/music/shop_theme.ogg -af volume=0.85 -c:a libmp3lame -b:a 128k public/assets/music/shop-theme.mp3
+```
+
+Wird gestreamt und nicht vom Service Worker vorab gecacht (Größe); offline gibt es keine Musik.
 
 ## Sounds
 

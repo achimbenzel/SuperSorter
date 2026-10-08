@@ -155,12 +155,12 @@
   box-shadow: inset 0 0 0 0.6cqw rgba(0, 0, 0, 0.12);
 }
 
-.tcg-emoji {
+.tcg-illu {
   position: relative;
   z-index: 1;
-  font-size: 36cqw;
-  line-height: 1;
-  filter: drop-shadow(0 1.6cqw 1.2cqw rgba(0, 0, 0, 0.3));
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .tcg-type {
@@ -434,9 +434,8 @@
 
 .bpack-art {
   position: relative;
-  font-size: calc(var(--pw) * 0.42);
-  line-height: 1;
-  filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.35));
+  width: calc(var(--pw) * 0.62);
+  height: calc(var(--pw) * 0.62);
 }
 
 .bpack-info {
@@ -804,7 +803,8 @@
 
 /* Detailansicht */
 .card-detail {
-  position: fixed;
+  /* liegt direkt in <body> (Portal); absolute statt fixed, s. .overlay */
+  position: absolute;
   inset: 0;
   z-index: 140;
   display: flex;

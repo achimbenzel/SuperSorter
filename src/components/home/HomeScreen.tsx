@@ -1,15 +1,16 @@
-import { House, PackageOpen, Play, Store, Trophy, Volume2, VolumeX, WalletCards } from 'lucide-react';
-import { useRef, useState, type CSSProperties } from 'react';
+import { House, Music, PackageOpen, Play, Store, Trophy, Volume2, VolumeX, WalletCards } from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { UI_IMAGE } from '../../assets';
 import { isSoundEnabled, setSoundEnabled } from '../../audio/player';
+import { isMusicEnabled, setMusicEnabled } from '../../audio/music';
 import { playSfx } from '../../audio/sfx';
 import { STORAGE_KEY } from '../../config';
 import { readProgress, type GameMode } from '../../hooks/progress';
 import { useCollection } from '../../hooks/useCollection';
-import { viewportInfo } from '../../viewport';
+import { setPageBackground, viewportInfo } from '../../viewport';
 import { CollectionPage } from './CollectionPage';
 import { PacksPage } from './PacksPage';
-import { TabBar, type TabDef } from './TabBar';
+import { activeTabSlot, TAB_ACTIVE_COLOR, TAB_BAR_COLOR, TabBar, type TabDef } from './TabBar';
 
 // Die fünf Plätze der Menüleiste, links nach rechts (Icons: lucide).
 const TAB = { shop: 0, ranking: 1, home: 2, packs: 3, collection: 4 } as const;
@@ -29,12 +30,15 @@ interface HomeScreenProps {
 export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
   const [tab, setTab] = useState<number>(TAB.home);
   const [sound, setSound] = useState(isSoundEnabled);
+  const [music, setMusic] = useState(isMusicEnabled);
   const [diag, setDiag] = useState(false);
   const titleTaps = useRef(0);
   // Richtung des Seitenwechsels (für die Einblend-Animation).
   const dir = useRef(0);
   const progress = readProgress(STORAGE_KEY);
   const { collection, addOpenedPack, markAllSeen } = useCollection();
+  // Unten liegt die Menüleiste: Seitenhintergrund in ihrer Farbe samt aktivem Reiter.
+  useEffect(() => setPageBackground(TAB_BAR_COLOR, { ...activeTabSlot(tab), color: TAB_ACTIVE_COLOR }), [tab]);
 
   const tabs: TabDef[] = [
     { id: 'shop', label: 'Shop', icon: Store },
@@ -58,6 +62,13 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
     if (next) playSfx('tap');
   };
 
+  const toggleMusic = () => {
+    const next = !music;
+    setMusicEnabled(next);
+    setMusic(next);
+    playSfx('tap');
+  };
+
   // Versteckte Diagnose (Höhe der Homescreen-App): Titel fünfmal antippen.
   const tapTitle = () => {
     titleTaps.current += 1;
@@ -74,9 +85,20 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
   return (
     <div className="app home">
       <header className="home-top">
-        <button type="button" className="hud-pill hud-icon" onClick={toggleSound} aria-label={sound ? 'Mute sound' : 'Turn sound on'}>
-          {sound ? <Volume2 strokeWidth={2.6} /> : <VolumeX strokeWidth={2.6} />}
-        </button>
+        <div className="home-top-group">
+          <button type="button" className="hud-pill hud-icon" onClick={toggleSound} aria-label={sound ? 'Mute sound' : 'Turn sound on'}>
+            {sound ? <Volume2 strokeWidth={2.6} /> : <VolumeX strokeWidth={2.6} />}
+          </button>
+          <button
+            type="button"
+            className={`hud-pill hud-icon home-music${music ? '' : ' is-off'}`}
+            onClick={toggleMusic}
+            aria-label={music ? 'Turn music off' : 'Turn music on'}
+            aria-pressed={music}
+          >
+            <Music strokeWidth={2.6} />
+          </button>
+        </div>
         <div className="hud-pill hud-coins" aria-label={`${progress.coins} coins`}>
           <img src={UI_IMAGE.coin} alt="" />
           <strong>{progress.coins}</strong>

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { cardArt } from '../../assets';
 import { ELEMENT_LABEL, RARITY_LABEL, RARITY_SYMBOL, SET_SIZE, type CardDef, type CardElement } from '../../game/cards/cards';
 
 export const ELEMENT_ICON: Record<CardElement, string> = {
@@ -44,7 +45,7 @@ export function TcgCard({ card, faceDown, className = '', style, children }: Tcg
             </span>
           </div>
           <div className="tcg-art">
-            <span className="tcg-emoji">{card.art}</span>
+            <img className="tcg-illu" src={cardArt(card.art)} alt="" draggable={false} decoding="async" />
             {card.rarity === 'holo' && <span className="tcg-holo" />}
           </div>
           <div className="tcg-type">

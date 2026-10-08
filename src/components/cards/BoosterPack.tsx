@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { cardArt } from '../../assets';
 
 interface BoosterPackProps {
   /** 'idle' schwebt, 'tearing' reißt oben auf und gibt die Karten frei. */
@@ -29,9 +30,7 @@ export function BoosterPack({ state, onClick }: BoosterPackProps) {
           SUPER SORTER
           <small>Trading Card Game</small>
         </span>
-        <span className="bpack-art" aria-hidden="true">
-          🐉
-        </span>
+        <img className="bpack-art" src={cardArt('solar-dragon')} alt="" draggable={false} />
         <span className="bpack-info">Base Set · 5 cards</span>
       </span>
       <span className="bpack-crimp bpack-crimp--bottom" style={{ clipPath: clips.bottom, WebkitClipPath: clips.bottom }} />

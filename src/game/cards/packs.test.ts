@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createRng, hashSeed } from '../random';
 import { CARD_SET, getCard, SET_SIZE, type CardElement, type Rarity } from './cards';
@@ -9,6 +10,14 @@ describe('Kartenset', () => {
     expect(new Set(CARD_SET.map((c) => c.id)).size).toBe(SET_SIZE);
     expect(CARD_SET.map((c) => c.no)).toEqual(Array.from({ length: SET_SIZE }, (_, i) => i + 1));
     expect(getCard('bs-08')?.name).toBe('Solar Dragon');
+  });
+
+  it('jede Karte hat ihre Illustration (SVG + WebP, scripts/card-art.mjs)', () => {
+    for (const card of CARD_SET) {
+      for (const ext of ['svg', 'webp']) {
+        expect(fs.existsSync(new URL(`../../../public/assets/cards/${card.art}.${ext}`, import.meta.url)), `${card.art}.${ext}`).toBe(true);
+      }
+    }
   });
 
   it('jedes Element hat 4 Common, 2 Uncommon, 1 Rare und 1 Holo Rare', () => {

@@ -19,15 +19,38 @@ body {
   overflow: hidden;
   /* verhindert Scroll-Bounce in Safari / Standalone-Modus */
   overscroll-behavior: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  /* --page-bg: Farbe des untersten Elements (src/viewport.ts, setBottomColor) */
-  background: var(--page-bg, var(--c-bg-wall-bottom));
+  /* Bewusst NICHT position: fixed – iOS 26 schneidet fixierte Elemente in der
+     Homescreen-App am zu kleinen Viewport ab (unten fehlten 59 pt, s. viewport.ts). */
+  /* Seitenfarbe = unterstes Element, im Menü mit aktivem Reiter (src/viewport.ts) */
+  background-color: var(--page-bg, var(--c-bg-wall-bottom));
+  background-image: var(--page-bg-image, none);
   color: var(--c-text);
   font-family: var(--font);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+}
+
+/* Aktiver Reiter der Menüleiste auch im Seitenhintergrund (gleitet mit, s. viewport.ts) */
+@property --tab-l {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+@property --tab-r {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+html {
+  transition:
+    --tab-l 460ms cubic-bezier(0.3, 1.32, 0.45, 1),
+    --tab-r 460ms cubic-bezier(0.3, 1.32, 0.45, 1);
 }
 
 html,

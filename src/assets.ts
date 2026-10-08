@@ -72,6 +72,13 @@ export const CART_ICON = '🛒';
  * Sounds (eigenes Sound-Design aus scripts/sfx/synth.py). Mehrere Dateien = Varianten,
  * der Player wählt zufällig (häufige Sounds klingen so nicht mechanisch).
  */
+/** Kartenillustration: SVG für die CSS-Karte (scharf in jeder Größe), WebP 512 px für die 3D-Textur. */
+export const cardArt = (art: string) => asset(`cards/${art}.svg`);
+export const cardArtRaster = (art: string) => asset(`cards/${art}.webp`);
+
+/** Hintergrundmusik (Quelle: assets-src/music/shop_theme.ogg, s. docs/ASSETS.md). */
+export const MUSIC_FILE = asset('music/shop-theme.mp3');
+
 export const SFX_FILE: Record<SfxName, string[]> = {
   tap: [asset('sfx/tap.mp3'), asset('sfx/tap-2.mp3')],
   select: [asset('sfx/select.mp3')],

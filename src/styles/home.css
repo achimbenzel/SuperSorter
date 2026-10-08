@@ -25,6 +25,33 @@
   color: var(--c-accent-dark);
 }
 
+.home-top-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Musik aus: Note durchgestrichen (lucide hat kein "music-off") */
+.home-music {
+  position: relative;
+}
+
+.home-music.is-off svg {
+  opacity: 0.45;
+}
+
+.home-music.is-off::after {
+  content: '';
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 2px;
+  background: var(--c-accent-dark);
+  transform: rotate(-45deg);
+}
+
 /* ------------------------------------------------------------------ Seiten */
 
 /* Seite + Play-Knopf (liegt unten über der Seite, nur auf "Home" sichtbar). */
