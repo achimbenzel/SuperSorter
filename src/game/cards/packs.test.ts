@@ -12,11 +12,13 @@ describe('Kartenset', () => {
     expect(getCard('bs-08')?.name).toBe('Solar Dragon');
   });
 
-  it('jede Karte hat ihre Illustration (SVG + WebP, scripts/card-art.mjs)', () => {
+  it('jede Karte hat Bild und Vorschau, jede Holo Rare ihre Holo-Maske (scripts/cards-import.py)', () => {
+    const exists = (p: string) => fs.existsSync(new URL(`../../../public/assets/cards/${p}`, import.meta.url));
     for (const card of CARD_SET) {
-      for (const ext of ['svg', 'webp']) {
-        expect(fs.existsSync(new URL(`../../../public/assets/cards/${card.art}.${ext}`, import.meta.url)), `${card.art}.${ext}`).toBe(true);
-      }
+      const nn = String(card.no).padStart(2, '0');
+      expect(exists(`${nn}.webp`), `${nn}.webp`).toBe(true);
+      expect(exists(`thumbs/${nn}.webp`), `thumbs/${nn}.webp`).toBe(true);
+      expect(exists(`${nn}-holo.webp`), `${nn}-holo.webp`).toBe(card.rarity === 'holo');
     }
   });
 

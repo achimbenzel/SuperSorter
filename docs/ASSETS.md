@@ -47,7 +47,7 @@ Seit dem Card-Shop-Thema verkauft der Laden Sammelkarten-Produkte. Die acht Ware
 
 Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`, werden aber nicht mehr ausgeliefert.
 
-**Sammelkarten** (Packs-/Sammlungs-Reiter): Rahmen, Texte und Rückseite haben keine Bilddateien – in 3D zeichnet sie `src/three/textures.ts` per Canvas 2D als Texturen, ohne WebGL CSS (`components/cards/`, `styles/cards.css`).
+**Sammelkarten** (`public/assets/cards/`): fertige Kartenbilder vom Projektinhaber (1024 × 1550, Rahmen, Bild, Name, Element-Symbol und Nummer im Bild), Originale in `assets-src/cards/` (Karte 01 = die Datei `01_new.webp`). `python3 scripts/cards-import.py QUELLORDNER` übernimmt sie: `NN.webp` (WebP q82, ~270 KB, für 3D und Großansicht), `thumbs/NN.webp` (330 px, ~38 KB, für Raster und Übersicht) und für die vier Holo Rares (08, 16, 24, 32) `NN-holo.webp` – die Holo-Maske (weiß = starker Holo-Effekt, schwarz = keiner) umgewandelt in Alpha, damit 3D-Shader und CSS-`mask-image` dieselbe Datei nutzen. Rückseite: `card-design/back.webp`. Hinweis: Karte 05 trägt im Bild „Cinder Pub“, in den Daten heißt sie „Cinder Pup“.
 
 **Booster-Pack** (`public/assets/pack/`): Vorlage vom Projektinhaber, `assets-src/pack/pack-front.jpg` (687 × 1024, flache Vorderseite ohne Packform) und `reference.jpg` (gewünschter Look als fertiges Pack). Aufbereitung:
 
@@ -56,9 +56,7 @@ Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`,
 
 Nähte, Aufhängeloch, Aufreiß-Kerben und die Rückseite zeichnet `textures.ts` (`drawCrimp`, `drawPackBack`). Ohne WebGL zeigt die CSS-Variante `front.webp` mit gerillten Silbernähten.
 
-**Kartenrahmen und Kartenrückseite (Prototyp, noch nicht im Spiel verwendet)** (`public/assets/card-design/`): Vorlagen vom Projektinhaber in `assets-src/card-design/` (`frame-prototype.jpg`: leerer Rahmen mit Namensleiste, Kreis oben rechts, quadratischem Bildfenster und Textfeld; `card-back.jpg`: Rückseite mit Logo). Wie das Booster-Pack per KI ×4 hochskaliert (Real-ESRGAN x4plus, CPU/ncnn), dann `python3 scripts/card-design.py RAHMEN_X4.png RUECKSEITE_X4.png`: Karte aus dem dunklen Hintergrund ausschneiden (Lage im Original x 25–662, y 29–994), runde Ecken transparent, 1024 × 1550 als WebP → `frame.webp`, `back.webp`. Seitenverhältnis der Vorlagen ≈ 0,66 – etwas schlanker als die bisherigen Karten (63 : 88 ≈ 0,72); beim Einbau Kartenmaße angleichen.
-
-**Kartenillustrationen** (32 Wesen, eigene Zeichnungen): `scripts/card-art.mjs` beschreibt jedes Wesen als Vektorgrafik (Baukasten: Augen, Flammen, Blätter, Blitze, Tropfen, schattierte Flächen) und schreibt `public/assets/cards/<name>.svg` (für die CSS-Karte, scharf in jeder Größe, ~6 KB) und `<name>.webp` (512 px, für die 3D-Textur, ~20 KB). Der Name ist der Kartenname in Kleinbuchstaben mit Bindestrichen (`art` in `cards.ts`). Die Solar-Dragon-Illustration ziert auch das Booster-Pack. Ändern: Zeichnung im Skript anpassen, `node scripts/card-art.mjs --sheet übersicht.png` (Übersichtsbild aller Karten zum Prüfen). Vorher waren es Emojis – die sahen je Gerät anders aus und erschienen auf iOS in der 3D-Textur nur als Silhouette.
+**Kartenrahmen und Kartenrückseite** (Rückseite im Spiel verwendet, der leere Rahmen ist nur Vorlage) (`public/assets/card-design/`): Vorlagen vom Projektinhaber in `assets-src/card-design/` (`frame-prototype.jpg`: leerer Rahmen mit Namensleiste, Kreis oben rechts, quadratischem Bildfenster und Textfeld; `card-back.jpg`: Rückseite mit Logo). Wie das Booster-Pack per KI ×4 hochskaliert (Real-ESRGAN x4plus, CPU/ncnn), dann `python3 scripts/card-design.py RAHMEN_X4.png RUECKSEITE_X4.png`: Karte aus dem dunklen Hintergrund ausschneiden (Lage im Original x 25–662, y 29–994), runde Ecken transparent, 1024 × 1550 als WebP → `frame.webp`, `back.webp`. Seitenverhältnis der Vorlagen ≈ 0,66 – etwas schlanker als die bisherigen Karten (63 : 88 ≈ 0,72); beim Einbau Kartenmaße angleichen.
 
 ## Musik
 

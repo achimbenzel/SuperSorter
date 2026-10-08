@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { cardArt } from '../../assets';
-import { ELEMENT_LABEL, RARITY_LABEL, RARITY_SYMBOL, SET_SIZE, type CardDef, type CardElement } from '../../game/cards/cards';
+import { CARD_BACK, cardHoloMask, cardImage, cardThumb } from '../../assets';
+import { ELEMENT_LABEL, RARITY_LABEL, type CardDef, type CardElement } from '../../game/cards/cards';
 
 export const ELEMENT_ICON: Record<CardElement, string> = {
   fire: '🔥',
@@ -12,57 +12,38 @@ export const ELEMENT_ICON: Record<CardElement, string> = {
 interface TcgCardProps {
   card: CardDef;
   /**
-   * Nur angeben, wenn die Karte umgedreht werden kann (Pack öffnen): Dann wird sie
-   * in 3D mit Rückseite aufgebaut. Ohne Angabe nur die Vorderseite (spart Grafik-
-   * ebenen, z. B. in der Sammlung mit 32 Karten).
+   * Nur angeben, wenn die Karte umgedreht werden kann (Pack öffnen ohne WebGL):
+   * Dann wird sie in 3D mit Rückseite aufgebaut.
    */
   faceDown?: boolean;
+  /** Großansicht: volles Bild statt 330-px-Vorschau. */
+  large?: boolean;
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
 }
 
 /**
- * Sammelkarte, komplett in CSS gezeichnet. Alle Maße in cqw (Prozent der
- * Kartenbreite) -> dieselbe Karte funktioniert als Mini-Vorschau und groß.
+ * Sammelkarte als fertiges Bild – Rahmen, Name, Element und Nummer sind Teil des
+ * Bildes. Klein (Raster, Übersicht) wird die Vorschau geladen: 32 Karten in voller
+ * Größe bräuchten auf dem iPhone ~200 MB Speicher. Holo Rares bekommen eine
+ * Regenbogenfolie nur dort, wo ihre Holo-Maske hell ist; Rares einen Glanz.
  */
-export function TcgCard({ card, faceDown, className = '', style, children }: TcgCardProps) {
+export function TcgCard({ card, faceDown, large = false, className = '', style, children }: TcgCardProps) {
   const flip = faceDown !== undefined;
+  const holo = card.rarity === 'holo';
   return (
     <div
-      className={`tcg el-${card.element} r-${card.rarity}${flip ? ' is-flip' : ''}${faceDown ? ' is-down' : ''} ${className}`}
+      className={`tcg r-${card.rarity}${flip ? ' is-flip' : ''}${faceDown ? ' is-down' : ''} ${className}`}
       style={style}
       aria-label={faceDown ? 'Face-down card' : `${card.name}, ${RARITY_LABEL[card.rarity]}, ${ELEMENT_LABEL[card.element]}`}
       role="img"
     >
       <div className="tcg-inner">
         <div className="tcg-face tcg-front">
-          <div className="tcg-top">
-            <span className="tcg-name">{card.name}</span>
-            <span className="tcg-hp">
-              <small>HP</small>
-              {card.hp}
-            </span>
-          </div>
-          <div className="tcg-art">
-            <img className="tcg-illu" src={cardArt(card.art)} alt="" draggable={false} decoding="async" />
-            {card.rarity === 'holo' && <span className="tcg-holo" />}
-          </div>
-          <div className="tcg-type">
-            Basic · {ELEMENT_LABEL[card.element]} · {RARITY_LABEL[card.rarity]}
-          </div>
-          <div className="tcg-attack">
-            <span className="tcg-cost">{ELEMENT_ICON[card.element]}</span>
-            <span className="tcg-attack-name">{card.attack.name}</span>
-            <strong>{card.attack.damage}</strong>
-          </div>
-          <div className="tcg-bottom">
-            <span>
-              #{String(card.no).padStart(2, '0')}/{SET_SIZE}
-            </span>
-            <span className="tcg-rarity">{RARITY_SYMBOL[card.rarity]}</span>
-          </div>
-          {card.rarity === 'holo' && <span className="tcg-foil" />}
+          <img className="tcg-img" src={large ? cardImage(card.no) : cardThumb(card.no)} alt="" draggable={false} decoding="async" />
+          {holo && <span className="tcg-holo" style={{ '--holo-mask': `url(${cardHoloMask(card.no)})` } as CSSProperties} />}
+          {(holo || card.rarity === 'rare') && <span className="tcg-foil" />}
         </div>
         {flip && <CardBackFace />}
       </div>
@@ -74,14 +55,7 @@ export function TcgCard({ card, faceDown, className = '', style, children }: Tcg
 function CardBackFace() {
   return (
     <div className="tcg-face tcg-back">
-      <div className="tcg-back-emblem">
-        <span>
-          SUPER
-          <br />
-          SORTER
-        </span>
-        <small>TRADING CARD GAME</small>
-      </div>
+      <img className="tcg-img" src={CARD_BACK} alt="" draggable={false} decoding="async" />
     </div>
   );
 }

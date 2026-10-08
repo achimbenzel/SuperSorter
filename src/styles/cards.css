@@ -1,50 +1,17 @@
 /*
  * Sammelkarten, Booster-Pack, Pack öffnen und Sammlung.
- * Karten sind komplett CSS; alle Maße in cqw (Prozent der Kartenbreite).
+ * Karten sind fertige Bilder (public/assets/cards/); Maße in cqw (Prozent der Kartenbreite).
  * Animiert werden nur transform und opacity.
  */
 
 /* ------------------------------------------------------------------ Karte */
 
+/* Fertiges Kartenbild: Rahmen, Name, Element und Nummer sind Teil des Bildes. */
 .tcg {
-  --el-a: #ffd27a;
-  --el-b: #e08a1e;
-  --art-a: #fff6dc;
-  --art-b: #ffc56b;
   position: relative;
   width: 100%;
-  aspect-ratio: 63 / 88;
+  aspect-ratio: 1024 / 1550;
   container-type: inline-size;
-  font-family: var(--font);
-  text-align: left;
-}
-
-.el-fire {
-  --el-a: #ff9a6b;
-  --el-b: #d02a1e;
-  --art-a: #fff1c9;
-  --art-b: #ff9a4d;
-}
-
-.el-water {
-  --el-a: #84cfff;
-  --el-b: #1f5fcf;
-  --art-a: #e6f7ff;
-  --art-b: #6cbcff;
-}
-
-.el-leaf {
-  --el-a: #a8e88a;
-  --el-b: #2c8a3b;
-  --art-a: #f2ffe6;
-  --art-b: #8fd86c;
-}
-
-.el-bolt {
-  --el-a: #ffe98a;
-  --el-b: #e09a00;
-  --art-a: #fffbe3;
-  --art-b: #ffd84a;
 }
 
 .tcg-inner {
@@ -56,8 +23,15 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 4.5cqw;
-  box-shadow: 0 1.6cqw 4cqw rgba(30, 15, 5, 0.35);
+  /* wie die runden Ecken der Kartenbilder */
+  border-radius: 2.1cqw;
+  box-shadow: 0 1.6cqw 4cqw rgba(10, 8, 20, 0.45);
+}
+
+.tcg-img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* Umdrehbare Karte (nur beim Pack öffnen): 3D mit Rückseite */
@@ -72,7 +46,7 @@
 }
 
 /* iOS-Safari ignoriert backface-visibility für Kinder mit eigener Grafikebene
-   (Schatten-Filter, Blend-Modus, Animation) – Emoji und Holo der Vorderseite
+   (Schatten-Filter, Blend-Modus, Animation) – Bild und Holo der Vorderseite
    schienen durch die Rückseite. Deshalb wird die abgewandte Seite zusätzlich genau
    zur Hälfte der Drehung (280 ms) unsichtbar geschaltet. */
 .tcg.is-flip .tcg-front,
@@ -98,191 +72,29 @@
   transform: rotateY(180deg);
 }
 
-/* Vorderseite */
-.tcg-front {
-  display: flex;
-  flex-direction: column;
-  gap: 1.8cqw;
-  padding: 3cqw 3.6cqw 2.6cqw;
-  border: 3cqw solid #f4cf3d;
-  background: linear-gradient(165deg, var(--el-a) 0%, var(--el-b) 100%);
-  color: #2a1a0e;
-}
-
-.tcg-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 2cqw;
-  min-width: 0;
-}
-
-.tcg-name {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 7cqw;
-  font-weight: 900;
-  letter-spacing: -0.01em;
-}
-
-.tcg-hp {
-  flex: none;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.6cqw;
-  font-size: 6.8cqw;
-  font-weight: 900;
-  color: #b3121f;
-}
-
-.tcg-hp small {
-  font-size: 4.2cqw;
-  font-weight: 900;
-}
-
-.tcg-art {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  border: 1.6cqw solid #e6c058;
-  border-radius: 2cqw;
-  background: radial-gradient(circle at 50% 42%, var(--art-a) 0%, var(--art-b) 100%);
-  box-shadow: inset 0 0 0 0.6cqw rgba(0, 0, 0, 0.12);
-}
-
-.tcg-illu {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.tcg-type {
-  align-self: center;
-  padding: 0.6cqw 3cqw;
-  border-radius: 999px;
-  background: rgba(255, 252, 240, 0.78);
-  font-size: 4.2cqw;
-  font-weight: 800;
-  font-style: italic;
-  white-space: nowrap;
-}
-
-.tcg-attack {
-  display: flex;
-  align-items: center;
-  gap: 2cqw;
-  padding: 1.6cqw 3cqw;
-  border-radius: 2.4cqw;
-  background: rgba(255, 250, 236, 0.9);
-}
-
-.tcg-cost {
-  display: grid;
-  place-items: center;
-  width: 7cqw;
-  height: 7cqw;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 0 0.5cqw rgba(0, 0, 0, 0.25);
-  font-size: 4.4cqw;
-}
-
-.tcg-attack-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 6cqw;
-  font-weight: 900;
-}
-
-.tcg-attack strong {
-  font-size: 8.4cqw;
-  font-weight: 900;
-}
-
-.tcg-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 4.4cqw;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 0.4cqw 0 rgba(0, 0, 0, 0.35);
-}
-
-.tcg-rarity {
-  font-size: 6cqw;
-}
-
-/* Rare: goldener Bildrahmen und Stern */
-.r-rare .tcg-art,
-.r-holo .tcg-art {
-  border-color: #ffd700;
-}
-
-.r-rare .tcg-rarity,
-.r-holo .tcg-rarity {
-  color: #ffe14d;
-}
-
-.r-holo .tcg-front {
-  border-color: #fde68a;
-}
-
-/* Holo: Regenbogen-Schimmer über dem Bild + wandernder Glanz über der Karte */
+/* Holo (ohne WebGL): Regenbogenfolie und feine Linien nur dort, wo die Holo-Maske
+   hell ist (Maske = Alpha der Datei NN-holo.webp). */
 .tcg-holo {
   position: absolute;
   inset: 0;
   z-index: 2;
-  overflow: hidden;
   pointer-events: none;
-  mix-blend-mode: color-dodge;
-  opacity: 0.8;
-}
-
-.tcg-holo::before {
-  content: '';
-  position: absolute;
-  top: -40%;
-  bottom: -40%;
-  left: -130%;
-  width: 400%;
-  background: repeating-linear-gradient(
-    115deg,
-    rgba(255, 60, 170, 0.55) 0 5%,
-    rgba(255, 214, 0, 0.55) 5% 10%,
-    rgba(40, 230, 150, 0.55) 10% 15%,
-    rgba(40, 180, 255, 0.55) 15% 20%,
-    rgba(160, 90, 255, 0.55) 20% 25%
-  );
-  animation: holo-sweep 5s linear infinite;
-}
-
-.tcg-holo::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 0.6cqw, transparent 0.9cqw),
-    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 0.4cqw, transparent 0.7cqw);
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.28) 0 1px, transparent 1px 4px),
+    linear-gradient(115deg, #ff5fb0 0%, #ffd84a 18%, #4ff0d8 36%, #7d6bff 54%, #ff5fb0 72%, #ffd84a 90%);
   background-size:
-    13cqw 11cqw,
-    9cqw 15cqw;
-  background-position:
-    0 0,
-    4cqw 6cqw;
-  animation: holo-twinkle 1.6s ease-in-out infinite alternate;
+    auto,
+    300% 300%;
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+  -webkit-mask-image: var(--holo-mask);
+  mask-image: var(--holo-mask);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  animation: holo-shift 7s linear infinite;
 }
 
+/* wandernder Glanz auf Rares und Holos */
 .tcg-foil {
   position: absolute;
   top: 0;
@@ -291,50 +103,9 @@
   width: 200%;
   z-index: 3;
   pointer-events: none;
-  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+  background: linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
   mix-blend-mode: soft-light;
   animation: foil-glare 3.4s ease-in-out infinite;
-}
-
-/* Rückseite */
-.tcg-back {
-  display: grid;
-  place-items: center;
-  border: 3cqw solid #1d3f9a;
-  background:
-    repeating-conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.07) 0 12deg, transparent 12deg 24deg),
-    radial-gradient(circle at 50% 50%, #3b78ea 0%, #1b45ac 55%, #0c2466 100%);
-}
-
-.tcg-back-emblem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 78cqw;
-  aspect-ratio: 1.3;
-  border-radius: 50%;
-  border: 2.4cqw solid #fff;
-  background: radial-gradient(ellipse at 50% 35%, #ffe680 0%, #ffb21a 60%, #f07c00 100%);
-  box-shadow: 0 1.2cqw 0 rgba(0, 0, 0, 0.25);
-  text-align: center;
-  color: #d0102b;
-}
-
-.tcg-back-emblem span {
-  font-size: 11cqw;
-  font-weight: 900;
-  line-height: 0.95;
-  -webkit-text-stroke: 1.2cqw #fff;
-  paint-order: stroke fill;
-}
-
-.tcg-back-emblem small {
-  margin-top: 1.4cqw;
-  font-size: 3.8cqw;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  color: #6a1b00;
 }
 
 /* Plaketten auf Karten */
@@ -1009,24 +780,7 @@
 
 /* ------------------------------------------------------------------ Keyframes */
 
-@keyframes holo-sweep {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    /* genau eine Musterperiode (25 % von 400 %) -> nahtlos */
-    transform: translateX(25%);
-  }
-}
 
-@keyframes holo-twinkle {
-  from {
-    opacity: 0.35;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
 @keyframes foil-glare {
   0%,
@@ -1169,5 +923,13 @@
   100% {
     transform: translateX(calc(var(--w, 200px) - 26px)) rotate(8deg);
     opacity: 0;
+  }
+}
+
+@keyframes holo-shift {
+  to {
+    background-position:
+      0 0,
+      300% 300%;
   }
 }

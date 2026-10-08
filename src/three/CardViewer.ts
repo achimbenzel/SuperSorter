@@ -32,11 +32,21 @@ export class CardViewer extends Stage {
     this.card = createCard(card, this.renderer);
     this.scene.add(this.card.group);
     this.layout();
-    // Auftritt: von der Seite hereindrehen
-    this.card.group.scale.setScalar(0.6);
+    // Auftritt: von der Seite hereindrehen – erst, wenn das Kartenbild geladen ist
+    const g = this.card.group;
+    g.visible = false;
+    g.scale.setScalar(0.6);
     this.yaw = -1.2;
-    void this.tween(650, (v) => this.card.group.scale.setScalar(0.6 + 0.4 * v), ease.outBack);
-    void this.tween(800, (v) => (this.yaw = -1.2 * (1 - v)), ease.outCubic);
+    let shown = false;
+    const show = () => {
+      if (shown) return;
+      shown = true;
+      g.visible = true;
+      void this.tween(650, (v) => g.scale.setScalar(0.6 + 0.4 * v), ease.outBack);
+      void this.tween(800, (v) => (this.yaw = -1.2 * (1 - v)), ease.outCubic);
+    };
+    void this.card.ready.then(show);
+    window.setTimeout(show, 1500);
 
     const c = this.canvas;
     c.addEventListener('pointerdown', this.down);

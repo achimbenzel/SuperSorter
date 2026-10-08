@@ -156,7 +156,7 @@ function CardDetail({ card, count, onClose }: { card: CardDef; count: number; on
         <X strokeWidth={3} />
       </button>
       <div className="card-detail-tilt" ref={tiltRef} onPointerMove={tilt} onPointerLeave={reset} onClick={(e) => e.stopPropagation()}>
-        <TcgCard card={card} />
+        <TcgCard card={card} large />
       </div>
       <p className="card-detail-info">
         <CardInfo card={card} count={count} />

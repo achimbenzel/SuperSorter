@@ -1,7 +1,8 @@
 // Kartenset des Card Shops ("Base Set"): 32 Karten in 4 Elementen.
 //
-// Pro Element: 4 Common, 2 Uncommon, 1 Rare, 1 Holo Rare. Die Illustrationen sind
-// eigene Vektorzeichnungen (scripts/card-art.mjs -> public/assets/cards/). Reine Daten.
+// Pro Element: 4 Common, 2 Uncommon, 1 Rare, 1 Holo Rare. Die Kartenbilder (fertige
+// Karten mit Rahmen, Name, Nummer) liegen unter public/assets/cards/NN.webp, die Holo
+// Rares haben zusätzlich eine Holo-Maske (scripts/cards-import.py). Reine Daten.
 
 export type CardElement = 'fire' | 'water' | 'leaf' | 'bolt';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'holo';
@@ -15,8 +16,6 @@ export interface CardDef {
   element: CardElement;
   rarity: Rarity;
   hp: number;
-  /** Name der Illustration (public/assets/cards/<art>.svg|.webp), aus dem Kartennamen. */
-  art: string;
   attack: { name: string; damage: number };
 }
 
@@ -105,7 +104,6 @@ export const CARD_SET: CardDef[] = ELEMENT_ORDER.flatMap((element, e) =>
       element,
       rarity: RARITY_BY_SLOT[i],
       hp,
-      art: name.toLowerCase().replace(/\s+/g, '-'),
       attack: { name: attack, damage },
     };
   }),

@@ -100,7 +100,7 @@ function PacksPageCss({ packsOpened, onOpened, onViewCollection }: PacksPageProp
             return (
               <div key={i} className={`reveal-card${cls}${hint}`} style={{ '--depth': Math.max(0, i - index) } as CSSProperties}>
                 {top && flipped && special && <span className={`reveal-rays reveal-rays--${current.rarity}`} />}
-                <TcgCard card={card} faceDown={!(top && flipped)}>
+                <TcgCard card={card} faceDown={!(top && flipped)} large>
                   {top && flipped && newIds.includes(card.id) && <span className="card-badge card-badge--new">NEW</span>}
                 </TcgCard>
               </div>

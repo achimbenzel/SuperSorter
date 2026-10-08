@@ -72,9 +72,17 @@ export const CART_ICON = '🛒';
  * Sounds (eigenes Sound-Design aus scripts/sfx/synth.py). Mehrere Dateien = Varianten,
  * der Player wählt zufällig (häufige Sounds klingen so nicht mechanisch).
  */
-/** Kartenillustration: SVG für die CSS-Karte (scharf in jeder Größe), WebP 512 px für die 3D-Textur. */
-export const cardArt = (art: string) => asset(`cards/${art}.svg`);
-export const cardArtRaster = (art: string) => asset(`cards/${art}.webp`);
+const nn = (no: number) => String(no).padStart(2, '0');
+/** Kartenbild (fertige Karte 1024 × 1550 mit Rahmen, Name, Nummer; scripts/cards-import.py). */
+export const cardImage = (no: number) => asset(`cards/${nn(no)}.webp`);
+/** Vorschau 330 px breit – für Raster und kleine Karten (spart viel Speicher). */
+export const cardThumb = (no: number) => asset(`cards/thumbs/${nn(no)}.webp`);
+/** Holo-Maske (nur Holo Rares): Alpha = Stärke des Holo-Effekts. */
+export const cardHoloMask = (no: number) => asset(`cards/${nn(no)}-holo.webp`);
+/** Kartenrückseite (KI-hochskaliert, scripts/card-design.py). */
+export const CARD_BACK = asset('card-design/back.webp');
+/** Seitenverhältnis der Kartenbilder (Breite : Höhe). */
+export const CARD_ASPECT = 1024 / 1550;
 
 /** Booster-Pack: Grafik (KI-hochskaliert) + Materialkarte für die 3D-Folie (scripts/pack-texture.py). */
 export const PACK_TEXTURE = { front: asset('pack/front.webp'), maps: asset('pack/maps.png') };

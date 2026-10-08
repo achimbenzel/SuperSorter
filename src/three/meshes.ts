@@ -1,15 +1,17 @@
 // 3D-Objekte: Sammelkarte (Vorder-/Rückseite mit Kante) und Booster-Pack.
 
 import * as THREE from 'three';
+import { CARD_ASPECT, CARD_BACK, cardHoloMask, cardImage, PACK_TEXTURE } from '../assets';
 import type { CardDef } from '../game/cards/cards';
-import { createHoloMaterial } from './holoMaterial';
-import { PACK_TEXTURE } from '../assets';
+import { createHoloMaterial, setHoloMask } from './holoMaterial';
 import { createTearRig, type TearRig } from './packTear';
-import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront, isArtLoaded, loadArt } from './textures';
+import { drawCrimp, drawPackBack, drawPackFront } from './textures';
 
+/** Karte im Seitenverhältnis der Kartenbilder (1024 × 1550). */
 export const CARD_W = 1;
-export const CARD_H = 88 / 63;
-const CARD_R = 0.05;
+export const CARD_H = CARD_W / CARD_ASPECT;
+/** Eckenradius wie im Kartenbild (≈ 21 px bei 1024 px Breite). */
+const CARD_R = 0.0205;
 const CARD_DEPTH = 0.012;
 
 function roundedRectShape(w: number, h: number, r: number) {
@@ -47,10 +49,43 @@ function texture(canvas: HTMLCanvasElement, renderer: THREE.WebGLRenderer) {
   return t;
 }
 
+/** Bild als Textur laden (Farbe in sRGB, scharf auch schräg betrachtet). */
+function loadImageTexture(url: string, renderer: THREE.WebGLRenderer, color = true): Promise<THREE.Texture> {
+  return new THREE.TextureLoader().loadAsync(url).then((t) => {
+    t.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return t;
+  });
+}
+
+/** Kartenrückseite: eine Textur für alle Karten (spart Grafikspeicher). */
+const backTextures = new WeakMap<THREE.WebGLRenderer, Promise<THREE.Texture>>();
+function backTexture(renderer: THREE.WebGLRenderer) {
+  let p = backTextures.get(renderer);
+  if (!p) {
+    p = loadImageTexture(CARD_BACK, renderer);
+    backTextures.set(renderer, p);
+  }
+  return p;
+}
+
+/** Platzhalter, bis das Kartenbild geladen ist (dunkles Grau wie der Kartenrahmen). */
+let placeholder: THREE.DataTexture | null = null;
+function placeholderTexture() {
+  if (!placeholder) {
+    placeholder = new THREE.DataTexture(new Uint8Array([46, 47, 53, 255]), 1, 1);
+    placeholder.colorSpace = THREE.SRGBColorSpace;
+    placeholder.needsUpdate = true;
+  }
+  return placeholder;
+}
+
 export interface CardObject {
   group: THREE.Group;
   card: CardDef;
   materials: THREE.ShaderMaterial[];
+  /** Erfüllt, sobald Kartenbild, Rückseite (und Holo-Maske) geladen sind. */
+  ready: Promise<void>;
   /** Deckkraft aller Teile setzen (für Ein-/Ausblenden). */
   setOpacity: (v: number) => void;
   /**
@@ -61,29 +96,39 @@ export interface CardObject {
   dispose: () => void;
 }
 
-/** Karte als Gruppe: Vorderseite (+z), Rückseite (-z), Kante. Vorderseite zeigt nach +z. */
+/**
+ * Karte als Gruppe: Vorderseite (+z, fertiges Kartenbild mit Holo-Shader), Rückseite
+ * (-z, gemeinsames Rückseitenbild), Kante. Bilder werden nachgeladen; bis dahin
+ * zeigen die Flächen einen dunklen Platzhalter.
+ */
 export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardObject {
   const group = new THREE.Group();
   const faceGeo = cardFaceGeometry();
-  const frontCanvas = drawCardFront(card);
-  const frontTex = texture(frontCanvas, renderer);
+  const front = createHoloMaterial({ map: placeholderTexture(), rare: card.rarity === 'rare' ? 1 : 0 });
+  const back = createHoloMaterial({ map: placeholderTexture() });
   let disposed = false;
-  // Illustration noch nicht geladen: nachzeichnen, sobald sie da ist (meist < 100 ms).
-  if (!isArtLoaded(card.art)) {
-    void loadArt(card.art).then((img) => {
-      if (!img || disposed) return;
-      drawCardFront(card, frontCanvas);
-      frontTex.needsUpdate = true;
-    });
-  }
-  const backTex = texture(drawCardBack(), renderer);
-  const front = createHoloMaterial({
-    map: frontTex,
-    holo: card.rarity === 'holo' ? 1 : 0,
-    rare: card.rarity === 'rare' ? 1 : 0,
-    artRect: ART_RECT_UV,
+  const owned: THREE.Texture[] = [];
+
+  const frontLoad = loadImageTexture(cardImage(card.no), renderer).then((t) => {
+    if (disposed) return t.dispose();
+    owned.push(t);
+    front.uniforms.map.value = t;
   });
-  const back = createHoloMaterial({ map: backTex });
+  const maskLoad =
+    card.rarity === 'holo'
+      ? loadImageTexture(cardHoloMask(card.no), renderer, false).then((t) => {
+          if (disposed) return t.dispose();
+          owned.push(t);
+          setHoloMask(front, t);
+        })
+      : Promise.resolve();
+  const backLoad = backTexture(renderer).then((t) => {
+    if (!disposed) back.uniforms.map.value = t;
+  });
+  const ready = Promise.all([frontLoad, maskLoad, backLoad]).then(
+    () => undefined,
+    () => undefined,
+  );
 
   const frontMesh = new THREE.Mesh(faceGeo, front);
   frontMesh.position.z = CARD_DEPTH / 2 + 0.0005;
@@ -93,7 +138,7 @@ export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardOb
 
   const edgeGeo = new THREE.ExtrudeGeometry(roundedRectShape(CARD_W, CARD_H, CARD_R), { depth: CARD_DEPTH, bevelEnabled: false, curveSegments: 8 });
   edgeGeo.translate(0, 0, -CARD_DEPTH / 2);
-  const edgeMat = new THREE.MeshBasicMaterial({ color: 0xe9e4d8, transparent: true });
+  const edgeMat = new THREE.MeshBasicMaterial({ color: 0x5c5e66, transparent: true });
   // Gruppe 0 = Deckflächen (unsichtbar, die liefern frontMesh/backMesh), 1 = Kante
   const edge = new THREE.Mesh(edgeGeo, [new THREE.MeshBasicMaterial({ visible: false }), edgeMat]);
 
@@ -109,6 +154,7 @@ export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardOb
     group,
     card,
     materials,
+    ready,
     setOpacity: (v) => {
       for (const m of materials) m.uniforms.uOpacity.value = v;
       edgeMat.opacity = v;
@@ -124,8 +170,7 @@ export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardOb
       disposed = true;
       faceGeo.dispose();
       edgeGeo.dispose();
-      frontTex.dispose();
-      backTex.dispose();
+      for (const t of owned) t.dispose();
       front.dispose();
       back.dispose();
       edgeMat.dispose();

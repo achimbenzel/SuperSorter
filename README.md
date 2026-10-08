@@ -5,11 +5,11 @@ Spielbarer Prototyp eines Mobile-Puzzle-Games in einem **Card Shop** (Sammelkart
 - **Shipping („Packband“) – Waren verkaufen** (Standard): Kundenpakete laufen auf einem Band vorbei und verlangen konkrete Waren. Ein Tap auf eine Lagerkiste nimmt die oberste Ware: Passt sie, fliegt sie ins Paket, sonst auf den Packtisch. Volle Pakete werden verschickt, und Waren vom Packtisch springen automatisch ins nächste Paket – Kettenreaktionen geben Kombo-Münzen. → [docs/PACK_MODE.md](docs/PACK_MODE.md)
 - **Restock („Regal“) – Waren in den Bestand aufnehmen:** Du räumst die Lieferung sortenrein ins Ladenregal (Prinzip *Water Sort / Magic Sort*). → [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 
-- **Packs & Collection:** Booster-Packs öffnen (5 Karten, je eine Rare oder **Holo Rare**) und das 32-Karten-Set „Base Set“ sammeln – jede Karte mit eigener Illustration. Zum Testen sind Packs kostenlos, später kosten sie Münzen.
+- **Packs & Collection:** Booster-Packs öffnen (5 Karten, je eine Rare oder **Holo Rare**) und das 32-Karten-Set „Base Set“ sammeln – Fantasy-Kartendesigns mit Holo-Effekt im Yu-Gi-Oh-Stil. Zum Testen sind Packs kostenlos, später kosten sie Münzen.
 
 Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen, W20 und Sammelfigur. Beide Puzzle-Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Power-ups und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (Shop, Ranking, Home mit „Play“, Packs, Collection). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
 
-![Card Shop: Hauptmenü mit Sound- und Musik-Schalter, metallisches 3D-Booster-Pack, aufgedeckte Karte gekippt, Übersicht mit eigenen Illustrationen, Holo Rare in der 3D-Großansicht](docs/screenshots/cardshop.webp)
+![Card Shop: Hauptmenü mit Sound- und Musik-Schalter, metallisches 3D-Booster-Pack, aufgedeckte Karte gekippt, Übersicht mit den Fantasy-Karten, Holo Rare in der 3D-Großansicht](docs/screenshots/cardshop.webp)
 
 <details>
 <summary>Packband-Modus (noch mit Supermarkt-Waren)</summary>
@@ -30,7 +30,7 @@ Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen,
 - **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Ranking, Home, Packs, Collection als Lucide-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Home“ sitzt der Play-Knopf. Shop und Ranking sind Platzhalter. Oben links Sound an/aus.
 - **Booster-Packs in 3D (three.js):** Metallisch glänzendes Pack (KI-hochskalierte Grafik, Rahmen und Goldschrift spiegeln, gerillte Silbernähte mit Aufhängeloch). Es schwebt und lässt sich kippen; zum Öffnen quer über die Oberkante wischen: Der Riss folgt dem Finger, der Streifen rollt sich ab (gezackte Risskante mit Folienfasern, Knistern, das Pack zittert unter Zug) und fliegt davon. Die Karten steigen verdeckt heraus, jede wird per Tipp umgedreht, lässt sich mit dem Finger kippen (Glanz und Holo-Folie wandern mit) und wird weggewischt. Die Rare kommt zuletzt und glüht vorher (Holo in Regenbogenfarben), beim Aufdecken Strahlen, Banner und Konfetti. Danach Übersicht mit „NEW“-Markierungen. Ohne WebGL gibt es eine CSS-Variante.
 - **Collection:** Album mit allen 32 Karten (fehlende als nummerierte Lücke), Filter nach Element, Fortschrittsbalken, Anzahl doppelter Karten, Großansicht in 3D: Karte frei drehen und kippen. Neue Karten zeigt eine Zahl am Reiter.
-- **Kartenkunst:** 32 eigene Vektor-Illustrationen (niedliche Wesen, je Element mit Flammen, Wasser, Blättern oder Blitzen), als SVG für die Karten und WebP für die 3D-Texturen.
+- **Karten:** 32 Fantasy-Kartendesigns (fertige Bilder mit Rahmen, Name und Nummer) und passende Rückseite. Holo Rares mit eigener Holo-Maske: Prismenfolie mit Regenbogen, feinem Linienraster, wanderndem Reflexionsband und Glitzer – stark, wo die Maske weiß ist. Im Raster kleine Vorschaubilder (spart Speicher).
 - **Sound & Musik:** eigene, per Klangsynthese erzeugte Sounds im Stil von Sammelkarten-Spielen (Karten-„Fwip“, Folie reißt, Glitzer-Glocken für Rares) und Hintergrundmusik in Dauerschleife (wird bei Fanfaren kurz leiser). Getrennte Schalter oben links; auf iOS ab dem ersten Tap, im Lautlos-Modus des iPhones bleibt es still.
 - **Packband:** Ein Tap pro Zug, alle wartenden Pakete sichtbar, Versand-Animation (Klappen, Klebeband, Abflug), Pakete fahren vom Band heran, Kettenreaktionen werden Schritt für Schritt abgespielt („Kombo ×2!“).
 - **Regal-Steuerung:** Ware antippen (hebt sich an, leuchtet), dann Fach antippen (Ware hüpft im Bogen hinein). Ungültige Ziele wackeln. **Multi-Move** für gleiche sichtbare Waren.
@@ -63,7 +63,7 @@ Weitere Scripts:
 | `npm run pack:report` | Packband-Modus: dasselbe für alle Versand-Tage |
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
 | `node scripts/cardshop-art.mjs` | Card-Shop-Waren (SVG im Code) neu nach `public/assets/items/` rendern |
-| `node scripts/card-art.mjs [--sheet bild.png]` | Kartenillustrationen (SVG im Code) nach `public/assets/cards/` schreiben (SVG + WebP), optional Übersichtsbild |
+| `python3 scripts/cards-import.py ordner/` | Kartenbilder + Holo-Masken übernehmen → `public/assets/cards/` (Karte, Vorschau, Alpha-Maske), Originale nach `assets-src/cards/` |
 | `python3 scripts/card-design.py rahmen.png rückseite.png` | Kartenrahmen + Kartenrückseite (KI-hochskaliert) ausschneiden → `public/assets/card-design/` |
 | `python3 scripts/pack-texture.py bild.png` | Booster-Pack-Textur + Materialkarte aus der (KI-hochskalierten) Pack-Grafik bauen → `public/assets/pack/` (s. docs/ASSETS.md) |
 | `python3 scripts/sfx/synth.py` | alle Sounds neu erzeugen (Klangsynthese → `public/assets/sfx/*.mp3`; braucht numpy, scipy, ffmpeg) |
@@ -151,14 +151,14 @@ SuperSorter/
 │  └─ screenshots/
 ├─ public/assets/                 optimierte Assets (WebP) + App-Icons
 │  ├─ items/  mystery/  board/  ui/  icons/
-│  ├─ cards/                      Kartenillustrationen (SVG + WebP, aus scripts/card-art.mjs)
+│  ├─ cards/                      Kartenbilder NN.webp, Vorschauen thumbs/, Holo-Masken NN-holo.webp
 │  ├─ pack/                       Booster-Pack: Grafik + Materialkarte (aus scripts/pack-texture.py)
 │  ├─ card-design/                Kartenrahmen + Rückseite (Prototyp, aus scripts/card-design.py)
 │  ├─ music/  sfx/                Hintergrundmusik, Sounds
 ├─ scripts/
 │  ├─ asset-map.mjs               Zuordnung Original → Ziel
 │  ├─ cardshop-art.mjs            Card-Shop-Waren als SVG → WebP
-│  ├─ card-art.mjs                32 Kartenillustrationen als SVG (+ WebP)
+│  ├─ cards-import.py             Kartenbilder + Holo-Masken übernehmen
 │  ├─ pack-texture.py             Booster-Pack-Textur + Materialkarte
 │  ├─ card-design.py              Kartenrahmen + Rückseite ausschneiden
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
@@ -176,7 +176,7 @@ SuperSorter/
 │  │  │                           BoosterBar, HUD, WinScreen, LoseScreen, DebugPanel, …
 │  │  ├─ home/                    HomeScreen, TabBar, PacksPage (Pack öffnen), CollectionPage (Album)
 │  │  ├─ three/                   Packs3D, CardViewer3D (React-Seite der 3D-Ansichten)
-│  │  ├─ cards/                   TcgCard (Sammelkarte in CSS), BoosterPack
+│  │  ├─ cards/                   TcgCard (Kartenbild, Holo ohne WebGL), BoosterPack
 │  │  └─ pack/                    PackBoard, PackBox, plan (Animationsplan), timeline (Zeitplan der Kette)
 │  ├─ hooks/                      useGame, usePackGame, progress, usePersistedState, useFlip, useFxAnimations, …
 │  ├─ three/                      3D mit three.js: PackOpening, CardViewer, Holo-Shader, Karten-/Pack-Modelle

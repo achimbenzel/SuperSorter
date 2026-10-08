@@ -15,7 +15,7 @@ Der Onlineshop-Prototyp wurde nach dem Playtest durch das **Packband** ersetzt (
 ## 0b. Card Shop und Sammelkarten
 
 - **Packs kosten Münzen:** `PACK_PRICE` in `src/game/cards/packs.ts` setzen, Kauf im Packs-Reiter abbuchen (gemeinsame Geldbörse in `progress.ts`).
-- ~~**Kartenkunst:**~~ umgesetzt: 32 eigene Vektor-Illustrationen (`scripts/card-art.mjs`). Offen: Holo-Varianten mit eigenem Hintergrund, Kartenkunst für weitere Sets.
+- ~~**Kartenkunst:**~~ umgesetzt: 32 Fantasy-Kartendesigns mit Holo-Masken (`scripts/cards-import.py`). Offen: Werte (HP, Attacke) im leeren Textfeld der Karten, weitere Sets.
 - **Weitere Sets / Sonderkarten:** Full Art, Secret Rare, zweites Set mit eigenem Pack-Design.
 - **Verknüpfung mit dem Puzzle:** Packs als Belohnung für Belohnungstage; im Shipping-Modus bestellen Kunden die Booster der Elemente, die man gerade sammelt.
 - **Shop & Ranking:** die beiden Platzhalter-Reiter füllen (Münzpakete, tägliche Herausforderung).
