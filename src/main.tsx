@@ -8,6 +8,9 @@ import { applyTimingCssVars } from './config';
 import { installImageRetry, preloadImages } from './imageLoader';
 import { installIosGuards } from './iosGuards';
 import { installStandaloneViewportFix } from './viewport';
+// Titelschrift (nur lateinischer Zeichensatz, 700 + 900), wird mitgecacht
+import '@fontsource/cinzel/latin-700.css';
+import '@fontsource/cinzel/latin-900.css';
 import './styles/tokens.css';
 import './styles/global.css';
 

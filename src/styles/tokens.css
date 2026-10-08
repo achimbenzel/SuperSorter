@@ -4,18 +4,34 @@
  * --t-* Variablen auf <html> gesetzt, damit CSS und JS dieselben Werte nutzen.
  */
 :root {
-  /* Farben */
-  --c-bg-wall-top: #fff4dc;
-  --c-bg-wall-bottom: #f6dfb6;
-  --c-bg-tile-line: rgba(196, 150, 92, 0.16);
-  --c-bg-floor: #d9b07c;
-  --c-text: #3b2414;
-  --c-text-soft: #7a5a3c;
+  /* Farben – dunkles Fantasy-Design passend zu Karten und Packs:
+     Schiefer/Eisen als Grund, Gold und Bronze für Rahmen und Schrift, Glut-Orange
+     als Akzent (wie die Edelsteine auf Kartenrückseite und Pack). */
+  --c-bg-top: #2a2d34;
+  --c-bg-mid: #1b1d22;
+  --c-bg-floor: #121317; /* unterster Ton des Verlaufs */
+  --c-page-floor: #0f1013; /* so sieht der Boden samt Maserung aus: Seitenhintergrund im Spiel */
+  --c-panel-top: #363a42;
+  --c-panel-bottom: #1f2126;
+  --c-steel: #6b717c;
+  --c-steel-light: #b5bac3;
+  --c-text: #efe6d2;
+  --c-text-soft: #a9a296;
+  --c-text-dim: #6f6a62;
   --c-text-inverse: #ffffff;
-  --c-accent: #2f8fd0;
-  --c-accent-dark: #1d5d94;
-  --c-hud: rgba(255, 255, 255, 0.82);
-  --c-hud-border: rgba(120, 72, 30, 0.22);
+  /* Tinte für Text auf Papier und Karton (Tickets, Schilder) */
+  --c-ink: #3b2414;
+  --c-ink-soft: #7a5a3c;
+  --c-gold: #e2b65c;
+  --c-gold-light: #f6dfa0;
+  --c-gold-dark: #8e6426;
+  --c-ember: #ff7a1f;
+  --c-ember-dark: #c2410c;
+  --c-ember-deep: #6e1f06;
+  --c-accent: var(--c-ember);
+  --c-accent-dark: var(--c-gold);
+  --c-hud: linear-gradient(180deg, var(--c-panel-top), var(--c-panel-bottom));
+  --c-hud-border: rgba(226, 182, 92, 0.55);
   --c-wood-dark: #6b3a1e;
   --c-wood: #b5743c;
   --c-wood-light: #e8b67c;
@@ -23,15 +39,17 @@
   --c-select-glow: rgba(255, 236, 80, 0.95);
   --c-valid-target: rgba(120, 230, 120, 0.55);
   --c-solved-glow: rgba(255, 214, 64, 0.9);
-  --c-gold: #ffc933;
-  --c-danger: #d6264b;
-  --c-success: #4caf2a;
-  --c-overlay: rgba(36, 20, 8, 0.55);
+  --c-danger: #e0453a;
+  --c-success: #5fb63c;
+  --c-overlay: rgba(8, 8, 12, 0.72);
   --c-closed-a: #8a5a33;
   --c-closed-b: #7a4c2a;
-  --c-statusbar: #1d5d94; /* = theme-color in index.html/vite.config.ts */
+  --c-statusbar: #121317; /* = theme-color in index.html/vite.config.ts */
   --c-cart: #c9d6e2;
   --c-cart-dark: #6f8396;
+
+  /* Goldrahmen: als zweiter Hintergrund (border-box) hinter einer Füllung (padding-box) */
+  --gold-frame: linear-gradient(180deg, #f6dfa0 0%, #c99a4a 45%, #7a5420 60%, #e2b65c 100%);
 
   /* Maße
    * --item ist die Kantenlänge einer Ware. Sie skaliert mit Breite UND nutzbarer
@@ -47,7 +65,9 @@
   --radius: 14px;
   --hud-h: calc(var(--item) * 0.78);
   --booster: calc(var(--item) * 1.02);
-  --font: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  /* Titel, Knöpfe, Zahlen: Cinzel (wie die Schrift auf Pack und Kartenrückseite), offline gebündelt */
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, 'Times New Roman', serif;
 
   /* Fallback-Zeiten (werden aus src/config.ts überschrieben) */
   --t-hop: 380ms;

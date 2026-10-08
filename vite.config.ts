@@ -22,8 +22,8 @@ function resolveBase(useBuildBase: boolean): string {
 }
 
 /** Farben für Manifest/Statusleiste (identisch mit --c-statusbar / --c-bg-wall-top in tokens.css). */
-const THEME_COLOR = '#1d5d94';
-const BACKGROUND_COLOR = '#fff4dc';
+const THEME_COLOR = '#121317';
+const BACKGROUND_COLOR = '#121317';
 
 /** Hostnamen, unter denen Dev-Server und Preview zusätzlich erreichbar sein dürfen. */
 const TAILSCALE_HOSTS = ['.ts.net'];
@@ -95,7 +95,7 @@ export default defineConfig(({ command, isPreview }) => {
         },
         workbox: {
           // Alles vorab cachen: Das Spiel funktioniert danach komplett offline.
-          globPatterns: ['**/*.{js,css,html,webp,png,svg,webmanifest,mp3}'],
+          globPatterns: ['**/*.{js,css,html,webp,png,svg,webmanifest,mp3,woff2}'],
           // Musik (4,7 MB) nicht vorab cachen: wird gestreamt (src/audio/music.ts).
           // Zusätzlich in includeAssets ausgenommen, sonst käme sie darüber wieder hinein.
           globIgnores: ['**/assets/music/**'],

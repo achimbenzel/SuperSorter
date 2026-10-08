@@ -22,7 +22,7 @@ body {
   /* Bewusst NICHT position: fixed – iOS 26 schneidet fixierte Elemente in der
      Homescreen-App am zu kleinen Viewport ab (unten fehlten 59 pt, s. viewport.ts). */
   /* Seitenfarbe = unterstes Element, im Menü mit aktivem Reiter (src/viewport.ts) */
-  background-color: var(--page-bg, var(--c-bg-wall-bottom));
+  background-color: var(--page-bg, var(--c-page-floor));
   background-image: var(--page-bg-image, none);
   color: var(--c-text);
   font-family: var(--font);

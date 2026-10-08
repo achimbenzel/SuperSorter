@@ -47,7 +47,8 @@ Jede neue Regel: zuerst `rules.ts` + Test, dann Solver-Spiegelung, dann Generato
 
 ## 4. Assets
 
-- **Einkaufswagen-Grafik** (derzeit CSS + 🛒), **Spielhintergrund** (derzeit CSS-Fliesen), **Restart-Icon** (derzeit Inline-SVG).
+- **Spielgrafiken im Fantasy-Stil:** Die Oberfläche ist umgestellt (dunkles Eisen, Gold, Glut, Cinzel), die Spielgrafiken noch nicht – Lieferkarton, Waren, Power-up-Kacheln, Münze, Regalfach und App-Icon (Einkaufskorb auf Blau) sind noch Comic-Bitmaps.
+- **Einkaufswagen-Grafik** (derzeit CSS + 🛒), **Restart-Icon** (derzeit Inline-SVG).
 - **Regalfach in höherer Auflösung** (derzeit aus einem 474 px breiten Original ausgeschnitten, auf 3x-Displays leicht weich).
 - Booster-Kacheln ohne eingebrannten englischen Text (Text dann per CSS, lokalisierbar).
 - iOS-Splash-Screens (`apple-touch-startup-image`) für einen sauberen Start.

@@ -1,19 +1,24 @@
-import { House, Music, PackageOpen, Play, Store, Trophy, Volume2, VolumeX, WalletCards } from 'lucide-react';
+import { House, LibraryBig, Music, Package, PackageOpen, Play, Store, Trophy, Volume2, VolumeX, WalletCards, type LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { UI_IMAGE } from '../../assets';
 import { isSoundEnabled, setSoundEnabled } from '../../audio/player';
 import { isMusicEnabled, setMusicEnabled } from '../../audio/music';
 import { playSfx } from '../../audio/sfx';
+import { CARD_SET } from '../../game/cards/cards';
 import { STORAGE_KEY } from '../../config';
 import { readProgress, type GameMode } from '../../hooks/progress';
 import { useCollection } from '../../hooks/useCollection';
 import { setPageBackground, viewportInfo } from '../../viewport';
+import { TcgCard } from '../cards/TcgCard';
 import { CollectionPage } from './CollectionPage';
 import { PacksPage } from './PacksPage';
 import { activeTabSlot, TAB_ACTIVE_COLOR, TAB_BAR_COLOR, TabBar, type TabDef } from './TabBar';
 
 // Die fünf Plätze der Menüleiste, links nach rechts (Icons: lucide).
 const TAB = { shop: 0, ranking: 1, home: 2, packs: 3, collection: 4 } as const;
+
+// Fächer über dem Titel: drei Holo Rares (Abyss Whale, Solar Dragon, Plasma Unicorn)
+const HERO_CARDS = [16, 8, 32].map((no) => CARD_SET[no - 1]);
 
 const PLACEHOLDER: Record<number, { title: string; text: string }> = {
   [TAB.shop]: { title: 'Shop', text: 'Coin bundles, power-ups and shop decorations – coming soon.' },
@@ -109,13 +114,18 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
         <main className={`home-page home-page--${tabs[tab].id}`} key={tab} style={{ '--dir': dir.current } as CSSProperties}>
           {isHome && (
             <>
+              <div className="home-hero" aria-hidden="true">
+                {HERO_CARDS.map((card, i) => (
+                  <TcgCard key={card.id} card={card} className={`home-hero-card home-hero-card--${i}`} />
+                ))}
+              </div>
               <h1 className="home-title" onClick={tapTitle}>
-                Super <span>Sorter</span>
+                <span className="home-title-word">Super</span> <span className="home-title-word">Sorter</span>
                 <small>Card Shop</small>
               </h1>
               <div className="home-modes" role="radiogroup" aria-label="Game mode">
                 <ModeCard
-                  icon="📦"
+                  icon={Package}
                   title="Shipping"
                   subtitle="Pack customer orders"
                   progress={`Day ${progress.packDay}`}
@@ -123,7 +133,7 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
                   onSelect={() => onModeChange('pack')}
                 />
                 <ModeCard
-                  icon="🗄️"
+                  icon={LibraryBig}
                   title="Restock"
                   subtitle="Fill the shop shelves"
                   progress={`Level ${progress.level}`}
@@ -153,8 +163,7 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
         <div className={`home-play${isHome ? ' is-shown' : ''}`} aria-hidden={!isHome}>
           <button
             type="button"
-            className="game-btn game-btn--green home-play-btn"
-            style={{ borderImageSource: `url(${UI_IMAGE.buttonGreen})` }}
+            className="game-btn game-btn--primary home-play-btn"
             onClick={() => {
               playSfx('button');
               onPlay();
@@ -173,7 +182,7 @@ export function HomeScreen({ mode, onModeChange, onPlay }: HomeScreenProps) {
 }
 
 interface ModeCardProps {
-  icon: string;
+  icon: LucideIcon;
   title: string;
   subtitle: string;
   progress: string;
@@ -181,7 +190,7 @@ interface ModeCardProps {
   onSelect: () => void;
 }
 
-function ModeCard({ icon, title, subtitle, progress, active, onSelect }: ModeCardProps) {
+function ModeCard({ icon: Icon, title, subtitle, progress, active, onSelect }: ModeCardProps) {
   return (
     <button
       type="button"
@@ -194,7 +203,7 @@ function ModeCard({ icon, title, subtitle, progress, active, onSelect }: ModeCar
       }}
     >
       <span className="home-mode-icon" aria-hidden="true">
-        {icon}
+        <Icon strokeWidth={1.9} />
       </span>
       <strong>{title}</strong>
       <span>{subtitle}</span>

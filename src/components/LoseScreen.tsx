@@ -1,4 +1,4 @@
-import { UI_IMAGE } from '../assets';
+import { RotateCcw } from 'lucide-react';
 import { EndPanel } from './EndPanel';
 import { GameButton } from './GameButton';
 
@@ -24,16 +24,16 @@ export function LoseScreen({ title, text, canExtra, extraLabel = 'Extra slot (po
       actions={
         <>
           {canExtra && (
-            <GameButton variant="green" onClick={onExtra}>
+            <GameButton variant="primary" onClick={onExtra}>
               {extraLabel}
             </GameButton>
           )}
           {canUndo && (
-            <GameButton variant="green" onClick={onUndo}>
+            <GameButton variant="primary" onClick={onUndo}>
               Undo ({undoCount})
             </GameButton>
           )}
-          <GameButton variant="red" icon={UI_IMAGE.cross} onClick={onRetry}>
+          <GameButton variant="secondary" icon={<RotateCcw strokeWidth={2.8} />} onClick={onRetry}>
             Try again
           </GameButton>
         </>

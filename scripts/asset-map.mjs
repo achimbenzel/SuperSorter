@@ -44,18 +44,12 @@ export const ASSET_MAP = [
   { src: 'UI_01_Lock.png', out: 'ui/lock', kind: 'sprite', size: 128 },
   { src: 'UI_02_Coin_Gold.png', out: 'ui/coin', kind: 'sprite', size: 128 },
   { src: 'UI_03_Star.png', out: 'ui/star', kind: 'sprite', size: 128 },
-  { src: 'UI_04_confetti.png', out: 'ui/confetti', kind: 'sprite', size: 384 },
   { src: 'UI_05_Undo.png', out: 'ui/booster-undo', kind: 'sprite', size: 192 },
   { src: 'UI_06_Extra_Slot.png', out: 'ui/booster-extra-slot', kind: 'sprite', size: 192 },
   { src: 'UI_07_Xray.png', out: 'ui/booster-peek', kind: 'sprite', size: 192 },
   { src: 'UI_08_Shuffle.png', out: 'ui/booster-shuffle', kind: 'sprite', size: 192 },
-  { src: 'UI_09_Panel.png', out: 'ui/panel', kind: 'wide', size: 900 },
-  { src: 'Button_01_Square.png', out: 'ui/button-square-green', kind: 'sprite', size: 192 },
-  { src: 'Button_02_Square_Red.png', out: 'ui/button-square-red', kind: 'sprite', size: 192 },
-  { src: 'Button_03_Wide.png', out: 'ui/button-wide-green', kind: 'wide', size: 600 },
-  { src: 'Button_04_Wide.png', out: 'ui/button-wide-red', kind: 'wide', size: 600 },
-  { src: 'Button_05_Checkmark.png', out: 'ui/icon-check', kind: 'sprite', size: 128 },
-  { src: 'Button_06_Cross.png', out: 'ui/icon-cross', kind: 'sprite', size: 128 },
+  // Nicht mehr verwendet seit dem Fantasy-Design (Originale bleiben in assets-src/):
+  // UI_04_confetti, UI_09_Panel, Button_01–06 – Knöpfe und Panels sind jetzt CSS.
 ];
 
 /** App-Icon-Quelle für scripts/generate-icons.mjs */

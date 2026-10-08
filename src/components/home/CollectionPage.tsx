@@ -101,7 +101,7 @@ export function CollectionPage({ collection, onSeen, onOpenPacks }: CollectionPa
         {owned === 0 && (
           <div className="collection-empty">
             <p>No cards yet.</p>
-            <GameButton variant="green" onClick={onOpenPacks}>
+            <GameButton variant="primary" onClick={onOpenPacks}>
               Open a pack
             </GameButton>
           </div>

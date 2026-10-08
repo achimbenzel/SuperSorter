@@ -9,7 +9,7 @@ Spielbarer Prototyp eines Mobile-Puzzle-Games in einem **Card Shop** (Sammelkart
 
 Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen, W20 und Sammelfigur. Beide Puzzle-Modi haben verpackte Mystery-Waren, goldene Bonus-Waren und Power-ups und teilen sich die Münzen. Die App startet im **Hauptmenü** mit unterer Menüleiste (Shop, Ranking, Home mit „Play“, Packs, Collection). Dort sind die Modi zum Testen getrennt wählbar; später sollen sie sich abwechseln. Die Web-App ist für das iPhone optimiert und läuft als Homescreen-App im Vollbild und offline.
 
-![Card Shop: Hauptmenü mit Sound- und Musik-Schalter, metallisches 3D-Booster-Pack, aufgedeckte Karte gekippt, Übersicht mit den Fantasy-Karten, Holo Rare in der 3D-Großansicht](docs/screenshots/cardshop.webp)
+![Card Shop im Fantasy-Design: Hauptmenü mit Kartenfächer und Goldschrift, metallisches 3D-Booster-Pack, Übersicht nach dem Öffnen, Sammlung, Win-Screen](docs/screenshots/cardshop.webp)
 
 <details>
 <summary>Packband-Modus (noch mit Supermarkt-Waren)</summary>
@@ -27,7 +27,8 @@ Waren im Laden: Booster-Packs (Fire, Water, Leaf, Bolt), Deckbox, Kartenhüllen,
 
 ## Features
 
-- **Hauptmenü:** Untere Menüleiste nach Vektor-Vorlage (Shop, Ranking, Home, Packs, Collection als Lucide-Icons). Der dunkle Reiter gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Home“ sitzt der Play-Knopf. Shop und Ranking sind Platzhalter. Oben links Sound an/aus.
+- **Fantasy-Oberfläche passend zu Karten und Packs:** dunkler Schiefer mit Maserung und warmem Licht von oben, Gold und Bronze für Rahmen und Schrift, Glut-Orange als Akzent (wie die Edelsteine auf Kartenrückseite und Pack). Titel, Knöpfe und Zahlen in *Cinzel* (offline gebündelt). Knöpfe, Plaketten und Win-/Lose-Fenster sind reines CSS (Goldrahmen, Glut-Edelsteine in den Ecken, facettierte Goldsterne).
+- **Hauptmenü:** Kartenfächer aus drei Holo Rares über dem Titel (nur auf hohen Displays), Modus-Karten als Metallplatten mit Medaillon. Untere Menüleiste nach Vektor-Vorlage (Shop, Ranking, Home, Packs, Collection als Lucide-Icons): Der Reiter (Bronzeplatte mit Goldkante und Glut hinter dem Icon) gleitet mit Überschwingen zum gewählten Icon und ploppt auf, das aktive Icon wird groß; über „Home“ sitzt der Play-Knopf. Shop und Ranking sind Platzhalter. Oben links Sound und Musik an/aus.
 - **Booster-Packs in 3D (three.js):** Metallisch glänzendes Pack (KI-hochskalierte Grafik, Rahmen und Goldschrift spiegeln, gerillte Silbernähte mit Aufhängeloch). Es schwebt und lässt sich kippen; zum Öffnen quer über die Oberkante wischen: Der Riss folgt dem Finger, der Streifen rollt sich ab (gezackte Risskante mit Folienfasern, Knistern, das Pack zittert unter Zug) und fliegt davon. Die Karten steigen verdeckt heraus, jede wird per Tipp umgedreht, lässt sich mit dem Finger kippen (Glanz und Holo-Folie wandern mit) und wird weggewischt. Die Rare kommt zuletzt und glüht vorher (Holo in Regenbogenfarben), beim Aufdecken Strahlen, Banner und Konfetti. Danach Übersicht mit „NEW“-Markierungen. Ohne WebGL gibt es eine CSS-Variante.
 - **Collection:** Album mit allen 32 Karten (fehlende als nummerierte Lücke), Filter nach Element, Fortschrittsbalken, Anzahl doppelter Karten, Großansicht in 3D: Karte frei drehen und kippen. Neue Karten zeigt eine Zahl am Reiter.
 - **Karten:** 32 Fantasy-Kartendesigns (fertige Bilder mit Rahmen, Name und Nummer) und passende Rückseite. Holo Rares mit eigener Holo-Maske: Prismenfolie mit Regenbogen, feinem Linienraster, wanderndem Reflexionsband und Glitzer – stark, wo die Maske weiß ist. Im Raster kleine Vorschaubilder (spart Speicher).
@@ -66,6 +67,7 @@ Weitere Scripts:
 | `python3 scripts/cards-import.py ordner/` | Kartenbilder + Holo-Masken übernehmen → `public/assets/cards/` (Karte, Vorschau, Alpha-Maske), Originale nach `assets-src/cards/` |
 | `python3 scripts/card-design.py rahmen.png rückseite.png` | Kartenrahmen + Kartenrückseite (KI-hochskaliert) ausschneiden → `public/assets/card-design/` |
 | `python3 scripts/pack-texture.py bild.png` | Booster-Pack-Textur + Materialkarte aus der (KI-hochskalierten) Pack-Grafik bauen → `public/assets/pack/` (s. docs/ASSETS.md) |
+| `python3 scripts/ui-texture.py` | Maserungs-Kachel für den Hintergrund neu erzeugen → `public/assets/ui/stone.webp` |
 | `python3 scripts/sfx/synth.py` | alle Sounds neu erzeugen (Klangsynthese → `public/assets/sfx/*.mp3`; braucht numpy, scipy, ffmpeg) |
 | `npm run phone` | Production-Build bauen und im Netz bereitstellen (Port 4173) – zum Testen auf dem Handy |
 | `npm run typecheck` | nur TypeScript prüfen |
@@ -161,6 +163,7 @@ SuperSorter/
 │  ├─ cards-import.py             Kartenbilder + Holo-Masken übernehmen
 │  ├─ pack-texture.py             Booster-Pack-Textur + Materialkarte
 │  ├─ card-design.py              Kartenrahmen + Rückseite ausschneiden
+│  ├─ ui-texture.py               Maserungs-Kachel des Hintergrunds (stone.webp)
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
 │  ├─ level-report.ts             npm run levels:report
@@ -201,7 +204,8 @@ SuperSorter/
 | React 18 + Vite 8 + TypeScript 5.9 (strict) | TS 5.9 statt 7.x: erprobt mit allen Tools |
 | Zustand per **`useReducer`** | Ein einziges Zustandsobjekt; der Reducer ist eine reine Funktion und ohne React testbar. Eine Bibliothek wie Zustand bringt hier keinen Mehrwert. |
 | Animationen per **CSS + Web Animations API** | Nur `transform`/`opacity`, kein framer-motion nötig (kleineres Bundle, volle Kontrolle) |
-| `canvas-confetti` | Konfetti im Win-Screen |
+| `canvas-confetti` | Funken (Gold/Glut) im Win-Screen und bei Rares |
+| `@fontsource/cinzel` | Titelschrift (nur Latin, 700 + 900), gebündelt und offline gecacht |
 | `vite-plugin-pwa` (Workbox) | Manifest + Service Worker |
 | Vitest | Unit-Tests der Spiellogik |
 | sharp (dev) | Asset-Optimierung und Icon-Generierung |

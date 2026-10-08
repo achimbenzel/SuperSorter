@@ -35,8 +35,10 @@
   align-self: center;
   padding: 3px 7px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--c-text);
+  border: 1px solid rgba(226, 182, 92, 0.55);
+  background: rgba(18, 19, 23, 0.88);
+  color: var(--c-gold-light);
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: calc(var(--item) * 0.24);
   white-space: nowrap;
@@ -97,7 +99,7 @@
 .pk-card-count {
   font-weight: 900;
   font-size: calc(var(--item) * 0.28);
-  color: var(--c-text);
+  color: var(--c-ink);
 }
 
 /* ------------------------------------------------------------------ Packplätze */
@@ -124,13 +126,14 @@
   min-height: calc(var(--item) * 1.5);
   padding: 5px;
   border-radius: 12px;
-  /* Packplatz: helle Holzplatte am Bandende */
+  /* Packplatz: dunkle Holzplatte am Bandende, feiner Goldrand */
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(0, 0, 0, 0.06)),
-    var(--c-wood-light);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.12)),
+    #74462a;
   box-shadow:
-    0 4px 0 var(--c-wood),
-    0 6px 10px rgba(80, 40, 10, 0.25);
+    inset 0 0 0 1px rgba(226, 182, 92, 0.3),
+    0 4px 0 #3a1f0e,
+    0 8px 14px rgba(0, 0, 0, 0.4);
 }
 
 .pk-spot > * {
@@ -188,7 +191,7 @@
   box-shadow: 0 1px 2px rgba(80, 50, 20, 0.25);
   font-size: calc(var(--item) * 0.22);
   font-weight: 800;
-  color: var(--c-text);
+  color: var(--c-ink);
   text-align: center;
 }
 
@@ -356,19 +359,22 @@
   padding: 5px 6px;
   border-radius: 12px;
   background:
-    repeating-linear-gradient(90deg, rgba(120, 70, 30, 0.08) 0 2px, transparent 2px 22px),
-    linear-gradient(180deg, #c98d50, var(--c-wood));
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.1) 0 2px, transparent 2px 22px),
+    linear-gradient(180deg, #8a5630, #5e3519);
   box-shadow:
-    inset 0 2px 0 rgba(255, 255, 255, 0.25),
-    0 4px 0 var(--c-wood-dark);
+    inset 0 2px 0 rgba(255, 220, 170, 0.18),
+    inset 0 0 0 1px rgba(226, 182, 92, 0.3),
+    0 4px 0 #3a1f0e,
+    0 8px 14px rgba(0, 0, 0, 0.4);
 }
 
 .pk-table-label {
   flex: none;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  color: #fff6e6;
-  font-weight: 900;
+  color: var(--c-gold-light);
+  font-family: var(--font-display);
+  font-weight: 700;
   font-size: calc(var(--item) * 0.2);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -388,8 +394,8 @@
   position: relative;
   aspect-ratio: 1;
   border-radius: 10px;
-  background: rgba(255, 240, 215, 0.4);
-  box-shadow: inset 0 2px 5px rgba(70, 35, 10, 0.4);
+  background: rgba(20, 10, 4, 0.35);
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
   display: grid;
   place-items: center;
 }
@@ -403,8 +409,8 @@
 
 .pk-table.is-full .pk-slot {
   box-shadow:
-    inset 0 2px 5px rgba(70, 35, 10, 0.4),
-    0 0 0 2px rgba(214, 38, 75, 0.45);
+    inset 0 2px 5px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(224, 69, 58, 0.6);
 }
 
 /* ------------------------------------------------------------------ Lagerkisten */
@@ -423,12 +429,15 @@
   z-index: 201;
   pointer-events: none;
   white-space: nowrap;
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: calc(var(--item) * 0.42);
-  color: #fff;
-  -webkit-text-stroke: 3px #d6264b;
+  color: #fff3d6;
+  -webkit-text-stroke: 3px #7a2306;
   paint-order: stroke fill;
-  text-shadow: 0 3px 0 rgba(120, 10, 40, 0.5);
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(255, 122, 31, 0.85);
 }
 
 /* ------------------------------------------------------------------ Keyframes */

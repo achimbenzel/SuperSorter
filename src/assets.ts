@@ -34,18 +34,12 @@ export const BOARD_IMAGE = {
   shelfSlot: asset('board/shelf-slot.webp'),
 } as const;
 
+// Knöpfe, Panels und Plaketten sind CSS (Fantasy-Design, s. styles/tokens.css);
+// als Bilder bleiben nur Schloss, Münze und Stern.
 export const UI_IMAGE = {
   lock: asset('ui/lock.webp'),
   coin: asset('ui/coin.webp'),
   star: asset('ui/star.webp'),
-  confetti: asset('ui/confetti.webp'),
-  panel: asset('ui/panel.webp'),
-  buttonGreen: asset('ui/button-wide-green.webp'),
-  buttonRed: asset('ui/button-wide-red.webp'),
-  buttonSquareGreen: asset('ui/button-square-green.webp'),
-  buttonSquareRed: asset('ui/button-square-red.webp'),
-  check: asset('ui/icon-check.webp'),
-  cross: asset('ui/icon-cross.webp'),
 } as const;
 
 export type BoosterId = 'undo' | 'extra' | 'peek' | 'shuffle';

@@ -22,7 +22,7 @@ export function drawPack(packsOpened: number): CardDef[] {
 
 export function OpenButton({ onClick, again = false }: { onClick: () => void; again?: boolean }) {
   return (
-    <GameButton variant="green" onClick={onClick}>
+    <GameButton variant="primary" onClick={onClick}>
       {again ? 'Open another' : 'Open pack'}
       <em className="packs-price">{PACK_PRICE === 0 ? 'FREE' : `${PACK_PRICE} coins`}</em>
     </GameButton>

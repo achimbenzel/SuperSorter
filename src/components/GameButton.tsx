@@ -1,28 +1,23 @@
-import type { CSSProperties, ReactNode } from 'react';
-import { UI_IMAGE } from '../assets';
+import type { ReactNode } from 'react';
 
 interface GameButtonProps {
-  variant?: 'green' | 'red';
-  icon?: string;
+  /** primary: Glut-Orange (Hauptaktion), secondary: dunkler Stahl. */
+  variant?: 'primary' | 'secondary';
+  /** Symbol vor dem Text (z. B. lucide-Icon). */
+  icon?: ReactNode;
   onClick: () => void;
   children: ReactNode;
 }
 
 /**
- * Glanz-Button aus den Button-Assets. Per border-image wird nur die Mitte des
- * Bildes gestreckt, die abgerundeten Ecken bleiben unverzerrt – so passt ein
- * Asset für beliebige Textlängen.
+ * Knopf im Stil von Karten und Packs: Goldrahmen, Füllung aus Glut bzw. Stahl,
+ * Rauten an den Enden. Reines CSS (.game-btn in screens.css), passt sich jeder
+ * Textlänge an.
  */
-export function GameButton({ variant = 'green', icon, onClick, children }: GameButtonProps) {
-  const src = variant === 'green' ? UI_IMAGE.buttonGreen : UI_IMAGE.buttonRed;
+export function GameButton({ variant = 'primary', icon, onClick, children }: GameButtonProps) {
   return (
-    <button
-      type="button"
-      className={`game-btn game-btn--${variant}`}
-      style={{ borderImageSource: `url(${src})` } as CSSProperties}
-      onClick={onClick}
-    >
-      {icon && <img src={icon} alt="" />}
+    <button type="button" className={`game-btn game-btn--${variant}`} onClick={onClick}>
+      {icon}
       <span>{children}</span>
     </button>
   );

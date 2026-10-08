@@ -18,20 +18,22 @@
   gap: calc(var(--gap) * 0.8);
   padding: calc(env(safe-area-inset-top) + 6px) max(10px, env(safe-area-inset-right))
     calc(env(safe-area-inset-bottom) + 8px) max(10px, env(safe-area-inset-left));
-  background-color: var(--c-bg-wall-top);
+  /* Dunkler Schiefer: warmes Licht von oben, Ränder abgedunkelt, darüber eine
+     Maserungs-Kachel (scripts/ui-texture.py) */
+  background-color: var(--c-bg-mid);
   background-image:
-    repeating-linear-gradient(0deg, var(--c-bg-tile-line) 0 1px, transparent 1px 38px),
-    repeating-linear-gradient(90deg, var(--c-bg-tile-line) 0 1px, transparent 1px 38px),
-    linear-gradient(180deg, var(--c-bg-wall-top) 0%, var(--c-bg-wall-bottom) 70%, var(--c-bg-floor) 100%);
+    url('/assets/ui/stone.webp'),
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 170, 90, 0.13), transparent 70%),
+    radial-gradient(140% 90% at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.45) 100%),
+    linear-gradient(180deg, var(--c-bg-top) 0%, var(--c-bg-mid) 55%, var(--c-bg-floor) 100%);
+  background-size: 256px 256px, auto, auto, auto;
   overflow: hidden;
 }
 
 /* Hinter der iOS-Statusleiste: Mit "black-translucent" ist die Statusleiste
-   transparent mit weißer Schrift und die App reicht bis an die Oberkante. Damit die
-   Schrift lesbar bleibt, ohne dass oben ein abgetrennter Streifen entsteht, läuft
-   der Hintergrund dort in einem weichen Verlauf ins Dunkle (ohne Kante, ohne
-   Schatten). Liegt hinter dem Inhalt (isolation + z-index -1). Im Browser ist der
-   Inset 0 -> nur ein Hauch am oberen Rand. */
+   transparent mit weißer Schrift und die App reicht bis an die Oberkante. Ein weicher
+   Verlauf ins Dunkle hält die Schrift lesbar, ohne abgetrennten Streifen. Liegt
+   hinter dem Inhalt (isolation + z-index -1). Im Browser ist der Inset 0. */
 .app {
   isolation: isolate;
 }
@@ -43,15 +45,7 @@
   left: 0;
   right: 0;
   height: calc(env(safe-area-inset-top) * 2.1);
-  background: linear-gradient(
-    180deg,
-    var(--c-statusbar) 0,
-    var(--c-statusbar) 30%,
-    /* über ein helles Himmelblau ausblenden, sonst wird der Übergang grau */
-    color-mix(in srgb, #3f84bf 85%, transparent) 50%,
-    color-mix(in srgb, #8cc4ef 50%, transparent) 75%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg, var(--c-statusbar) 0, var(--c-statusbar) 30%, transparent 100%);
   z-index: -1;
   pointer-events: none;
 }
@@ -67,6 +61,7 @@
   font-size: calc(var(--item) * 0.32);
 }
 
+/* Plaketten oben: dunkles Metall mit Goldrand (Rahmen = zweiter Hintergrund) */
 .hud-pill {
   height: 100%;
   display: flex;
@@ -74,32 +69,39 @@
   gap: 0.35em;
   padding: 0 0.8em;
   border-radius: 999px;
-  background: var(--c-hud);
-  border: 2px solid var(--c-hud-border);
-  box-shadow: 0 2px 0 rgba(120, 72, 30, 0.18);
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(180deg, var(--c-panel-top), var(--c-panel-bottom)) padding-box,
+    var(--gold-frame) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.45);
   color: var(--c-text);
 }
 
 .hud-level {
   margin-right: auto;
+  font-family: var(--font-display);
 }
 
 .hud-level-label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--c-text-soft);
 }
 
 .hud-level strong,
 .hud-coins strong {
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: 1.15em;
+  color: var(--c-gold-light);
 }
 
 .hud-bonus {
   font-size: 0.7em;
   font-weight: 800;
   color: var(--c-text-inverse);
-  background: var(--c-success);
+  background: linear-gradient(180deg, var(--c-ember), var(--c-ember-dark));
   border-radius: 999px;
   padding: 0.15em 0.55em;
 }
@@ -109,7 +111,7 @@
   aspect-ratio: 1;
   padding: 0;
   justify-content: center;
-  color: var(--c-accent-dark);
+  color: var(--c-gold);
   font-size: 1.1em;
   transition: transform 120ms;
 }
@@ -335,7 +337,7 @@
   display: block;
   font-weight: 600;
   font-size: 0.72em;
-  color: var(--c-text-soft);
+  color: var(--c-ink-soft);
 }
 
 /* ------------------------------------------------------------------ Unterer Bereich */
@@ -572,6 +574,7 @@
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: var(--c-ink);
   font-size: calc(var(--item) * 0.22);
   line-height: 1;
 }
@@ -672,6 +675,7 @@
   position: fixed;
   z-index: 201;
   pointer-events: none;
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: calc(var(--item) * 0.42);
   color: var(--c-gold);

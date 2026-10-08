@@ -22,7 +22,7 @@
 .home-top .hud-icon svg {
   width: 52%;
   height: 52%;
-  color: var(--c-accent-dark);
+  color: var(--c-gold);
 }
 
 .home-top-group {
@@ -48,7 +48,8 @@
   height: 3px;
   margin-top: -1.5px;
   border-radius: 2px;
-  background: var(--c-accent-dark);
+  background: var(--c-gold);
+  box-shadow: 0 0 0 1.5px var(--c-panel-bottom);
   transform: rotate(-45deg);
 }
 
@@ -80,34 +81,114 @@
   padding-bottom: 104px;
 }
 
+/* Schriftzug wie auf Pack und Kartenrückseite: Cinzel in Bronze-Gold mit dunkler Kante */
 .home-title {
   margin: 0;
-  text-align: center;
-  font-size: clamp(40px, 13vw, 58px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: clamp(44px, 14vw, 62px);
   font-weight: 900;
   line-height: 0.95;
-  color: var(--c-wood-dark);
-  text-shadow: 0 4px 0 rgba(120, 70, 20, 0.2);
+  letter-spacing: 0.03em;
+  text-align: center;
+  filter: drop-shadow(0 2px 0 #1a0e05) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.65));
 }
 
-.home-title span {
+.home-title-word {
   display: block;
-  color: #008cff;
+  background: linear-gradient(180deg, #fff4d2 8%, #f0c878 34%, #b77a2e 56%, #7c4c18 66%, #d9a85a 88%, #f3d394 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(40, 20, 6, 0.85);
 }
 
 .home-title small {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 4px 14px;
-  border-radius: 999px;
-  background: #ff3d6e;
-  color: #fff;
-  font-size: clamp(14px, 4.4vw, 18px);
-  letter-spacing: 0.12em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: clamp(12px, 3.8vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.34em;
   text-transform: uppercase;
-  text-shadow: none;
-  transform: rotate(-3deg);
-  box-shadow: 0 3px 0 rgba(140, 20, 50, 0.35);
+  color: var(--c-gold-light);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Zierlinien mit Raute links und rechts vom Untertitel (Form per clip-path) */
+.home-title small::before,
+.home-title small::after {
+  content: '';
+  width: 44px;
+  height: 8px;
+  background: linear-gradient(90deg, transparent, var(--c-gold) 70%);
+  clip-path: polygon(0 3.5px, calc(100% - 9px) 3.5px, calc(100% - 4.5px) 0, 100% 4px, calc(100% - 4.5px) 8px, calc(100% - 9px) 4.5px, 0 4.5px);
+}
+
+/* letter-spacing hängt auch hinter dem letzten Buchstaben an: ausgleichen */
+.home-title small::after {
+  margin-left: -0.34em;
+  transform: scaleX(-1);
+}
+
+/* Kartenfächer über dem Titel; nur auf hohen Bildschirmen (Höhe aus --usable-h) */
+.home-hero {
+  --hero-h: clamp(0px, calc(var(--usable-h) - 620px), 170px);
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: var(--hero-h);
+}
+
+.home-hero::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--hero-h) * 2.2);
+  height: calc(var(--hero-h) * 1.3);
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, rgba(255, 130, 40, 0.3), rgba(255, 110, 20, 0.08) 60%, transparent);
+}
+
+.home-hero .home-hero-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: calc(var(--hero-h) * 0.66);
+  transform-origin: 50% 120%;
+}
+
+.home-hero-card .tcg-face {
+  box-shadow: 0 1.6cqw 6cqw rgba(0, 0, 0, 0.7);
+}
+
+.home-hero-card--0 {
+  translate: -100% 5%;
+  rotate: -13deg;
+  filter: brightness(0.78);
+}
+
+.home-hero-card--1 {
+  z-index: 1;
+  translate: -50% -2%;
+  animation: hero-float 3.6s ease-in-out infinite alternate;
+}
+
+.home-hero-card--2 {
+  translate: 0% 5%;
+  rotate: 13deg;
+  filter: brightness(0.78);
+}
+
+@media (max-height: 740px) {
+  .home-hero {
+    display: none;
+  }
 }
 
 .home-diag {
@@ -128,23 +209,29 @@
   width: min(100%, 360px);
 }
 
+/* Modus-Karte: dunkle Metallplatte mit feinem Goldrand; gewählt glüht sie wie Glut. */
 .home-mode {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 12px 8px;
-  border-radius: 18px;
-  background: #fff;
-  border: 3px solid #ead7b8;
+  gap: 3px;
+  padding: 14px 8px 12px;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(180deg, var(--c-panel-top), var(--c-panel-bottom)) padding-box,
+    linear-gradient(180deg, rgba(226, 182, 92, 0.6), rgba(142, 100, 38, 0.3)) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 6px 14px rgba(0, 0, 0, 0.45);
   color: var(--c-text-soft);
-  font-size: 13px;
-  font-weight: 700;
-  box-shadow: 0 4px 0 rgba(120, 72, 30, 0.18);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
   transition:
     transform 260ms cubic-bezier(0.3, 1.6, 0.5, 1),
-    border-color 200ms,
-    background-color 200ms;
+    box-shadow 200ms;
 }
 
 .home-mode:active {
@@ -152,35 +239,75 @@
 }
 
 .home-mode.is-active {
-  border-color: #008cff;
-  background: #eef6fd;
+  background:
+    radial-gradient(90% 65% at 50% 28%, rgba(255, 122, 31, 0.24), transparent 72%) padding-box,
+    linear-gradient(180deg, #3b322b, #1e1a17) padding-box,
+    var(--gold-frame) border-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(255, 122, 31, 0.32),
+    0 6px 14px rgba(0, 0, 0, 0.45);
+  color: #d8cdb8;
   transform: scale(1.04);
 }
 
+/* Medaillon wie die Edelstein-Fassungen auf Karten und Pack */
 .home-mode-icon {
-  font-size: 36px;
-  line-height: 1.1;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  background:
+    radial-gradient(circle at 50% 35%, #41454e, #16181c 78%) padding-box,
+    var(--gold-frame) border-box;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.55);
+  color: var(--c-gold);
+  transition: box-shadow 200ms;
+}
+
+.home-mode-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.home-mode.is-active .home-mode-icon {
+  background:
+    radial-gradient(circle at 50% 38%, #ffb062 0%, #e8590c 38%, #7a2306 78%) padding-box,
+    var(--gold-frame) border-box;
+  box-shadow:
+    0 0 16px rgba(255, 122, 31, 0.65),
+    0 3px 8px rgba(0, 0, 0, 0.55);
+  color: #fff3dc;
 }
 
 .home-mode strong {
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 900;
-  color: var(--c-text);
+  letter-spacing: 0.02em;
+  color: var(--c-gold-light);
 }
 
 .home-mode small {
-  margin-top: 4px;
-  padding: 2px 10px;
+  margin-top: 5px;
+  padding: 2px 11px;
   border-radius: 999px;
-  background: rgba(0, 140, 255, 0.12);
-  color: #0063b8;
+  border: 1px solid rgba(226, 182, 92, 0.4);
+  background: rgba(0, 0, 0, 0.35);
+  font-family: var(--font-display);
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 700;
+  color: var(--c-gold);
 }
 
 .home-mode.is-active small {
-  background: #008cff;
-  color: #fff;
+  border-color: var(--c-gold-light);
+  background: linear-gradient(180deg, var(--c-ember), var(--c-ember-dark));
+  color: #fff7e6;
+  text-shadow: 0 1px 0 rgba(90, 25, 0, 0.6);
 }
 
 /* Platzhalter-Seiten */
@@ -197,33 +324,38 @@
 .home-placeholder-icon {
   display: grid;
   place-items: center;
-  width: 104px;
-  height: 104px;
+  width: 108px;
+  height: 108px;
   border-radius: 50%;
-  background: #008cff;
-  color: #fff;
+  border: 2px solid transparent;
+  background:
+    radial-gradient(circle at 50% 38%, #4a3a2e 0%, #24201d 55%, #121317 85%) padding-box,
+    var(--gold-frame) border-box;
+  color: var(--c-gold-light);
   box-shadow:
-    inset 0 -6px 0 rgba(0, 43, 255, 0.45),
-    0 6px 0 rgba(0, 43, 255, 0.25);
+    0 0 26px rgba(255, 122, 31, 0.25),
+    0 8px 18px rgba(0, 0, 0, 0.55);
 }
 
 .home-placeholder-icon svg {
-  width: 54px;
-  height: 54px;
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 0 8px rgba(255, 150, 60, 0.55));
 }
 
 .home-placeholder h2 {
-  margin: 8px 0 0;
-  font-size: 26px;
+  margin: 10px 0 0;
+  font-family: var(--font-display);
+  font-size: 28px;
   font-weight: 900;
-  color: var(--c-text);
+  color: var(--c-gold-light);
 }
 
 .home-placeholder p {
   margin: 0;
   font-size: 15px;
-  font-weight: 700;
-  line-height: 1.35;
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* ------------------------------------------------------------------ Play */
@@ -256,16 +388,15 @@
 
 .home-play-btn {
   width: min(66vw, 260px);
-  min-height: 74px;
+  min-height: 70px;
   font-size: clamp(26px, 8vw, 32px);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.08em;
 }
 
 .home-play-icon {
-  width: 30px;
-  height: 30px;
-  margin: -16px 0;
-  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 2px 0 rgba(90, 25, 0, 0.75));
 }
 
 /* ------------------------------------------------------------------ Menüleiste */
@@ -284,14 +415,18 @@
   height: 22.6496cqw; /* 265 / 1170 */
 }
 
+/* Leiste aus dunklem Stahl mit Goldkante; unten exakt TAB_BAR_COLOR (Seitenhintergrund). */
 .tabbar-bg {
   position: absolute;
   left: 0;
   right: 0;
   top: 3.3751cqw; /* 39,489 / 1170 */
   bottom: calc(-1 * env(safe-area-inset-bottom));
-  background: #008cff;
-  box-shadow: 0 -3px 8px rgba(0, 40, 120, 0.18);
+  border-top: 2px solid #b8873f;
+  background: linear-gradient(180deg, #34373f 0%, #1e2025 45%, #141519 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.22),
+    0 -8px 18px rgba(0, 0, 0, 0.5);
 }
 
 /* Aktiver Reiter: gleitet mit Überschwingen zum gewählten Platz. */
@@ -305,12 +440,20 @@
   transition: transform 460ms cubic-bezier(0.3, 1.32, 0.45, 1);
 }
 
-/* ... und ploppt dabei auf (Stauchen und Strecken, von unten). */
+/* ... und ploppt dabei auf (Stauchen und Strecken, von unten). Bronzeplatte mit
+   Goldkante, die nach unten in TAB_ACTIVE_COLOR ausläuft, und Glut hinter dem Icon. */
 .tabbar-active-shape {
+  position: relative;
   width: 100%;
   height: 100%;
+  border: 2px solid transparent;
+  border-bottom: 0;
   border-radius: 3.1624cqw 3.1624cqw 0 0; /* 37 / 1170 */
-  background: #002bff;
+  background:
+    radial-gradient(closest-side, rgba(255, 140, 50, 0.55), rgba(255, 100, 20, 0.12) 65%, transparent) 50% 1.8cqw / 19cqw 19cqw no-repeat padding-box,
+    linear-gradient(180deg, #4c3524 0%, #2b1e15 55%, #1a120d 100%) padding-box,
+    linear-gradient(180deg, #f6dfa0 0%, #c99a4a 35%, #6e4a1c 70%, #1a120d 100%) border-box;
+  box-shadow: 0 -4px 14px rgba(255, 122, 31, 0.22);
   transform-origin: 50% 100%;
   animation: tab-pop 480ms cubic-bezier(0.3, 1.5, 0.5, 1) both;
 }
@@ -324,7 +467,7 @@
   margin-left: -10cqw;
   padding: 0;
   background: none;
-  color: #fff;
+  color: #8f897d;
 }
 
 /* Icon sitzt genau auf dem gelben Punkt der Vorlage; inaktiv kleiner. */
@@ -342,6 +485,10 @@
     opacity 200ms;
 }
 
+.tabbar-btn.is-active {
+  color: var(--c-gold-light);
+}
+
 .tabbar-btn.is-active .tabbar-icon {
   transform: scale(1);
   opacity: 1;
@@ -354,9 +501,12 @@
   min-width: 46%;
   padding: 0 6%;
   border-radius: 999px;
-  background: #ff3d6e;
-  box-shadow: 0 0 0 2px #fff;
+  background: linear-gradient(180deg, var(--c-ember), var(--c-ember-dark));
+  box-shadow:
+    0 0 0 1.5px #1b1d22,
+    0 0 0 2.5px var(--c-gold);
   color: #fff;
+  font-family: var(--font);
   font-size: 3.2cqw;
   font-weight: 900;
   line-height: 1.5;
@@ -368,7 +518,11 @@
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 2px 0 rgba(0, 20, 90, 0.35));
+  filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.6));
+}
+
+.tabbar-btn.is-active .tabbar-icon svg {
+  filter: drop-shadow(0 1px 0 rgba(60, 20, 0, 0.8)) drop-shadow(0 0 6px rgba(255, 150, 60, 0.7));
 }
 
 .tabbar-btn:active .tabbar-icon {
@@ -390,6 +544,15 @@
   }
   100% {
     transform: none;
+  }
+}
+
+@keyframes hero-float {
+  from {
+    transform: translateY(2px);
+  }
+  to {
+    transform: translateY(-5px);
   }
 }
 

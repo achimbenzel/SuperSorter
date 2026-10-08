@@ -12,16 +12,18 @@ export interface TabDef {
 // Geometrie aus der Vektor-Vorlage (1.svg–5.svg im main-Branch): 1170 × 265 px,
 // also 390 pt Breite bei 3x. Alle Werte werden relativ zur Breite umgerechnet
 // (cqw), damit die Leiste auf jedem iPhone gleich aussieht.
-//   - helle Leiste:   ab y = 39,5 bis unten (#008cff)
-//   - aktiver Reiter: 258 breit, ragt 39,5 über die Leiste, Ecken r = 37 (#002bff)
+//   - Leiste:         ab y = 39,5 bis unten (Stahl, Goldkante oben)
+//   - aktiver Reiter: 258 breit, ragt 39,5 über die Leiste, Ecken r = 37 (Bronze)
 //   - gelber Punkt:   Icon-Mitte, y = 132,5, Durchmesser 114,7
 const VIEW_W = 1170;
 const SLOT_LEFT = [0, 222, 456, 690, 912];
 const ICON_X = [129, 351, 585, 819, 1041];
 const cqw = (px: number) => (px / VIEW_W) * 100;
 
-export const TAB_BAR_COLOR = '#008cff';
-export const TAB_ACTIVE_COLOR = '#002bff';
+// Unterste Farbe von Leiste und aktivem Reiter (Verläufe in home.css enden darin);
+// so setzt der Seitenhintergrund sie nahtlos fort (s. setPageBackground).
+export const TAB_BAR_COLOR = '#141519';
+export const TAB_ACTIVE_COLOR = '#1a120d';
 
 /** Lage des aktiven Reiters in Prozent der Leistenbreite (für den Seitenhintergrund). */
 export function activeTabSlot(index: number): { left: number; width: number } {

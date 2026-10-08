@@ -24,7 +24,7 @@ export default function App() {
   const mode = normalizeMode(modeState.mode);
   // Im Spiel liegt unten der Boden (das Menü setzt seinen Hintergrund selbst, HomeScreen).
   useEffect(() => {
-    if (screen === 'game') setPageBackground('var(--c-bg-floor)');
+    if (screen === 'game') setPageBackground('var(--c-page-floor)');
   }, [screen]);
 
   if (screen === 'home') {

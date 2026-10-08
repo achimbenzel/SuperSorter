@@ -58,6 +58,13 @@ Nähte, Aufhängeloch, Aufreiß-Kerben und die Rückseite zeichnet `textures.ts`
 
 **Kartenrahmen und Kartenrückseite** (Rückseite im Spiel verwendet, der leere Rahmen ist nur Vorlage) (`public/assets/card-design/`): Vorlagen vom Projektinhaber in `assets-src/card-design/` (`frame-prototype.jpg`: leerer Rahmen mit Namensleiste, Kreis oben rechts, quadratischem Bildfenster und Textfeld; `card-back.jpg`: Rückseite mit Logo). Wie das Booster-Pack per KI ×4 hochskaliert (Real-ESRGAN x4plus, CPU/ncnn), dann `python3 scripts/card-design.py RAHMEN_X4.png RUECKSEITE_X4.png`: Karte aus dem dunklen Hintergrund ausschneiden (Lage im Original x 25–662, y 29–994), runde Ecken transparent, 1024 × 1550 als WebP → `frame.webp`, `back.webp`. Seitenverhältnis der Vorlagen ≈ 0,66 – etwas schlanker als die bisherigen Karten (63 : 88 ≈ 0,72); beim Einbau Kartenmaße angleichen.
 
+## Oberfläche
+
+Das Fantasy-Design der Oberfläche (Farben, Rahmen, Knöpfe) ist CSS, siehe docs/ARCHITECTURE.md („Oberfläche“). Dazu zwei Dateien:
+
+- `public/assets/ui/stone.webp` – Maserungs-Kachel (256 × 256, ~21 KB, nahtlos), erzeugt von `python3 scripts/ui-texture.py`: schwarz mit wechselnder Deckkraft (weiche Flecken + feines Korn), liegt über dem Farbverlauf von `.app` und dem Win-/Lose-Fenster.
+- Schrift **Cinzel** (SIL Open Font License) aus dem npm-Paket `@fontsource/cinzel`, nur Latin in 700 und 900 (je ~15 KB als woff2), wird mitgebaut und vom Service Worker gecacht.
+
 ## Musik
 
 `public/assets/music/shop-theme.mp3`: Hintergrundmusik in Dauerschleife (4:55 min, MP3 128 kbit/s, ca. 4,7 MB), vom Projektinhaber bereitgestellt. Quelle: `assets-src/music/shop_theme.ogg` (Ogg Vorbis, spielt nicht auf allen iPhones); umgewandelt und leicht leiser gemacht (Original übersteuert) mit:
@@ -110,19 +117,19 @@ Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synt
 | `Background_Shelf.png` (Ausschnitt) | `assets/board/shelf-slot.webp` | Ein einzelnes Regalfach: Rückwand + Boden mit Preisschild | Hintergrund jedes Regalfachs | 474×1024 | 334×150 |
 | `UI_01_Lock.png` | `assets/ui/lock.webp` | Dunkles Vorhängeschloss | Markierung „Fach gelöst/gesperrt“ | 512×512 | 128×128 |
 | `UI_02_Coin_Gold.png` | `assets/ui/coin.webp` | Goldmünze mit Stern | Münzzähler im HUD, Belohnungen | 512×512 | 128×128 |
-| `UI_03_Star.png` | `assets/ui/star.webp` | Goldener Stern | Sterne-Effekt beim Lösen eines Fachs, Sterne im Win-Screen | 512×512 | 128×128 |
-| `UI_04_confetti.png` | `assets/ui/confetti.webp` | Bunte Konfetti-Explosion | Deko im Win-Screen | 512×512 | 384×384 |
+| `UI_03_Star.png` | `assets/ui/star.webp` | Goldener Stern | Sterne-Effekt beim Lösen eines Fachs (im Win-Screen sind die Sterne jetzt ein SVG) | 512×512 | 128×128 |
+| `UI_04_confetti.png` | `assets/ui/confetti.webp` | Bunte Konfetti-Explosion | Nicht mehr verwendet (Fantasy-Design), nur Original in `assets-src/` | 512×512 | 384×384 |
 | `UI_05_Undo.png` | `assets/ui/booster-undo.webp` | Kachel „UNDO“ mit Pfeil | Booster Rückgängig | 512×512 | 192×192 |
 | `UI_06_Extra_Slot.png` | `assets/ui/booster-extra-slot.webp` | Kachel „EXTRA SLOT+“, Schatztruhe mit 3 Fächern | Booster Extra-Platz | 512×512 | 192×192 |
 | `UI_07_Xray.png` | `assets/ui/booster-peek.webp` | Kachel „SCAN (X-RAY+)“, Lupe + Röntgenbrille | Booster Peek/Lupe | 512×512 | 192×192 |
 | `UI_08_Shuffle.png` | `assets/ui/booster-shuffle.webp` | Kachel „SHUFFLE“, gekreuzte Pfeile | Booster Mischen | 512×512 | 192×192 |
-| `UI_09_Panel.png` | `assets/ui/panel.webp` | Goldener Zierrahmen mit Waren und Sternen | Hintergrund von Win- und Lose-Screen | 1024×1024 | 900×771 |
-| `Button_01_Square.png` | `assets/ui/button-square-green.webp` | Grüner quadratischer Glanz-Button (leer) | Reserve (eckige Icon-Buttons) | 512×512 | 192×192 |
-| `Button_02_Square_Red.png` | `assets/ui/button-square-red.webp` | Roter quadratischer Glanz-Button (leer) | Reserve | 512×512 | 192×192 |
-| `Button_03_Wide.png` | `assets/ui/button-wide-green.webp` | Grüner breiter Glanz-Button (leer) | Primär-Button („Weiter“, „Extra-Platz“) | 1024×512 | 600×272 |
-| `Button_04_Wide.png` | `assets/ui/button-wide-red.webp` | Roter breiter Glanz-Button (leer) | Sekundär-Button („Nochmal“) | 1024×512 | 600×273 |
-| `Button_05_Checkmark.png` | `assets/ui/icon-check.webp` | Weißer Haken mit grüner Kontur | Icon im „Weiter“-Button | 512×512 | 128×128 |
-| `Button_06_Cross.png` | `assets/ui/icon-cross.webp` | Weißes Kreuz mit roter Kontur | Icon im Lose-Screen | 512×512 | 128×128 |
+| `UI_09_Panel.png` | `assets/ui/panel.webp` | Goldener Zierrahmen mit Waren und Sternen | Nicht mehr verwendet (Win/Lose ist jetzt CSS), nur Original | 1024×1024 | 900×771 |
+| `Button_01_Square.png` | `assets/ui/button-square-green.webp` | Grüner quadratischer Glanz-Button (leer) | Nicht mehr verwendet, nur Original | 512×512 | 192×192 |
+| `Button_02_Square_Red.png` | `assets/ui/button-square-red.webp` | Roter quadratischer Glanz-Button (leer) | Nicht mehr verwendet, nur Original | 512×512 | 192×192 |
+| `Button_03_Wide.png` | `assets/ui/button-wide-green.webp` | Grüner breiter Glanz-Button (leer) | Nicht mehr verwendet (Knöpfe sind jetzt CSS), nur Original | 1024×512 | 600×272 |
+| `Button_04_Wide.png` | `assets/ui/button-wide-red.webp` | Roter breiter Glanz-Button (leer) | Nicht mehr verwendet, nur Original | 1024×512 | 600×273 |
+| `Button_05_Checkmark.png` | `assets/ui/icon-check.webp` | Weißer Haken mit grüner Kontur | Nicht mehr verwendet (Lucide-Icon), nur Original | 512×512 | 128×128 |
+| `Button_06_Cross.png` | `assets/ui/icon-cross.webp` | Weißes Kreuz mit roter Kontur | Nicht mehr verwendet (Lucide-Icon), nur Original | 512×512 | 128×128 |
 | `AppIcon.png` | `assets/icons/apple-touch-icon-180.png` | Goldener Einkaufskorb + Schriftzug „Super Sorter“ auf Blau | iOS-Homescreen-Icon | 1024×1024 | 180×180 |
 | `AppIcon.png` | `assets/icons/pwa-192.png` | (s. o.) | Manifest-Icon | 1024×1024 | 192×192 |
 | `AppIcon.png` | `assets/icons/pwa-512.png` | (s. o.) | Manifest-Icon, Splash | 1024×1024 | 512×512 |
@@ -147,14 +154,15 @@ Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synt
 | Benötigt für | Platzhalter im Prototyp | Wo definiert |
 |---|---|---|
 | Einkaufswagen (Puffer-Plätze) | 🛒-Emoji als Kopf, CSS-Gitterkorb mit Rädern, Mulden als Plätze | `src/components/Cart.tsx`, `.cart` in `src/styles/game.css` |
-| Spielhintergrund (Supermarkt) | CSS-Verlauf mit Fliesenraster (Farben `--c-bg-*`) | `.app` in `src/styles/game.css`, `src/styles/tokens.css` |
+| Spielhintergrund | Dunkler Schiefer: CSS-Verlauf (`--c-bg-*`) + Maserungs-Kachel `ui/stone.webp` (s. „Oberfläche“) | `.app` in `src/styles/game.css`, `src/styles/tokens.css` |
 | Regalrahmen | CSS (dunkles Holz, Schatten), die Fächer selbst nutzen `shelf-slot.webp` | `.shelf` in `src/styles/game.css` |
 | Restart-Icon (HUD) | Inline-SVG (Lucide „rotate-ccw“) | `src/components/icons.tsx` |
 | Geschlossenes Regalfach | CSS-Holzabdeckung mit Schild „Geschlossen“ | `src/components/ShelfSlot.tsx`, `.slot-cover` |
 | Auswahl-, Fach- und Gold-Glow | CSS (vorgerenderte Verläufe/Schatten, nur `opacity` animiert) | `src/styles/game.css` |
 | Papierfetzen beim Aufreißen | 4 Ausschnitte der jeweiligen Verpackung (`paper-wrap`/`paper-gold`) per `clip-path`, dazu `paper-shreds.webp` als Burst | `src/components/Item.tsx` |
 | Kategorie-Hinweis auf verpackten Items (`hintMode`) | Emoji (🥤 🍿 🍎 🥖 🧀) | `CATEGORY_ICON` in `src/assets.ts` |
-| Statusleisten-Hintergrund (iOS) | CSS-Band in Theme-Farbe | `.app::before` in `src/styles/game.css` |
+| Statusleisten-Hintergrund (iOS) | CSS-Verlauf ins Dunkle | `.app::before` in `src/styles/game.css` |
+| Knöpfe, Plaketten, Win-/Lose-Fenster | CSS im Fantasy-Design (Goldrahmen, Glut, Edelsteine), Sterne als SVG | `GameButton.tsx`, `EndPanel.tsx`, `src/styles/screens.css` |
 | Booster-Zähler-Badge | CSS | `src/components/BoosterBar.tsx`, `src/styles/screens.css` |
 | Hinweistexte, Debug-Panel | HTML/CSS | `src/styles/screens.css` |
 | Sound-Effekte | per Klangsynthese erzeugt (eigene Arbeit) | `scripts/sfx/synth.py` → `public/assets/sfx/` |
@@ -165,4 +173,4 @@ Alle Sounds sind **eigene Arbeit**: per Klangsynthese erzeugt (`scripts/sfx/synt
 | Datei | Mögliche Verwendung |
 |---|---|
 | `board/shelf.webp` | Deko, Level-Auswahl, Ladebildschirm |
-| `ui/button-square-green.webp`, `ui/button-square-red.webp` | eckige Icon-Buttons (z. B. Einstellungen, Pause) |
+| `assets-src/UI_04_confetti.png`, `UI_09_Panel.png`, `Button_01`–`06` | Comic-Knöpfe, -Panel und -Konfetti; seit dem Fantasy-Design nicht mehr im Spiel (auch nicht mehr in `public/`). Bei Bedarf wieder in `scripts/asset-map.mjs` eintragen |
