@@ -76,6 +76,9 @@ export const CART_ICON = '🛒';
 export const cardArt = (art: string) => asset(`cards/${art}.svg`);
 export const cardArtRaster = (art: string) => asset(`cards/${art}.webp`);
 
+/** Booster-Pack: Grafik (KI-hochskaliert) + Materialkarte für die 3D-Folie (scripts/pack-texture.py). */
+export const PACK_TEXTURE = { front: asset('pack/front.webp'), maps: asset('pack/maps.png') };
+
 /** Hintergrundmusik (Quelle: assets-src/music/shop_theme.ogg, s. docs/ASSETS.md). */
 export const MUSIC_FILE = asset('music/shop-theme.mp3');
 

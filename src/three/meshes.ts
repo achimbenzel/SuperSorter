@@ -3,7 +3,8 @@
 import * as THREE from 'three';
 import type { CardDef } from '../game/cards/cards';
 import { createHoloMaterial } from './holoMaterial';
-import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront, isArtLoaded, loadArt, PACK_ART } from './textures';
+import { PACK_TEXTURE } from '../assets';
+import { ART_RECT_UV, drawCardBack, drawCardFront, drawCrimp, drawPackBack, drawPackFront, isArtLoaded, loadArt } from './textures';
 
 export const CARD_W = 1;
 export const CARD_H = 88 / 63;
@@ -133,21 +134,27 @@ export function createCard(card: CardDef, renderer: THREE.WebGLRenderer): CardOb
 
 // ---------------------------------------------------------------- Booster-Pack
 
+/** Seitenverhältnis der Pack-Grafik (public/assets/pack/front.webp, Breite : Höhe). */
+const PACK_ART_ASPECT = 687 / 1024;
 export const PACK_W = 1.18;
-export const PACK_H = PACK_W * 1.6;
-export const CRIMP_H = 0.15;
+export const CRIMP_H = 0.16;
+const BODY_H = PACK_W / PACK_ART_ASPECT;
+export const PACK_H = BODY_H + 2 * CRIMP_H;
 
-/** "Kissen": Fläche, die in der Mitte leicht nach vorn gewölbt ist (gefüllte Folie). */
-function pillowGeometry(w: number, h: number, bulge: number, v0: number, v1: number) {
-  const geo = new THREE.PlaneGeometry(w, h, 24, 32);
+/**
+ * "Kissen": gefüllte Folie, in der Mitte nach vorn gewölbt, an den Nähten flach –
+ * dort mit feinen Knitterfalten, in denen sich das Licht fängt.
+ */
+function pillowGeometry(w: number, h: number, bulge: number) {
+  const geo = new THREE.PlaneGeometry(w, h, 48, 72);
   const pos = geo.attributes.position;
-  const uv = geo.attributes.uv;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i) / (w / 2);
-    const y = uv.getY(i) * 2 - 1; // Wölbung läuft an den Nähten flach aus
-    const z = bulge * Math.pow(Math.max(0, 1 - x * x), 0.55) * Math.pow(Math.max(0, 1 - y * y), 0.55);
+    const y = pos.getY(i) / (h / 2);
+    let z = bulge * Math.pow(Math.max(0, 1 - x * x), 0.55) * Math.pow(Math.max(0, 1 - y * y), 0.55);
+    const seam = Math.max(0, (Math.abs(y) - 0.8) / 0.2);
+    z += 0.012 * seam * Math.sin(x * 23 + Math.sign(y) * 1.7) * (1 - 0.6 * x * x);
     pos.setZ(i, z);
-    uv.setY(i, uv.getY(i) * (v1 - v0) + v0);
   }
   geo.computeVertexNormals();
   return geo;
@@ -158,65 +165,115 @@ export interface PackObject {
   /** Obere Naht, die beim Aufreißen davonfliegt. */
   top: THREE.Group;
   body: THREE.Group;
+  /** Erfüllt, sobald die Pack-Grafik geladen ist (oder nicht geladen werden konnte). */
+  ready: Promise<void>;
   setOpacity: (v: number) => void;
   setTopOpacity: (v: number) => void;
   dispose: () => void;
 }
 
+/**
+ * Booster-Pack: Vorderseite mit der Pack-Grafik als metallische Folie. Eine
+ * Materialkarte (maps.png, s. scripts/pack-texture.py) sagt, wo Metall ist
+ * (Rahmen, Ornamente, goldene Schrift: spiegelt die Umgebung) und wo nicht (das
+ * Gemälde), und gibt den Ornamenten Relief. Bis die Grafik geladen ist, zeigt die
+ * Folie eine gezeichnete Ersatz-Vorderseite.
+ */
 export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture): PackObject {
   const disposables: { dispose: () => void }[] = [];
   const keep = <T extends { dispose: () => void }>(x: T) => (disposables.push(x), x);
 
-  const frontCanvas = drawPackFront();
-  const frontTex = keep(texture(frontCanvas, renderer));
-  if (!isArtLoaded(PACK_ART)) {
-    void loadArt(PACK_ART).then((img) => {
-      if (!img) return;
-      drawPackFront(frontCanvas);
-      frontTex.needsUpdate = true;
-    });
-  }
-  const backTex = keep(texture(drawPackBack(), renderer));
-  const foil = (map: THREE.Texture) =>
-    keep(
-      new THREE.MeshPhysicalMaterial({
-        map,
-        envMap,
-        metalness: 0.4,
-        roughness: 0.38,
-        envMapIntensity: 0.55,
-        iridescence: 0.7,
-        iridescenceIOR: 1.35,
-        iridescenceThicknessRange: [180, 520],
-        clearcoat: 0.3,
-        clearcoatRoughness: 0.35,
-        transparent: true,
-      }),
-    );
-  const frontMat = foil(frontTex);
-  const backMat = foil(backTex);
+  const frontMat = keep(
+    new THREE.MeshPhysicalMaterial({
+      map: keep(texture(drawPackFront(), renderer)),
+      envMap,
+      envMapIntensity: 1,
+      metalness: 0.5,
+      roughness: 0.4,
+      clearcoat: 0.25,
+      clearcoatRoughness: 0.3,
+      iridescence: 0.18,
+      iridescenceIOR: 1.3,
+      iridescenceThicknessRange: [200, 480],
+      transparent: true,
+    }),
+  );
+  const backMat = keep(
+    new THREE.MeshPhysicalMaterial({
+      map: keep(texture(drawPackBack(), renderer)),
+      envMap,
+      envMapIntensity: 1.1,
+      metalness: 0.75,
+      roughness: 0.38,
+      clearcoat: 0.4,
+      transparent: true,
+    }),
+  );
 
-  const bodyH = PACK_H - 2 * CRIMP_H;
   const body = new THREE.Group();
-  const bodyFront = new THREE.Mesh(keep(pillowGeometry(PACK_W, bodyH, 0.09, CRIMP_H / PACK_H, 1 - CRIMP_H / PACK_H)), frontMat);
-  const bodyBack = new THREE.Mesh(keep(pillowGeometry(PACK_W, bodyH, 0.09, CRIMP_H / PACK_H, 1 - CRIMP_H / PACK_H)), backMat);
+  const bodyGeo = keep(pillowGeometry(PACK_W, BODY_H, 0.09));
+  const bodyFront = new THREE.Mesh(bodyGeo, frontMat);
+  const bodyBack = new THREE.Mesh(bodyGeo, backMat);
   bodyBack.rotation.y = Math.PI;
   body.add(bodyFront, bodyBack);
 
+  // Nähte: Silberfolie mit Rillen (Relief aus derselben Zeichnung), Stanzungen per alphaTest
   const crimpMat = (top: boolean) => {
     const t = keep(texture(drawCrimp(top), renderer));
-    return keep(new THREE.MeshStandardMaterial({ map: t, envMap, metalness: 0.85, roughness: 0.35, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide }));
+    return keep(
+      new THREE.MeshStandardMaterial({
+        map: t,
+        bumpMap: t,
+        bumpScale: 1.2,
+        envMap,
+        envMapIntensity: 1.3,
+        metalness: 1,
+        roughness: 0.3,
+        transparent: true,
+        alphaTest: 0.5,
+        side: THREE.DoubleSide,
+      }),
+    );
   };
   const crimpGeo = keep(new THREE.PlaneGeometry(PACK_W, CRIMP_H));
   const top = new THREE.Group();
   top.add(new THREE.Mesh(crimpGeo, crimpMat(true)));
-  top.position.y = PACK_H / 2 - CRIMP_H / 2;
+  top.position.y = BODY_H / 2 + CRIMP_H / 2;
   const bottom = new THREE.Mesh(crimpGeo, crimpMat(false));
-  bottom.position.y = -PACK_H / 2 + CRIMP_H / 2;
+  bottom.position.y = -BODY_H / 2 - CRIMP_H / 2;
   body.add(bottom);
 
   const group = new THREE.Group();
   group.add(body, top);
+
+  // Pack-Grafik + Materialkarte nachladen
+  let disposed = false;
+  const loader = new THREE.TextureLoader();
+  const ready = Promise.all([loader.loadAsync(PACK_TEXTURE.front), loader.loadAsync(PACK_TEXTURE.maps)])
+    .then(([front, maps]) => {
+      if (disposed) {
+        front.dispose();
+        maps.dispose();
+        return;
+      }
+      keep(front);
+      keep(maps);
+      front.colorSpace = THREE.SRGBColorSpace;
+      front.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      maps.colorSpace = THREE.NoColorSpace;
+      frontMat.map?.dispose();
+      frontMat.map = front;
+      frontMat.metalnessMap = maps; // Blau
+      frontMat.roughnessMap = maps; // Grün
+      frontMat.bumpMap = maps; // Rot = Höhe
+      frontMat.bumpScale = 2.2;
+      frontMat.metalness = 1;
+      frontMat.roughness = 1;
+      frontMat.needsUpdate = true;
+    })
+    .catch(() => {
+      /* Ersatz-Vorderseite bleibt */
+    });
 
   const topMat = (top.children[0] as THREE.Mesh).material as THREE.Material;
   const bodyMats = [frontMat, backMat, bottom.material as THREE.Material];
@@ -224,6 +281,7 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
     group,
     top,
     body,
+    ready,
     setOpacity: (v) => {
       for (const m of bodyMats) m.opacity = v;
       group.visible = v > 0.001;
@@ -232,6 +290,9 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
       topMat.opacity = v;
       top.visible = v > 0.001;
     },
-    dispose: () => disposables.forEach((d) => d.dispose()),
+    dispose: () => {
+      disposed = true;
+      disposables.forEach((d) => d.dispose());
+    },
   };
 }

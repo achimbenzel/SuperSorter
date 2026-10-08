@@ -371,8 +371,9 @@
   display: flex;
   flex-direction: column;
   width: var(--pw);
-  /* explizit statt aspect-ratio: das ignorieren manche Browser auf <button> */
-  height: calc(var(--pw) * 1.6);
+  /* explizit statt aspect-ratio: das ignorieren manche Browser auf <button>.
+     Grafik 687 : 1024 plus zwei Nähte à 8 % */
+  height: calc(var(--pw) * 1.75);
   padding: 0;
   filter: drop-shadow(0 14px 14px rgba(40, 20, 5, 0.35));
 }
@@ -390,16 +391,15 @@
   position: relative;
   flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12% 6% 9%;
-  background:
-    radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.35) 0, transparent 45%),
-    linear-gradient(160deg, #7b3cf0 0%, #2c7bff 48%, #ff4f9a 100%);
-  color: #fff;
-  text-align: center;
+  background: #2b2c32;
+}
+
+.bpack-front {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .bpack-shine {
@@ -410,43 +410,6 @@
   width: 200%;
   background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
   animation: foil-glare 3s ease-in-out infinite;
-}
-
-.bpack-logo {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  font-size: calc(var(--pw) * 0.12);
-  font-weight: 900;
-  line-height: 0.95;
-  -webkit-text-stroke: calc(var(--pw) * 0.012) #2a1050;
-  paint-order: stroke fill;
-  text-shadow: 0 calc(var(--pw) * 0.012) 0 rgba(0, 0, 0, 0.35);
-}
-
-.bpack-logo small {
-  margin-top: 4px;
-  font-size: calc(var(--pw) * 0.052);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  -webkit-text-stroke: 0;
-}
-
-.bpack-art {
-  position: relative;
-  width: calc(var(--pw) * 0.62);
-  height: calc(var(--pw) * 0.62);
-}
-
-.bpack-info {
-  position: relative;
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: rgba(20, 0, 60, 0.35);
-  font-size: calc(var(--pw) * 0.058);
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 /* Aufreißen: wackeln, Naht fliegt weg, Pack fällt nach unten weg */

@@ -77,6 +77,8 @@ export class PackOpening extends Stage {
   private flipAngle = Math.PI;
   private viewPack: View = { z: 6, y: 0 };
   private viewCards: View = { z: 5, y: 0 };
+  private shown = false;
+  private disposedPack = false;
   /** Zählt bei reset()/skip() hoch: laufende Abläufe erkennen daran, dass sie veraltet sind. */
   private run = 0;
 
@@ -98,7 +100,16 @@ export class PackOpening extends Stage {
 
     this.layout();
     this.applyView(this.viewPack);
-    void this.dropIn();
+    // Erst einfliegen, wenn die Pack-Grafik da ist (aus dem Cache meist sofort).
+    this.pack.group.visible = false;
+    const show = () => {
+      if (this.shown || this.disposedPack) return;
+      this.shown = true;
+      this.pack.group.visible = true;
+      void this.dropIn();
+    };
+    void this.pack.ready.then(show);
+    window.setTimeout(show, 2500);
 
     const c = this.canvas;
     c.addEventListener('pointerdown', this.down);
@@ -258,7 +269,7 @@ export class PackOpening extends Stage {
 
   /** Aufreißen (Wischgeste oder Knopf). `dir`: Richtung, in die die Naht fliegt. */
   async tear(dir = 1) {
-    if (this.phase !== 'pack') return;
+    if (this.phase !== 'pack' || !this.shown) return;
     this.phase = 'opening';
     const run = this.run;
     this.ev.onHint(null);
@@ -511,6 +522,7 @@ export class PackOpening extends Stage {
     c.removeEventListener('pointerup', this.up);
     c.removeEventListener('pointercancel', this.cancel);
     for (const card of this.cards) card.dispose();
+    this.disposedPack = true;
     this.pack.dispose();
     this.glowTex.dispose();
     this.glow.material.dispose();

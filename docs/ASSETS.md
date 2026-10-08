@@ -47,7 +47,14 @@ Seit dem Card-Shop-Thema verkauft der Laden Sammelkarten-Produkte. Die acht Ware
 
 Die Supermarkt-Originale (`Item_01`–`Item_08`) liegen weiter in `assets-src/`, werden aber nicht mehr ausgeliefert.
 
-**Sammelkarten und Booster-Pack** (Packs-/Sammlungs-Reiter): Rahmen, Texte, Rückseite und Packfolie haben keine Bilddateien – in 3D zeichnet sie `src/three/textures.ts` per Canvas 2D als Texturen, ohne WebGL CSS (`components/cards/`, `styles/cards.css`).
+**Sammelkarten** (Packs-/Sammlungs-Reiter): Rahmen, Texte und Rückseite haben keine Bilddateien – in 3D zeichnet sie `src/three/textures.ts` per Canvas 2D als Texturen, ohne WebGL CSS (`components/cards/`, `styles/cards.css`).
+
+**Booster-Pack** (`public/assets/pack/`): Vorlage vom Projektinhaber, `assets-src/pack/pack-front.jpg` (687 × 1024, flache Vorderseite ohne Packform) und `reference.jpg` (gewünschter Look als fertiges Pack). Aufbereitung:
+
+1. **KI-Hochskalierung ×4** mit Real-ESRGAN (`realesrgan-x4plus`, BSD-3-Lizenz) auf der CPU über das Python-Paket `ncnn`; Modell aus dem Release `realesrgan-ncnn-vulkan-20220424-ubuntu.zip` (github.com/xinntao/Real-ESRGAN, Ordner `models/`). Ergebnis 2748 × 4096, deutlich schärfer als klassisches Vergrößern. Das Zwischenbild liegt nicht im Repo.
+2. `python3 scripts/pack-texture.py HOCHSKALIERT.png` → `front.webp` (1536 × 2289, Farbe) und `maps.png` (768 × 1144, Materialkarte: R = Relief, G = Rauheit, B = Metall). Metall wird aus der Farbe geschätzt (graue Rahmenflächen, goldene Schrift und Plaketten); Innenfeld und Gemälde bleiben matt.
+
+Nähte, Aufhängeloch, Aufreiß-Kerben und die Rückseite zeichnet `textures.ts` (`drawCrimp`, `drawPackBack`). Ohne WebGL zeigt die CSS-Variante `front.webp` mit gerillten Silbernähten.
 
 **Kartenillustrationen** (32 Wesen, eigene Zeichnungen): `scripts/card-art.mjs` beschreibt jedes Wesen als Vektorgrafik (Baukasten: Augen, Flammen, Blätter, Blitze, Tropfen, schattierte Flächen) und schreibt `public/assets/cards/<name>.svg` (für die CSS-Karte, scharf in jeder Größe, ~6 KB) und `<name>.webp` (512 px, für die 3D-Textur, ~20 KB). Der Name ist der Kartenname in Kleinbuchstaben mit Bindestrichen (`art` in `cards.ts`). Die Solar-Dragon-Illustration ziert auch das Booster-Pack. Ändern: Zeichnung im Skript anpassen, `node scripts/card-art.mjs --sheet übersicht.png` (Übersichtsbild aller Karten zum Prüfen). Vorher waren es Emojis – die sahen je Gerät anders aus und erschienen auf iOS in der 3D-Textur nur als Silhouette.
 

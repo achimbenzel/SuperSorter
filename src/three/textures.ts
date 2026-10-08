@@ -346,56 +346,155 @@ export function drawPackFront(target?: HTMLCanvasElement): HTMLCanvasElement {
   return c;
 }
 
+/** Rückseite: dunkles gebürstetes Metall mit goldener Schrift (passend zur Vorderseite). */
 export function drawPackBack(): HTMLCanvasElement {
   const W = PACK_TEX_W;
   const H = PACK_TEX_H;
   const { c, ctx } = canvas(W, H);
-  const g = ctx.createLinearGradient(W, 0, 0, H);
-  g.addColorStop(0, '#5a2cc0');
-  g.addColorStop(1, '#1f5ad6');
+  const rnd = seeded(5);
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#4a4c54');
+  g.addColorStop(0.5, '#2a2b31');
+  g.addColorStop(1, '#3c3e46');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, W, H);
+  for (let y = 0; y < H; y += 2) {
+    ctx.fillStyle = `rgba(255,255,255,${(rnd() * 0.05).toFixed(3)})`;
+    ctx.fillRect(0, y, W, 1);
+  }
+  ctx.strokeStyle = '#b8924a';
+  ctx.lineWidth = 6;
+  roundRect(ctx, 34, 34, W - 68, H - 68, 26);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(184,146,74,0.5)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, 48, 48, W - 96, H - 96, 20);
+  ctx.stroke();
+
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.font = `900 46px ${FONT}`;
-  ctx.fillText('5 CARDS', W / 2, H * 0.42);
+  const gold = ctx.createLinearGradient(0, H * 0.3, 0, H * 0.44);
+  gold.addColorStop(0, '#f6dfa0');
+  gold.addColorStop(1, '#b07a2e');
+  ctx.font = `900 78px ${FONT}`;
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#1c1410';
+  ctx.fillStyle = gold;
+  for (const [t, y] of [
+    ['SUPER', H * 0.33],
+    ['SORTER', H * 0.42],
+  ] as const) {
+    ctx.strokeText(t, W / 2, y);
+    ctx.fillText(t, W / 2, y);
+  }
+  ctx.fillStyle = 'rgba(240,226,190,0.85)';
   ctx.font = `800 28px ${FONT}`;
-  ctx.fillText('1 RARE OR BETTER IN EVERY PACK', W / 2, H * 0.5);
+  ctx.fillText('5 CARDS · 1 RARE OR BETTER', W / 2, H * 0.55);
   ctx.font = `700 22px ${FONT}`;
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.fillText('Super Sorter TCG · Base Set', W / 2, H * 0.9);
+  ctx.fillStyle = 'rgba(240,226,190,0.55)';
+  ctx.fillText('Super Sorter TCG · Base Expansion', W / 2, H * 0.88);
   return c;
 }
 
-/** Silberne Schweißnaht mit Zacken (Alpha) – oben bzw. unten am Pack. */
+export const CRIMP_TEX_W = 1024;
+export const CRIMP_TEX_H = 140;
+
+/** Kleiner deterministischer Zufall (gleiche Naht bei jedem Start). */
+function seeded(seed: number) {
+  let s = seed;
+  return () => ((s = (s * 16807) % 2147483647) - 1) / 2147483646;
+}
+
+/**
+ * Silberne Schweißnaht wie bei echten Packs: feine senkrechte Rillen, leicht
+ * zerknitterte Folie, gezackte Außenkante. Oben zusätzlich die Stanzungen:
+ * Aufhängeloch (Euro-Schlitz) in der Mitte und Aufreiß-Kerben an den Seiten.
+ * Transparente Stellen schneidet das Material per alphaTest aus.
+ */
 export function drawCrimp(top: boolean): HTMLCanvasElement {
-  const W = 512;
-  const H = 96;
+  const W = CRIMP_TEX_W;
+  const H = CRIMP_TEX_H;
   const { c, ctx } = canvas(W, H);
-  const teeth = 16;
+  const rnd = seeded(top ? 7 : 11);
+  const outer = top ? 0 : H; // Außenkante
+  const inner = H - outer; // Kante zum Pack hin
+
+  // Grundfläche mit gezackter Außenkante
+  const teeth = 56;
+  const depth = 9;
   ctx.beginPath();
-  if (top) {
-    ctx.moveTo(0, H);
-    for (let i = 0; i <= teeth * 2; i++) ctx.lineTo((i / (teeth * 2)) * W, i % 2 ? H * 0.22 : 0);
-    ctx.lineTo(W, H);
-  } else {
-    ctx.moveTo(0, 0);
-    ctx.lineTo(W, 0);
-    for (let i = teeth * 2; i >= 0; i--) ctx.lineTo((i / (teeth * 2)) * W, i % 2 ? H * 0.78 : H);
+  ctx.moveTo(0, inner);
+  for (let i = 0; i <= teeth * 2; i++) {
+    const x = (i / (teeth * 2)) * W;
+    const d = i % 2 ? depth : 0;
+    ctx.lineTo(x, top ? d : H - d);
   }
+  ctx.lineTo(W, inner);
   ctx.closePath();
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#f2f4f8');
-  g.addColorStop(0.5, '#c4cad6');
-  g.addColorStop(1, '#e8ebf1');
+  g.addColorStop(0, '#9aa1ad');
+  g.addColorStop(0.35, '#eef1f6');
+  g.addColorStop(0.6, '#c9ced8');
+  g.addColorStop(1, '#8d94a1');
   ctx.fillStyle = g;
   ctx.fill();
+
   ctx.save();
   ctx.clip();
-  ctx.fillStyle = 'rgba(70,80,100,0.22)';
-  for (let x = 0; x < W; x += 9) ctx.fillRect(x, 0, 3, H);
+  // Knitter: breite, weiche helle/dunkle Bahnen
+  for (let i = 0; i < 26; i++) {
+    const x = rnd() * W;
+    const w = 20 + rnd() * 70;
+    const light = rnd() > 0.5;
+    const band = ctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+    const col = light ? '255,255,255' : '40,46,58';
+    band.addColorStop(0, `rgba(${col},0)`);
+    band.addColorStop(0.5, `rgba(${col},${light ? 0.35 : 0.22})`);
+    band.addColorStop(1, `rgba(${col},0)`);
+    ctx.fillStyle = band;
+    ctx.fillRect(x - w / 2, 0, w, H);
+  }
+  // feine Rillen
+  for (let x = 0; x < W; x += 6) {
+    ctx.fillStyle = 'rgba(30,36,48,0.32)';
+    ctx.fillRect(x, 0, 2, H);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.fillRect(x + 2, 0, 1.5, H);
+  }
+  // Schatten an der Kante zum Pack
+  const sg = ctx.createLinearGradient(0, inner, 0, top ? inner - 18 : inner + 18);
+  sg.addColorStop(0, 'rgba(20,22,30,0.55)');
+  sg.addColorStop(1, 'rgba(20,22,30,0)');
+  ctx.fillStyle = sg;
+  ctx.fillRect(0, top ? inner - 18 : inner, W, 18);
   ctx.restore();
+
+  if (top) {
+    // Aufhängeloch: Stadion-Form ausstanzen, mit geprägtem Rand
+    const hw = W * 0.2;
+    const hh = 40;
+    const hx = (W - hw) / 2;
+    const hy = H * 0.5 - hh / 2;
+    roundRect(ctx, hx - 7, hy - 7, hw + 14, hh + 14, (hh + 14) / 2);
+    ctx.fillStyle = 'rgba(60,66,78,0.55)';
+    ctx.fill();
+    roundRect(ctx, hx - 3, hy - 3, hw + 6, hh + 6, (hh + 6) / 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fill();
+    ctx.globalCompositeOperation = 'destination-out';
+    roundRect(ctx, hx, hy, hw, hh, hh / 2);
+    ctx.fill();
+    // Aufreiß-Kerben links und rechts
+    for (const x of [0, W]) {
+      ctx.beginPath();
+      ctx.moveTo(x, H * 0.48);
+      ctx.lineTo(x + (x ? -22 : 22), H * 0.66);
+      ctx.lineTo(x, H * 0.84);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
   return c;
 }
 
