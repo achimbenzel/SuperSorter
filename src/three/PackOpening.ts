@@ -123,6 +123,8 @@ export class PackOpening extends Stage {
       if (this.shown || this.disposedPack) return;
       this.shown = true;
       this.pack.group.visible = true;
+      // Shader beider Modelle (unversehrt / geteilt) jetzt übersetzen, nicht erst beim Reißen
+      this.pack.withAllVisible(() => this.renderer.compile(this.scene, this.camera));
       void this.dropIn();
     };
     void this.pack.ready.then(show);
@@ -135,6 +137,8 @@ export class PackOpening extends Stage {
     c.addEventListener('pointercancel', this.cancel);
     this.start();
     ev.onHint('swipe');
+    // Nur in der Entwicklung: Zugriff für Tests (z. B. Modelltausch pixelgenau prüfen)
+    if (import.meta.env.DEV) (window as { __packOpening?: PackOpening }).__packOpening = this;
   }
 
   // ------------------------------------------------------------ Layout
@@ -224,10 +228,7 @@ export class PackOpening extends Stage {
         if (ptr.tearZone && this.shown && !this.completing && Math.abs(dx) > Math.abs(dy) * 0.8) {
           // An der Kante quer gewischt: aufreißen – der Riss folgt dem Finger
           ptr.mode = 'tear';
-          if (!this.tearDir) {
-            this.tearDir = Math.sign(dx) || 1;
-            this.tearTick = 0.03;
-          }
+          if (!this.tearDir) this.beginTear(Math.sign(dx) || 1);
           this.tearing = true;
           this.tilt.yaw = this.tilt.pitch = 0;
         } else {
@@ -307,13 +308,18 @@ export class PackOpening extends Stage {
     this.ev.onHint('swipe');
   }
 
+  /** Erster Riss: nahtlos vom unversehrten auf das geteilte Modell wechseln. */
+  private beginTear(dir: number) {
+    this.tearDir = dir;
+    this.tearTick = 0.03;
+    this.pack.tear.update(0, dir);
+    this.pack.setTorn(true);
+  }
+
   /** Aufreißen per Knopf: Der Riss läuft von selbst über das Pack (`dir` +1 = nach rechts). */
   tear(dir = 1) {
     if (this.phase !== 'pack' || !this.shown || this.completing) return;
-    if (!this.tearDir) {
-      this.tearDir = dir;
-      this.tearTick = 0.03;
-    }
+    if (!this.tearDir) this.beginTear(dir);
     this.ev.onHint(null);
     const from = this.tearTarget;
     void this.tween(700, (v) => (this.tearTarget = Math.max(this.tearTarget, from + (1 - from) * v)), ease.inOutCubic);
@@ -516,6 +522,7 @@ export class PackOpening extends Stage {
   reset() {
     this.clearCards();
     this.pack.tear.reset();
+    this.pack.setTorn(false);
     this.tearP = this.tearTarget = 0;
     this.tearDir = 0;
     this.tearing = false;

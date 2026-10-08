@@ -175,6 +175,10 @@ export interface PackObject {
   body: THREE.Group;
   /** Steuerung des Aufreißens (Rissfront, Aufrollen, Fasern). */
   tear: TearRig;
+  /** false: unversehrtes Modell (keine Risslinie), true: geteiltes Modell zum Aufreißen. */
+  setTorn: (torn: boolean) => void;
+  /** fn ausführen, während beide Modelle sichtbar sind (Shader vorab übersetzen). */
+  withAllVisible: (fn: () => void) => void;
   /** Erfüllt, sobald die Pack-Grafik geladen ist (oder nicht geladen werden konnte). */
   ready: Promise<void>;
   setOpacity: (v: number) => void;
@@ -257,12 +261,25 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
   const tear = keep(createTearRig({ packW: PACK_W, bodyH: BODY_H, crimpH: CRIMP_H, bandH: TEAR_BAND_H, amp: 0.014, surfaceZ: pillowZ }, envMap, renderer, frontMat));
   tear.drawStrip(fallbackFront, topCrimp);
   tear.update(0, 1);
+  // Vorderseite bleibt immer dasselbe Modell; ausgeschnitten wird nur am gerissenen Stück
   frontMat.alphaMap = tear.bodyAlpha;
+  tear.patchBody(frontMat);
   body.add(tear.bodyRim);
   const top = tear.strip;
 
   const group = new THREE.Group();
-  group.add(body, top);
+  group.add(body, top, tear.intactTop);
+
+  // Zu Beginn: unversehrte Naht; beim ersten Riss übernimmt der Streifen
+  let torn = false;
+  const cut = [top, tear.bodyRim];
+  const intact = [tear.intactTop];
+  const setTorn = (on: boolean) => {
+    torn = on;
+    for (const o of cut) o.visible = on;
+    for (const o of intact) o.visible = !on;
+  };
+  setTorn(false);
   // Umgebung leicht gedreht: In Ruhelage spiegelt die Folie sonst genau die hellste
   // Lampe (Naht und Oberkante wirkten weiß überstrahlt); beim Kippen wandert der Glanz.
   group.traverse((o) => {
@@ -314,7 +331,20 @@ export function createPack(renderer: THREE.WebGLRenderer, envMap: THREE.Texture)
       for (const m of bodyMats) m.opacity = v;
       group.visible = v > 0.001;
     },
-    setTopOpacity: (v) => tear.setOpacity(v),
+    setTopOpacity: (v) => {
+      tear.setOpacity(v);
+      top.visible = torn && v > 0.001;
+    },
+    setTorn,
+    withAllVisible: (fn) => {
+      const was = torn;
+      for (const o of [...cut, ...intact]) o.visible = true;
+      try {
+        fn();
+      } finally {
+        setTorn(was);
+      }
+    },
     dispose: () => {
       disposed = true;
       disposables.forEach((d) => d.dispose());

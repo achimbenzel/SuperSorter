@@ -10,6 +10,14 @@
 //   - erscheinen nur am bereits gerissenen Stück helle Folienfasern an beiden
 //     Risskanten (drawRange der Fasergeometrie),
 //   - zeigt der Streifen hinten die silberne Innenfolie.
+//
+// Damit die Risslinie vorher nicht zu ahnen ist:
+//   - Die Pack-Vorderseite bleibt immer dasselbe Modell. Ausgeschnitten wird sie
+//     per Shader nur links bzw. rechts der Rissfront (uTearX) – vor dem ersten Riss
+//     also nirgends.
+//   - Der Streifen zeigt sein Stück Packkante ebenfalls nur am gerissenen Teil.
+//   - Die Naht: vor dem Riss `intactTop`, beim ersten Riss tauscht meshes.ts auf den
+//     Streifen. Beide liegen exakt gleich (gleiche Höhe, Normalen, UVs, Materialien).
 
 import * as THREE from 'three';
 
@@ -28,10 +36,14 @@ export interface TearDims {
 export interface TearRig {
   /** Streifen (Ursprung in seiner Mitte, damit er beim Wegfliegen um sich selbst dreht). */
   strip: THREE.Group;
+  /** Nur die Naht, an exakt derselben Stelle – für das unversehrte Pack. */
+  intactTop: THREE.Group;
   /** Fasern an der Risskante des Packs (gehört zum Pack-Körper). */
   bodyRim: THREE.Mesh;
   /** Ausschnitt für die Pack-Vorderseite (alphaMap): oberhalb der Risslinie leer. */
   bodyAlpha: THREE.Texture;
+  /** Shader der Pack-Vorderseite erweitern: Ausschnitt nur am gerissenen Stück. */
+  patchBody: (material: THREE.MeshPhysicalMaterial) => void;
   /**
    * Streifen-Texturen aus Naht und Pack-Grafik zeichnen; mit `maps` (Materialkarte
    * der Vorderseite) bekommt der Streifen dasselbe Material wie das Pack darunter –
@@ -48,7 +60,9 @@ export interface TearRig {
 }
 
 const N = 120; // Abschnitte entlang der Risslinie
-const ROWS = 6; // Gitterzeilen im Streifen
+const ROWS_BAND = 5; // Gitterzeilen Packkante (Risslinie bis Oberkante der Folie)
+const ROWS_CRIMP = 3; // Gitterzeilen Naht – eine Zeile liegt genau auf der Oberkante
+const ROWS = ROWS_BAND + ROWS_CRIMP;
 const BEND_R = 0.42; // Biegeradius beim Aufrollen
 const BEND_MAX = 1.25; // maximaler Biegewinkel (rad)
 const LIFT = 0.26; // Anheben des freien Teils je Einheit gerissener Länge
@@ -81,10 +95,11 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
   const cols = N + 1;
   const base = new Float32Array(cols * (ROWS + 1) * 3);
   const uv = new Float32Array(cols * (ROWS + 1) * 2);
+  const bodyTop = bodyH / 2;
   for (let j = 0; j <= ROWS; j++) {
     for (let i = 0; i < cols; i++) {
       const k = j * cols + i;
-      const y = jag[i] + ((yTop - jag[i]) * j) / ROWS;
+      const y = j <= ROWS_BAND ? jag[i] + ((bodyTop - jag[i]) * j) / ROWS_BAND : bodyTop + ((yTop - bodyTop) * (j - ROWS_BAND)) / ROWS_CRIMP;
       base[k * 3] = xs[i];
       base[k * 3 + 1] = y;
       base[k * 3 + 2] = surfaceZ(xs[i], y) + 0.0008;
@@ -108,7 +123,7 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
   stripGeo.setIndex(idx);
 
   // Textur (Naht + Packkante) und Ausschnitt (Aufhängeloch, Zacken der Naht)
-  const texW = 1024;
+  const texW = 1536; // wie die Pack-Grafik: Packkante im Streifen genauso scharf wie am Pack
   const texH = Math.round((stripH / packW) * texW);
   const stripCanvas = document.createElement('canvas');
   stripCanvas.width = texW;
@@ -192,9 +207,56 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
   inner.add(new THREE.Mesh(stripGeo, frontMat), new THREE.Mesh(stripGeo, backMat), new THREE.Mesh(stripRimGeo, stripFiberMat));
   strip.add(inner);
 
+  // Unversehrt: nur die Naht (oberhalb der Packkante), gleiche Materialien und UVs
+  const vBodyTop = (bodyH / 2 - yMin) / stripH;
+  const crimpGeo = new THREE.PlaneGeometry(packW, crimpH, N, ROWS_CRIMP);
+  const cuv = crimpGeo.attributes.uv;
+  for (let i = 0; i < cuv.count; i++) cuv.setY(i, vBodyTop + cuv.getY(i) * (1 - vBodyTop));
+  const intactTop = new THREE.Group();
+  intactTop.position.set(0, bodyH / 2 + crimpH / 2, 0.0008);
+  intactTop.add(new THREE.Mesh(crimpGeo, frontMat), new THREE.Mesh(crimpGeo, backMat));
+
+  // ---------------------------------------------------------------- Ausschnitt per Shader
+  // uTearX: Rissfront in UV (0..1), uTearDir: Richtung. Gerissen ist links (dir > 0)
+  // bzw. rechts (dir < 0) der Front.
+  const uniforms = { uTearX: { value: 0 }, uTearDir: { value: 1 }, uBandTop: { value: vBodyTop } };
+  const torn = 'bool tornHere = uTearDir > 0.0 ? vAlphaMapUv.x < uTearX : vAlphaMapUv.x > uTearX;';
+  function patch(material: THREE.Material, key: string, alphaCode: string) {
+    material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, uniforms);
+      shader.fragmentShader = shader.fragmentShader
+        .replace('#include <alphamap_pars_fragment>', '#include <alphamap_pars_fragment>\nuniform float uTearX;\nuniform float uTearDir;\nuniform float uBandTop;')
+        .replace('#include <alphamap_fragment>', `#ifdef USE_ALPHAMAP\n${torn}\n${alphaCode}\n#endif`);
+    };
+    material.customProgramCacheKey = () => key;
+  }
+  // Pack-Vorderseite: Risslinien-Maske nur am gerissenen Stück anwenden
+  const patchBody = (m: THREE.MeshPhysicalMaterial) => patch(m, 'pack-tear-body', 'if ( tornHere ) diffuseColor.a *= texture2D( alphaMap, vAlphaMapUv ).g;');
+  // Streifen: Naht immer, Packkante nur wo gerissen (sonst zeigt sie die Vorderseite selbst)
+  const stripAlpha = 'diffuseColor.a *= texture2D( alphaMap, vAlphaMapUv ).g;\nif ( vAlphaMapUv.y < uBandTop && !tornHere ) diffuseColor.a = 0.0;';
+  patch(frontMat, 'pack-tear-strip', stripAlpha);
+  patch(backMat, 'pack-tear-strip-back', stripAlpha);
+
   // ---------------------------------------------------------------- Verformung
   const pos = stripGeo.attributes.position as THREE.BufferAttribute;
   const rimPos = stripRimGeo.attributes.position as THREE.BufferAttribute;
+
+  /** Normale der unverformten Fläche (wie am Pack bzw. flach an der Naht). */
+  function restNormal(x: number, y: number, out: Float32Array, k: number) {
+    if (y >= bodyTop - 1e-6) {
+      out[k] = 0;
+      out[k + 1] = 0;
+      out[k + 2] = 1;
+      return;
+    }
+    const e = 0.002;
+    const dzdx = (surfaceZ(x + e, y) - surfaceZ(x - e, y)) / (2 * e);
+    const dzdy = (surfaceZ(x, y + e) - surfaceZ(x, y - e)) / (2 * e);
+    const l = Math.hypot(dzdx, dzdy, 1);
+    out[k] = -dzdx / l;
+    out[k + 1] = -dzdy / l;
+    out[k + 2] = 1 / l;
+  }
 
   /** Punkt (x, y, z) des Streifens bei Rissfront xf in Richtung dir verformen. */
   function deform(out: Float32Array, src: Float32Array, k: number, xf: number, dir: number) {
@@ -229,6 +291,14 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
     for (let k = 0; k < arr.length; k += 3) deform(arr, base, k, xf, dir || 1);
     pos.needsUpdate = true;
     stripGeo.computeVertexNormals();
+    // Unverformte Punkte: exakt die Normale der Fläche darunter (kein Lichtsprung beim Tausch)
+    const nrm = stripGeo.attributes.normal.array as Float32Array;
+    for (let k = 0; k < arr.length; k += 3) {
+      const d = (dir || 1) > 0 ? xf - base[k] : base[k] - xf;
+      if (d <= 0) restNormal(base[k], base[k + 1], nrm, k);
+    }
+    uniforms.uTearX.value = (dir || 1) > 0 ? progress : 1 - progress;
+    uniforms.uTearDir.value = dir || 1;
     const rArr = rimPos.array as Float32Array;
     for (let k = 0; k < rArr.length; k += 3) deform(rArr, stripRimBase, k, xf, dir || 1);
     rimPos.needsUpdate = true;
@@ -335,8 +405,10 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
   const mats = [frontMat, backMat, stripFiberMat];
   return {
     strip,
+    intactTop,
     bodyRim,
     bodyAlpha,
+    patchBody,
     drawStrip: (front, crimp, maps) => {
       drawStrip(front, crimp, maps);
       if (maps && bodyMaterial) matchBody(bodyMaterial);
@@ -345,7 +417,6 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
     update,
     setOpacity: (v) => {
       for (const m of mats) m.opacity = v;
-      strip.visible = v > 0.001;
     },
     reset: () => {
       strip.position.set(0, yCenter, 0);
@@ -355,6 +426,7 @@ export function createTearRig(dims: TearDims, envMap: THREE.Texture, renderer: T
     },
     dispose: () => {
       stripGeo.dispose();
+      crimpGeo.dispose();
       bodyRimGeo.dispose();
       stripRimGeo.dispose();
       stripTex.dispose();
