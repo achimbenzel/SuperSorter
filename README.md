@@ -64,6 +64,7 @@ Weitere Scripts:
 | `npm run assets` | Assets aus `assets-src/` optimieren und App-Icons erzeugen (`assets:optimize`, `assets:icons`) |
 | `node scripts/cardshop-art.mjs` | Card-Shop-Waren (SVG im Code) neu nach `public/assets/items/` rendern |
 | `node scripts/card-art.mjs [--sheet bild.png]` | Kartenillustrationen (SVG im Code) nach `public/assets/cards/` schreiben (SVG + WebP), optional Übersichtsbild |
+| `python3 scripts/card-design.py rahmen.png rückseite.png` | Kartenrahmen + Kartenrückseite (KI-hochskaliert) ausschneiden → `public/assets/card-design/` |
 | `python3 scripts/pack-texture.py bild.png` | Booster-Pack-Textur + Materialkarte aus der (KI-hochskalierten) Pack-Grafik bauen → `public/assets/pack/` (s. docs/ASSETS.md) |
 | `python3 scripts/sfx/synth.py` | alle Sounds neu erzeugen (Klangsynthese → `public/assets/sfx/*.mp3`; braucht numpy, scipy, ffmpeg) |
 | `npm run phone` | Production-Build bauen und im Netz bereitstellen (Port 4173) – zum Testen auf dem Handy |
@@ -152,12 +153,14 @@ SuperSorter/
 │  ├─ items/  mystery/  board/  ui/  icons/
 │  ├─ cards/                      Kartenillustrationen (SVG + WebP, aus scripts/card-art.mjs)
 │  ├─ pack/                       Booster-Pack: Grafik + Materialkarte (aus scripts/pack-texture.py)
+│  ├─ card-design/                Kartenrahmen + Rückseite (Prototyp, aus scripts/card-design.py)
 │  ├─ music/  sfx/                Hintergrundmusik, Sounds
 ├─ scripts/
 │  ├─ asset-map.mjs               Zuordnung Original → Ziel
 │  ├─ cardshop-art.mjs            Card-Shop-Waren als SVG → WebP
 │  ├─ card-art.mjs                32 Kartenillustrationen als SVG (+ WebP)
 │  ├─ pack-texture.py             Booster-Pack-Textur + Materialkarte
+│  ├─ card-design.py              Kartenrahmen + Rückseite ausschneiden
 │  ├─ optimize-assets.mjs         npm run assets:optimize (sharp)
 │  ├─ generate-icons.mjs          npm run assets:icons (180/192/512/maskable)
 │  ├─ level-report.ts             npm run levels:report
